@@ -9,13 +9,18 @@ def tag_text(text, keywords):
 
 def get_top_n_risk_keywords(tagged_tokens, n):
     token_risk = {}
+    token_count = {}
     for token, risk, topics in tagged_tokens:
         if risk != 0:
             if token not in token_risk:
                 token_risk[token] = risk
+            if token in token_count:
+                token_count[token] += 1
+            else:
+                token_count[token] = 1
     
     sorted_tokens = sorted(token_risk, key=lambda x: token_risk[x], reverse=True)[:n]
-    result = [(token, token_risk[token]) for token in sorted_tokens]
+    result = [(token, token_risk[token], token_count[token]) for token in sorted_tokens]
     return result
 
 def get_top_n_common_topics_with_avg_risk(tagged_tokens, n):
