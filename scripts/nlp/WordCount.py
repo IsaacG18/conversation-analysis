@@ -1,20 +1,26 @@
 import numpy as np
 import re
+from docx import Document
 
 def parse_chat_file(file_path, delimiters):
     # Constructing the regular expression pattern based on provided delimiters
     pattern = '^'
-    for _, delim in delimiters:
+    for key, delim in delimiters:
         pattern += f'(.*?){delim}\s'
     pattern += '(.*)$'
-    delimiters.append(["Message",""])
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
+    delimiters.append(["Message", ""])
+    
+    # Check if the file has a '.docx' extension
+    if file_path.endswith('.docx'):
+        doc = Document(file_path)
+        lines = [paragraph.text for paragraph in doc.paragraphs]
+    else:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
 
     messages = []
     for line in lines:
-        # Use regular expression to extract timestamp, sender's name, and message
-        match = re.match(pattern, line)
+        # Use regular expression to extract values based on delimiters
         match = re.match(pattern, line)
         if match:
             values = match.groups()
@@ -24,6 +30,14 @@ def parse_chat_file(file_path, delimiters):
             messages.append(message_dict)
 
     return messages
+
+# Example usage:
+file_path = 'General Chat 1.docx'  # Use the correct file path with the .docx extension
+delimiters = [["Timestamp", ","], ["Sender", ":"]]
+chat_messages = parse_chat_file(file_path, delimiters)
+
+for message in chat_messages:
+    print(f"Timestamp: {message['Timestamp']}, Sender: {message['Sender']}, Message: {message['Message']}")
 
 
 
