@@ -74,3 +74,31 @@ def extract(doc, labels):
         if entity.label_ in labels:
             found_entities[entity.label_].append(entity.text)
     return found_entities
+
+def message_to_text(list_of_messages):
+    text = ""
+    for message in list_of_messages:
+        text += message.get("Message", "") + " "
+    return text
+
+def create_arrays(parsed_data):
+    # Dictionary to store arrays for each person
+    person_arrays = {}
+
+    for entry in parsed_data:
+        sender_name = entry.get('Sender', None)
+        message_length = len(entry.get('Message', ''))
+
+        if sender_name is not None:
+            if sender_name not in person_arrays:
+                person_arrays[sender_name] = {'timestamps': [], 'message_lengths': []}
+
+            person_arrays[sender_name]['timestamps'].append(entry.get('Timestamp', ''))
+            person_arrays[sender_name]['message_lengths'].append(message_length)
+
+    # Convert the lists to NumPy arrays
+    for person, data in person_arrays.items():
+        data['timestamps'] = np.array(data['timestamps'])
+        data['message_lengths'] = np.array(data['message_lengths'])
+
+    return person_arrays
