@@ -10,4 +10,4 @@ def process_file(file_path, delimiters =[["Timestamp", ","], ["Sender", ":"]], k
     person_and_locations = extract(nlp_text, ["PERSON", "GPE"])
     risk_words = get_top_n_risk_keywords(nlp_text, 3)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
-    return message_count,person_and_locations,risk_words,common_topics
+    return chat_messages, message_count,person_and_locations,risk_words,common_topics
