@@ -9,17 +9,8 @@ from .models import File, Message, Analysis, Person, Location, RiskWord
 
 # Create your views here.
 def homepage(request):
-    if request.method == "POST":
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            uploaded = request.FILES["file"]
-            title = str(uploaded)
-            file_obj = File.objects.create(file=uploaded)
-            file_obj.save()
-            return HttpResponse("You have successfully uploaded " + str(uploaded))
-    else:
-        form = UploadFileForm()
-    return render(request, "conversation_analyst/homepage.html", {"form": form})
+    files = File.objects.order_by('-date')
+    return render(request, "conversation_analyst/homepage.html", {"files": files})
 
 def upload(request):
     if request.method == "POST":

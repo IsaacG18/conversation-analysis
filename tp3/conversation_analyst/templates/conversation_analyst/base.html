@@ -18,14 +18,20 @@
     </style>
 </head>
 <body>
-  <nav class="navbar fixed-top bg-dark-subtle">
-      <div class="container-fluid justify-content-between">
-          <a href="{% url 'upload' %}" class="btn btn-outline-secondary me-2 btn-sm align-items-center"><span class="align-items-center"><i class="bi bi-file-earmark-plus"></i></span></a>
-{#          <button class="btn btn-outline-secondary me-2 btn-sm align-items-center" type="button">#}
-{#              <span class="align-items-center"><i class="bi bi-file-earmark-plus"></i></span></button>#}
-          <button class="btn btn-outline-secondary me-2 btn-sm" type="button"><span><i class="bi bi-gear-fill"></i></span></button>
+<nav class="navbar fixed-top navbar-expand-md bg-body-tertiary">
+  <div class="container-fluid align-content-center">
+    <a class="navbar-brand" href="{% url 'homepage' %}">Conversation Analyst</a>
+    <button class="navbar-toggler btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#button_group" aria-controls="button_group" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="button_group">
+      <div class="navbar-nav">
+        <a href="{% url 'upload' %}" class="btn btn-outline-secondary me-2 btn-sm align-items-center"><span class="align-items-center"><i class="bi bi-file-earmark-plus"></i></span></a>
+        <button class="btn btn-outline-secondary me-2 btn-sm" type="button"><span><i class="bi bi-gear-fill"></i></span></button>
       </div>
-    </nav>
+    </div>
+  </div>
+</nav>
     {% block body %}
     {% endblock %}
 </body>
