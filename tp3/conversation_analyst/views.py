@@ -12,9 +12,8 @@ from .models import File, Message, Analysis, Person, Location, RiskWord
 
 # Create your views here.
 def homepage(request):
-    files = File.objects.all()
+    files = File.objects.order_by('-date')
     return render(request, "conversation_analyst/homepage.html", {"files": files})
-
 
 def upload(request):
     if request.method == "POST":
