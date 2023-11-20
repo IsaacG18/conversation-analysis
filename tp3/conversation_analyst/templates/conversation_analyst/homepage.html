@@ -4,15 +4,20 @@
 {% endblock %}
     <title>Homepage</title>
 {% block body %}
-  <div class="container mt-5 text-center">
-    <span>
-        <form action="{% url 'homepage' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <p>
-                {{ form }}
-            </p>
-            <p><input type="submit" value="Upload" /></p>
-        </form>
-    </span>
-  </div>
+  {% comment %} <div class="container mt-5 text-center">
+    <span class="display-3">this is the homepage.</span>
+  </div> {% endcomment %}
+  <h2>Documents</h2>
+  {% if files %}
+    <ul>
+      {% for file in files %}
+        <li>{{ file.file.name }} - Date modified: {{ file.date|date:"N j, Y" }}</li> <!-- Ensure 'file' attribute matches your model's field name -->
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No documents found.</p>
+  {% endif %}
+
+
 {% endblock %}
+
