@@ -3,6 +3,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
 
+import os
+from django.conf import settings
+
 from .forms import UploadFileForm
 from .models import File, Message, Analysis, Person, Location, RiskWord
 
