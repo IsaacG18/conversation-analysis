@@ -1,0 +1,86 @@
+{% extends "conversation_analyst/base.html" %}
+{% block title %}
+
+{% endblock %}
+    <title>Content Review</title>
+{% block body %}
+  <div class="container-fluid mt-2">
+  <div class="row">
+    <div class="col-6">
+        {% if messages %}
+            <div class="list-group">
+            {% for message in messages %}
+                <div class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <span class="sender"><small>{{ message.sender }}:</small></span>
+                    <small class="timestamp text-body-secondary">{{ message.timestamp }}</small>
+                </div>
+                <small class="content">{{ message.content }}</small>
+                </div>
+                </li>
+            {% endfor %}
+            </div>
+        {% else %}
+            <strong>There are no messages present.</strong>
+        {% endif %}
+    </div>
+  <div class="col-6">
+      <div class="accordion" id="analysis">
+          {% if persons %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                Person
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                {% for person in persons %}
+                  <button class="btn btn-outline-primary">{{ person }}</button>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% if locations %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                Location
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                {% for location in locations %}
+                  <button class="btn btn-outline-success">{{ location }}</button>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% if risk_words %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+                Risk Words
+              </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                {% for risk_word in risk_words %}
+                    {% if risk_word.risk_factor > 5.0 %}
+                    <button class="btn btn-danger">{{ risk_word.keyword }}({{ risk_word.amount }})</button>
+                    {% else %}
+                    <button class="btn btn-warning">{{ risk_word.keyword }}({{ risk_word.amount }})</button>
+                    {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+  </div>
+    </div>
+  </div>
+  </div>
+{% endblock %}
