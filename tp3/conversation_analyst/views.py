@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
+from ..tp3.scripts.data_ingestion import upload
 
 import os
 from django.conf import settings
@@ -23,6 +24,10 @@ def upload(request):
             title = str(uploaded)
             file_obj = File.objects.create(file=uploaded)
             file_obj.save()
+            # Specify the directory where you want to save or process the file
+            directory = os.path.join(settings.MEDIA_ROOT, 'uploads')
+            file_path = os.path.join(directory, file_obj.file.name)
+            upload.process_file(file_path)
             return HttpResponseRedirect(reverse('content_review'))
     else:
         form = UploadFileForm()
