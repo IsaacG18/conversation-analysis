@@ -10,7 +10,7 @@ django.setup()
 from conversation_analyst.scripts.data_ingestion import ingestion
 from conversation_analyst.scripts.nlp.nlp import *
 from conversation_analyst.scripts.object_creators import *
-from conversation_analyst.views import generate_displayables
+from conversation_analyst.views import generate_analysis_objects
 
 
 def populate():
@@ -32,7 +32,7 @@ def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keyword
     person_and_locations = {'PERSON': ['Martin', 'Chris', 'Ma', 'Philly', 'Dune'], 'GPE': ['Philly']}
     risk_words = get_top_n_risk_keywords(nlp_text, 3)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
-    generate_displayables(file, chat_messages, message_count, person_and_locations, risk_words, common_topics)
+    generate_analysis_objects(file, chat_messages, message_count, person_and_locations, risk_words, common_topics)
 
 
 # Start excution here

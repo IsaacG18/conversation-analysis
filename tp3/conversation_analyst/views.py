@@ -64,10 +64,10 @@ def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keyword
     risk_words = get_top_n_risk_keywords(nlp_text, 3)
     print("length: " + str(risk_words.__len__()))
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
-    generate_displayables(file, chat_messages, message_count, person_and_locations, risk_words, common_topics)
+    generate_analysis_objects(file, chat_messages, message_count, person_and_locations, risk_words, common_topics)
 
 
-def generate_displayables(file, chat_messages, message_count, person_and_locations, risk_words, common_topics):
+def generate_analysis_objects(file, chat_messages, message_count, person_and_locations, risk_words, common_topics):
     persons = person_and_locations['PERSON']
     locations = person_and_locations['GPE']
 
