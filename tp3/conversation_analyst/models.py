@@ -1,12 +1,14 @@
 from django.db import models
+from django.template.defaultfilters import slugify
 
 
 # Create your models here.
 
 class File(models.Model):
     file = models.FileField(upload_to="uploads/")
-    title = models.CharField(max_length=128, unique=True)
+    title = models.CharField(max_length=128, unique=False)
     date = models.DateTimeField(auto_now_add=True)
+    slug = models.SlugField(unique=True)
 
     def save(self, *args, **kwargs):
         partition = self.file.name.partition("uploads/")
@@ -14,6 +16,7 @@ class File(models.Model):
             self.title = partition[0]
         else:
             self.title = partition[2]
+        self.slug = slugify(self.title+str(self.date))
         super(File, self).save(*args, **kwargs)
 
     def __str__(self):
