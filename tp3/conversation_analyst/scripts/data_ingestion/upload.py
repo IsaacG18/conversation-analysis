@@ -1,6 +1,10 @@
 from ingestion import parse_chat_file
-from nlp.nlp import create_arrays,tag_text,extract,get_top_n_risk_keywords,message_to_text,get_top_n_common_topics_with_avg_risk
-from nlp.Keywords import *
+import sys
+sys.path.append(r'C:/Users/fmitc/Documents/3rd Year/Professional Software Development/Project/branch 53/cs39_main/tp3/tp3/scripts/nlp')
+
+
+from nlp import *
+from Keywords import *
 
 
 def process_file(file_path, delimiters =[["Timestamp", ","], ["Sender", ":"]], keywords = Keywords()):
