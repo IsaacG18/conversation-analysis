@@ -5,7 +5,6 @@ from .scripts.data_ingestion import ingestion
 from .scripts.nlp.nlp import *
 from .scripts.object_creators import *
 
-
 import os
 from django.conf import settings
 
@@ -15,23 +14,26 @@ from .models import File, Message, Analysis, Person, Location, RiskWord
 
 # Create your views here.
 def homepage(request):
-    files = File.objects.order_by('-date')
+    files = File.objects.order_by('-date') # newest at the top
     return render(request, "conversation_analyst/homepage.html", {"files": files})
+
 
 def upload(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
+            # create file object
             uploaded = request.FILES["file"]
-            title = str(uploaded)
             file_obj = File.objects.create(file=uploaded)
             file_obj.save()
-            # Specify the directory where you want to save or process the file
             process_file(file_obj)
+            # display file analysis
             return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
     else:
         form = UploadFileForm()
     return render(request, "conversation_analyst/upload.html", {"form": form})
+
+
 def content_review(request, file_slug):
     try:
         file = File.objects.get(slug=file_slug)
@@ -49,8 +51,9 @@ def content_review(request, file_slug):
     except File.DoesNotExist:
         return HttpResponse("File not exist")
 
-def process_file(file, delimiters =[["Timestamp", ","], ["Sender", ":"]], keywords = Keywords()):
 
+def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keywords=Keywords()):
+    # Specify the directory where you want to save or process the file
     directory = os.path.join(settings.MEDIA_ROOT, 'uploads')
     file_path = os.path.join(directory, file.title)
     chat_messages = ingestion.parse_chat_file(file_path, delimiters)
@@ -59,10 +62,12 @@ def process_file(file, delimiters =[["Timestamp", ","], ["Sender", ":"]], keywor
     # person_and_locations = extract(nlp_text, ["PERSON", "GPE"])
     person_and_locations = {'PERSON': ['Martin', 'Chris', 'Ma', 'Philly', 'Dune'], 'GPE': ['Philly']}
     risk_words = get_top_n_risk_keywords(nlp_text, 3)
+    print("length: " + str(risk_words.__len__()))
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
-    generate_displayables(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
+    generate_displayables(file, chat_messages, message_count, person_and_locations, risk_words, common_topics)
 
-def generate_displayables(file, chat_messages, message_count, person_and_locations,risk_words,common_topics):
+
+def generate_displayables(file, chat_messages, message_count, person_and_locations, risk_words, common_topics):
     persons = person_and_locations['PERSON']
     locations = person_and_locations['GPE']
 

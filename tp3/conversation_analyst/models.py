@@ -1,5 +1,6 @@
 from django.db import models
 from django.template.defaultfilters import slugify
+from pathlib import Path
 
 
 # Create your models here.
@@ -11,12 +12,10 @@ class File(models.Model):
     slug = models.SlugField(unique=True)
 
     def save(self, *args, **kwargs):
-        partition = self.file.name.partition("uploads/")
-        if len(partition[2]) == 0:
-            self.title = partition[0]
-        else:
-            self.title = partition[2]
-        self.slug = slugify(self.title+str(self.date))
+        self.title = Path(self.file.name).stem
+        partition = self.file.name.partition(".")
+        self.title = self.title + "." + partition[2]
+        self.slug = slugify(self.title+" "+str(self.date))
         super(File, self).save(*args, **kwargs)
 
     def __str__(self):

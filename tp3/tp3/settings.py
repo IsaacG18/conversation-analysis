@@ -108,9 +108,9 @@ LANGUAGE_CODE = 'en-uk'
 
 TIME_ZONE = 'GMT'
 
-USE_I18N = True
+USE_TZ = False  # dirty fix for timezone warning
 
-USE_TZ = True
+USE_I18N = True
 
 
 # Static files (CSS, JavaScript, Images)
