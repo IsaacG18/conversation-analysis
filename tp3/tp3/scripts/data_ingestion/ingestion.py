@@ -7,7 +7,7 @@ def parse_chat_file(file_path, delimiters):
         pattern += f'(.*?){delim}\s'
     pattern += '(.*)$'
     delimiters.append(["Message", ""])
-
+    messages = []
     try:
         if file_path.endswith('.docx'):
             doc = Document(file_path)
@@ -16,7 +16,7 @@ def parse_chat_file(file_path, delimiters):
             with open(file_path, 'r') as file:
                 lines = file.readlines()
 
-        messages = []
+        
         for line in lines:
             match = re.match(pattern, line)
             if match:
