@@ -1,4 +1,4 @@
-import Keywords
+from .Keywords import *
 import spacy
 import numpy as np
 nlp = spacy.load("en_core_web_sm")
@@ -6,7 +6,7 @@ nlp = spacy.load("en_core_web_sm")
 
 def tag_text(text, keywords):
     doc = nlp(text)
-    return [(token.text, keywords.get_keyword(token.text)["risk"] if token.text in keywords.get_keywords() else 0, keywords.get_keyword_topics(token.text) if token.text in keywords.get_keywords() else None) for token in doc]
+    return doc, [(token.text, keywords.get_keyword(token.text)["risk"] if token.text in keywords.get_keywords() else 0, keywords.get_keyword_topics(token.text) if token.text in keywords.get_keywords() else None) for token in doc]
 
 def get_top_n_risk_keywords(tagged_tokens, n):
     token_risk = {}
@@ -74,3 +74,31 @@ def extract(doc, labels):
         if entity.label_ in labels:
             found_entities[entity.label_].append(entity.text)
     return found_entities
+
+def message_to_text(list_of_messages):
+    text = ""
+    for message in list_of_messages:
+        text += message.get("Message", "") + " "
+    return text
+
+def create_arrays(parsed_data):
+    # Dictionary to store arrays for each person
+    person_arrays = {}
+
+    for entry in parsed_data:
+        sender_name = entry.get('Sender', None)
+        message_length = len(entry.get('Message', ''))
+
+        if sender_name is not None:
+            if sender_name not in person_arrays:
+                person_arrays[sender_name] = {'timestamps': [], 'message_lengths': []}
+
+            person_arrays[sender_name]['timestamps'].append(entry.get('Timestamp', ''))
+            person_arrays[sender_name]['message_lengths'].append(message_length)
+
+    # Convert the lists to NumPy arrays
+    for person, data in person_arrays.items():
+        data['timestamps'] = np.array(data['timestamps'])
+        data['message_lengths'] = np.array(data['message_lengths'])
+
+    return person_arrays
