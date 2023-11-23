@@ -1,19 +1,21 @@
 from django.db import models
+from django.template.defaultfilters import slugify
+from pathlib import Path
 
 
 # Create your models here.
 
 class File(models.Model):
     file = models.FileField(upload_to="uploads/")
-    title = models.CharField(max_length=128, unique=True)
+    title = models.CharField(max_length=128, unique=False)
     date = models.DateTimeField(auto_now_add=True)
+    slug = models.SlugField(unique=True)
 
     def save(self, *args, **kwargs):
-        partition = self.file.name.partition("uploads/")
-        if len(partition[2]) == 0:
-            self.title = partition[0]
-        else:
-            self.title = partition[2]
+        self.title = Path(self.file.name).stem
+        partition = self.file.name.partition(".")
+        self.title = self.title + "." + partition[2]
+        self.slug = slugify(self.title+" "+str(self.date))
         super(File, self).save(*args, **kwargs)
 
     def __str__(self):
