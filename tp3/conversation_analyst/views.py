@@ -14,6 +14,12 @@ from .models import File, Message, Analysis, Person, Location, RiskWord
 
 # Create your views here.
 def homepage(request):
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    return render(request, "conversation_analyst/homepage.html")
+=======
+>>>>>>> b5bc203 (fix merge induced bug)
     files = File.objects.order_by('-date') # newest at the top
     return render(request, "conversation_analyst/homepage.html", {"files": files})
 
@@ -78,3 +84,7 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
         p = add_location(a, location)
     for risk_word in risk_words:
         r = add_risk_word(a, risk_word[0], risk_word[1], risk_word[2])
+<<<<<<< HEAD
+=======
+>>>>>>> 0dca055 (fix merge induced bug)
+>>>>>>> b5bc203 (fix merge induced bug)
