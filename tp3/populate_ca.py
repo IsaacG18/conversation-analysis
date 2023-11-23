@@ -25,14 +25,13 @@ def populate():
 def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keywords=Keywords()):
     sample_dir = os.path.abspath(os.path.join(os.getcwd(), 'static/sample'))
     file_path = os.path.join(sample_dir, file.title)
-    chat_messages = ingestion.parse_chat_file(file_path, delimiters)
+    chat_messages =  ingestion.parse_chat_file(file_path, delimiters)
     message_count = create_arrays(chat_messages)
-    nlp_text = tag_text(message_to_text(chat_messages), keywords)
-    # person_and_locations = extract(nlp_text, ["PERSON", "GPE"])
-    person_and_locations = {'PERSON': ['Martin', 'Chris', 'Ma', 'Philly', 'Dune'], 'GPE': ['Philly']}
-    risk_words = get_top_n_risk_keywords(nlp_text, 3)
-    common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
-    generate_analysis_objects(file, chat_messages, message_count, person_and_locations, risk_words, common_topics)
+    nlp_text, Keywords = tag_text(message_to_text(chat_messages), keywords)
+    person_and_locations = extract(nlp_text, ["PERSON", "GPE"])
+    risk_words = get_top_n_risk_keywords(Keywords, 3)
+    common_topics = get_top_n_common_topics_with_avg_risk(Keywords, 3)
+    generate_analysis_objects(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
 
 
 # Start excution here
