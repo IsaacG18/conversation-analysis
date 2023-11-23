@@ -6,7 +6,7 @@ nlp = spacy.load("en_core_web_sm")
 
 def tag_text(text, keywords):
     doc = nlp(text)
-    return [(token.text, keywords.get_keyword(token.text)["risk"] if token.text in keywords.get_keywords() else 0, keywords.get_keyword_topics(token.text) if token.text in keywords.get_keywords() else None) for token in doc]
+    return doc, [(token.text, keywords.get_keyword(token.text)["risk"] if token.text in keywords.get_keywords() else 0, keywords.get_keyword_topics(token.text) if token.text in keywords.get_keywords() else None) for token in doc]
 
 def get_top_n_risk_keywords(tagged_tokens, n):
     token_risk = {}
