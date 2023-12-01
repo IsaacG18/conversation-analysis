@@ -76,9 +76,12 @@ def get_date_messages(parsed_data):
 def extract(messages, labels):
     found_entities = {label: [] for label in labels}
     for message in messages:
+        for label in labels:
+            message[label]=0
         for entity in message["doc"].ents:
             if entity.label_ in labels:
                 found_entities[entity.label_].append(entity.text)
+                message[entity.label_]+=1
     return found_entities
 
 def message_to_text(list_of_messages):
