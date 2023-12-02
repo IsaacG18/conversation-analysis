@@ -5,7 +5,7 @@ nlp = spacy.load("en_core_web_sm")
 
 
 def tag_text(Message_Text, keywords):
-    for message in Message_Text[1]:
+    for message in Message_Text:
         message["risk"] = 0
         message["doc"] = nlp(message["Message"])
         doc = nlp(message["doc"])
@@ -24,8 +24,7 @@ def tag_text(Message_Text, keywords):
             tag_list.append((token_text, risk, topics))
 
         message["tags"] = tag_list
-    doc = nlp(Message_Text[0])
-    return Message_Text[1]
+    return Message_Text
 
 def get_top_n_risk_keywords(messages, n):
     token_risk = {}

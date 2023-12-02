@@ -58,10 +58,11 @@ def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keyword
 
     chat_messages = ingestion.parse_chat_file(file_path, delimiters)
     message_count = create_arrays(chat_messages)
-    messages = tag_text(message_to_text(chat_messages), keywords)
-    person_and_locations = extract(messages, ["PERSON", "GPE"])
-    risk_words = get_top_n_risk_keywords(messages, 3)
-    common_topics = get_top_n_common_topics_with_avg_risk(messages, 3)
+    nlp_text = tag_text(chat_messages, keywords)
+    person_and_locations = extract(nlp_text, ["PERSON", "GPE"])
+    risk_words = get_top_n_risk_keywords(nlp_text, 3)
+    common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
+
     generate_analysis_objects(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
 
 
