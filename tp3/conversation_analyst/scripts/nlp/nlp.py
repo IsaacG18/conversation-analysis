@@ -76,9 +76,17 @@ def get_date_messages(parsed_data):
 def extract(messages, labels):
     found_entities = {label: [] for label in labels}
     for message in messages:
+        distance=0
+        for label in labels:
+            message[label]=0
         for entity in message["doc"].ents:
             if entity.label_ in labels:
                 found_entities[entity.label_].append(entity.text)
+                message[entity.label_]+=1
+                start_tag = f'<div class="{entity.label_}"><div class="{entity.text}">'
+                end_tag = '</div></div>'
+                message["Message"] = message["Message"][:entity.start_char+distance] + start_tag + entity.text + end_tag + message["Message"][entity.end_char+distance:]
+                distance+=len(start_tag)+len(end_tag)
     return found_entities
 
 def message_to_text(list_of_messages):
