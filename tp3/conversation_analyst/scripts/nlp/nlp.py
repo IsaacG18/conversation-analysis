@@ -7,22 +7,26 @@ nlp = spacy.load("en_core_web_sm")
 def tag_text(messages, keywords, labels):
     found_entities = {label: [] for label in labels}
     for message in messages:
-        for label in labels:
-            message[label]=0
+        distance = 0
+        
         message["risk"] = 0
         message["doc"] = nlp(message["Message"])
-        tag_message = ""
         tag_list = []
-        for token in message["doc"].ents:
+        for label in labels:
+            message[label] = 0
+        for entity in message["doc"].ents:
+            if entity.label_ in labels:
+                start_tag = f'<div class="{entity.label_}"><div class="{entity.text}">'
+                end_tag = '</div></div>'
+                
+                found_entities[entity.label_].append((entity.text))
+                message["Message"] = message["Message"][:entity.start_char + distance] + start_tag + entity.text + end_tag + message["Message"][entity.end_char+ distance:]
+                distance += len(start_tag) + len(end_tag)
+                
+                message[entity.label_] += 1
+        for token in message["doc"]:
             token_text = token.text
             input_text = token_text
-            tag_message = ""
-            if token.label_ in labels:
-                found_entities[token.label_].append(token.text)
-                message[token.label_]+=1
-                start_tag = f'<div class="{token.label_}"><div class="{token.text}">'
-                end_tag = '</div></div>'
-                input_text = start_tag + input_text + end_tag
             if token_text.lower() in keywords.get_keywords():
                 risk = keywords.get_keyword(token_text)["risk"]
                 topics = keywords.get_keyword_topics(token_text.lower())
@@ -32,16 +36,15 @@ def tag_text(messages, keywords, labels):
                 for topic in topics:
                     start_tag = f'<div class="{topic}">' + start_tag
                     end_tag += '</div>'
-                tag_message+= start_tag + input_text + end_tag
+                start = message["Message"].find(token_text)
+                input_text= start_tag + input_text + end_tag
+                message["Message"] = message["Message"][:start] + start_tag + entity_tag + end_tag + message["Message"][start+ len(start):]
             else:
                 risk = 0
                 topics = None
-                tag_message+= input_text
-            
             tag_list.append((token_text, risk, topics))
 
         message["tags"] = tag_list
-        message["Message"] = tag_message
     return messages, found_entities
 
 def get_top_n_risk_keywords(messages, n):
