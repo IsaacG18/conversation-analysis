@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .scripts.data_ingestion import ingestion
 from .scripts.nlp.nlp import *
@@ -50,6 +50,37 @@ def content_review(request, file_slug):
 
     except File.DoesNotExist:
         return HttpResponse("File not exist")
+
+def json_content_review(request, file_slug):
+    try:
+        file = File.objects.get(slug=file_slug)
+        messages = Message.objects.filter(file=file)
+        analysis = Analysis.objects.get(file=file)
+        persons = Person.objects.filter(analysis=analysis)
+        locations = Location.objects.filter(analysis=analysis)
+        risk_words = RiskWord.objects.filter(analysis=analysis)
+
+        # Assuming buttonValue is sent as a POST parameter
+        button_value = request.POST.get('value', None)
+
+        # Filter messages based on button value
+        if button_value:
+            messages = messages.filter(content__icontains=button_value)
+
+        messages_list = [{'content': message.content, 'created_at': message.created_at} for message in messages]
+
+        response_data = {
+            'messages': messages_list,
+            'persons': [person.name for person in persons],
+            'locations': [location.name for location in locations],
+            'risk_words': [risk_word.word for risk_word in risk_words]
+        }
+
+        return JsonResponse(response_data)
+
+    except File.DoesNotExist:
+        return JsonResponse({'error': 'File not found'})
+
 
 
 def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keywords=Keywords()):
