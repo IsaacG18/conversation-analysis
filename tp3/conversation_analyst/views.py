@@ -5,6 +5,9 @@ from .scripts.data_ingestion import ingestion
 from .scripts.nlp.nlp import *
 from .scripts.object_creators import *
 from django.core.serializers import serialize
+from itertools import chain
+import json
+
 
 import os
 from django.conf import settings
@@ -82,8 +85,10 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
     for risk_word in risk_words:
         r = add_risk_word(a, risk_word[0], risk_word[1], risk_word[2])
 
+
 def filter_view(request):
-    filter_button = request.GET['filter_button']
+    filter_buttons = request.GET.get('filters','[]')
+    filter_buttons = json.loads(filter_buttons)
     file_slug = request.GET['file_slug']
     try:
         file = File.objects.get(slug=file_slug)
@@ -92,17 +97,23 @@ def filter_view(request):
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
         risk_words = RiskWord.objects.filter(analysis=analysis)
-
-        # Filter messages based on button value
-        if filter_button:
-            messages = messages.filter(content__icontains=filter_button)
+        print(messages)
+        if len(filter_buttons)> 0:
+            return_messages = []
+            if filter_buttons[0]:
+                return_messages = messages.filter(content__icontains=filter_buttons[0])
+            if len(filter_buttons)> 1:
+                for filter_button in filter_buttons[1]:
+                    if filter_button:
+                        return_messages = chain(return_messages, messages.filter(content__icontains=filter_button))
+            messages = set(list(return_messages))
 
         
-    except:
-        return JsonResponse(-1)
+    except Exception as e:
+        print(e)
+        return JsonResponse({'result': 'error', 'message': 'Internal Server Error'})
 
     context_dict = {'messages': serialize('json', messages), 'persons': serialize('json', persons),
                         'locations': serialize('json', locations), 'risk_words': serialize('json', risk_words)}
-    print(context_dict)
     return JsonResponse(context_dict)
         
