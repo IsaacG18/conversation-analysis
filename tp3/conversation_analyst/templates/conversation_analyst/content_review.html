@@ -82,6 +82,24 @@
             </div>
           </div>
           {% endif %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
+                Date/Time Filter
+              </button>
+            </h2>
+            <div id="collapseDateFilter" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                <label for="startDate">Start Date/Time:</label>
+                <input type="datetime-local" id="startDate" class="form-control">
+                
+                <label for="endDate">End Date/Time:</label>
+                <input type="datetime-local" id="endDate" class="form-control">
+          
+                <button class="btn btn-outline-success date-fil">Filter</button>
+              </div>
+            </div>
+          </div>
         </div>
   </div>
     </div>
