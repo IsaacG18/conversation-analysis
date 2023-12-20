@@ -24,8 +24,6 @@ $(document).ready(function () {
 
 
 
-
-
     $(".filter").click(function () {
         var button = document.getElementsByClassName("existing");
         var filter_vals = []
@@ -82,7 +80,7 @@ function extractMessageDetails(data) {
             return {
                 sender: item.fields.sender,
                 timestamp: item.fields.timestamp,
-                content: item.fields.content
+                display_content: item.fields.display_content
             };
         });
 
@@ -96,7 +94,7 @@ function extractMessageDetails(data) {
 function formatMessagesHTML(messageDetails) {
     if (messageDetails.length > 0) {
         let html = '<div class="list-group">';
-        
+        console.log("here")
         messageDetails.forEach(message => {
             // Format timestamp using JavaScript Date object
             const formattedTimestamp = new Date(message.timestamp).toLocaleString('en-US', {
@@ -114,7 +112,7 @@ function formatMessagesHTML(messageDetails) {
                         <span class="sender"><small>${message.sender}:</small></span>
                         <small class="timestamp text-body-secondary">${formattedTimestamp}</small>
                     </div>
-                    <small class="content">${message.content}</small>
+                    <small class="content">${message.display_content}</small>
                 </div>`;
         });
 

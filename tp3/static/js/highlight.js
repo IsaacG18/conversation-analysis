@@ -1,8 +1,6 @@
 $(document).ready(function () {
     $(".filter").mouseenter(function () {
-        var buttonValue = $(this).text();
-        buttonValue = "." + buttonValue;
-
+        var buttonValue = "." + classify($(this).text());
         if ($(this).hasClass("person-button")) {
             var personElements = document.querySelectorAll('.PERSON');
             personElements.forEach(function (personElement) {
@@ -30,9 +28,7 @@ $(document).ready(function () {
         }
     }).mouseleave(function () {
         // Handle mouseleave event here
-        var buttonValue = $(this).text();
-        buttonValue = "." + buttonValue;
-
+        var buttonValue = "." + classify($(this).text());
         if ($(this).hasClass("person-button")) {
             var personElements = document.querySelectorAll('.PERSON');
             personElements.forEach(function (personElement) {
@@ -78,3 +74,8 @@ var styles = `
   </style>
 `;
 document.head.insertAdjacentHTML('beforeend', styles);
+
+function classify(inputString) {
+    const resultString = inputString.replace(/ /g, '_');
+    return resultString;
+  }

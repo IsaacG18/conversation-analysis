@@ -27,6 +27,7 @@ class Message(models.Model):
     timestamp = models.DateTimeField()
     sender = models.CharField(max_length=50)
     content = models.CharField(max_length=1000)
+    display_content = models.CharField(max_length=1100)
 
     def __str__(self):
         return self.sender + self.timestamp.__str__()
