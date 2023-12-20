@@ -16,12 +16,13 @@ def tag_text(messages, keywords, labels):
             message[label] = 0
         for entity in message["doc"].ents:
             if entity.label_ in labels:
-                start_tag = f'<div class="{entity.label_}"><div class="{entity.text}">'
-                end_tag = '</div></div>'
+                start_tag = f'<span class="{entity.label_}"><span class="{entity.text}">'
+                end_tag = '</span></span>'
                 
                 found_entities[entity.label_].append((entity.text))
                 message["Message"] = message["Message"][:entity.start_char + distance] + start_tag + entity.text + end_tag + message["Message"][entity.end_char+ distance:]
                 distance += len(start_tag) + len(end_tag)
+                print(message["Message"])
                 
                 message[entity.label_] += 1
         for token in message["doc"]:
@@ -31,11 +32,11 @@ def tag_text(messages, keywords, labels):
                 risk = keywords.get_keyword(token_text)["risk"]
                 topics = keywords.get_keyword_topics(token_text.lower())
                 message["risk"] += risk
-                start_tag = f'<div class="{token_text}">'
-                end_tag = '</div>'
+                start_tag = f'<span class="{token_text} risk">'
+                end_tag = '</span>'
                 for topic in topics:
-                    start_tag = f'<div class="{topic}">' + start_tag
-                    end_tag += '</div>'
+                    start_tag = f'<span class="{topic}">' + start_tag
+                    end_tag += '</span>'
                 start = message["Message"].find(token_text)
                 input_text= start_tag + input_text + end_tag
                 message["Message"] = message["Message"][:start] + start_tag + entity_tag + end_tag + message["Message"][start+ len(start):]
