@@ -1,9 +1,17 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .scripts.data_ingestion import ingestion
 from .scripts.nlp.nlp import *
 from .scripts.object_creators import *
+from django.core.serializers import serialize
+from itertools import chain
+from django.utils import timezone
+from datetime import datetime
+import json
+
+
+
 
 import os
 from django.conf import settings
@@ -52,6 +60,7 @@ def content_review(request, file_slug):
         return HttpResponse("File not exist")
 
 
+
 def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keywords=Keywords()):
     directory = os.path.join(settings.MEDIA_ROOT, 'uploads')
     file_path = os.path.join(directory, file.title)
@@ -77,3 +86,47 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
         p = add_location(a, location)
     for risk_word in risk_words:
         r = add_risk_word(a, risk_word[0], risk_word[1], risk_word[2])
+
+
+def filter_view(request):
+    filter_buttons = request.GET.get('filters','[]')
+    filter_buttons = json.loads(filter_buttons)
+    file_slug = request.GET['file_slug']
+    start_date = request.GET.get('startDate')
+    end_date = request.GET.get('endDate')
+    print(filter_buttons)
+    filter_buttons
+
+    try:
+        file = File.objects.get(slug=file_slug)
+        filter_params = {'file': file}
+        if start_date: 
+            filter_params['timestamp__gte'] = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
+        if end_date:
+            filter_params['timestamp__lte'] = datetime.strptime(end_date, '%Y-%m-%dT%H:%M')
+
+        
+        messages = Message.objects.filter(**filter_params)
+        analysis = Analysis.objects.get(file=file)
+        persons = Person.objects.filter(analysis=analysis)
+        locations = Location.objects.filter(analysis=analysis)
+        risk_words = RiskWord.objects.filter(analysis=analysis)
+        print(filter_buttons)
+        if len(filter_buttons)> 0:
+            return_messages = []
+            if filter_buttons[0]:
+                return_messages = messages.filter(content__icontains=filter_buttons[0])
+            if len(filter_buttons)> 1:
+                for filter_button in filter_buttons[1]:
+                    if filter_button:
+                        return_messages = chain(return_messages, messages.filter(content__icontains=filter_button))
+            messages = set(list(return_messages))
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({'result': 'error', 'message': 'Internal Server Error'})
+
+    context_dict = {'messages': serialize('json', messages), 'persons': serialize('json', persons),
+                        'locations': serialize('json', locations), 'risk_words': serialize('json', risk_words)}
+    return JsonResponse(context_dict)
+        
