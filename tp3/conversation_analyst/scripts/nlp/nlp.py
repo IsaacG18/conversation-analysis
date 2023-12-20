@@ -4,27 +4,48 @@ import numpy as np
 nlp = spacy.load("en_core_web_sm")
 
 
-def tag_text(Message_Text, keywords):
-    for message in Message_Text:
+def tag_text(messages, keywords, labels):
+    found_entities = {label: [] for label in labels}
+    for message in messages:
+        distance = 0
+        
         message["risk"] = 0
         message["doc"] = nlp(message["Message"])
-        doc = nlp(message["doc"])
-        
         tag_list = []
-        for token in doc:
+        for label in labels:
+            message[label] = 0
+        for entity in message["doc"].ents:
+            if entity.label_ in labels:
+                start_tag = f'<div class="{entity.label_}"><div class="{entity.text}">'
+                end_tag = '</div></div>'
+                
+                found_entities[entity.label_].append((entity.text))
+                message["Message"] = message["Message"][:entity.start_char + distance] + start_tag + entity.text + end_tag + message["Message"][entity.end_char+ distance:]
+                distance += len(start_tag) + len(end_tag)
+                
+                message[entity.label_] += 1
+        for token in message["doc"]:
             token_text = token.text
+            input_text = token_text
             if token_text.lower() in keywords.get_keywords():
                 risk = keywords.get_keyword(token_text)["risk"]
                 topics = keywords.get_keyword_topics(token_text.lower())
                 message["risk"] += risk
+                start_tag = f'<div class="{token_text}">'
+                end_tag = '</div>'
+                for topic in topics:
+                    start_tag = f'<div class="{topic}">' + start_tag
+                    end_tag += '</div>'
+                start = message["Message"].find(token_text)
+                input_text= start_tag + input_text + end_tag
+                message["Message"] = message["Message"][:start] + start_tag + entity_tag + end_tag + message["Message"][start+ len(start):]
             else:
                 risk = 0
                 topics = None
-            
             tag_list.append((token_text, risk, topics))
 
         message["tags"] = tag_list
-    return Message_Text
+    return messages, found_entities
 
 def get_top_n_risk_keywords(messages, n):
     token_risk = {}
@@ -87,16 +108,6 @@ def get_date_messages(parsed_data):
 
     return person_arrays
 
-def extract(messages, labels):
-    found_entities = {label: [] for label in labels}
-    for message in messages:
-        for label in labels:
-            message[label]=0
-        for entity in message["doc"].ents:
-            if entity.label_ in labels:
-                found_entities[entity.label_].append(entity.text)
-                message[entity.label_]+=1
-    return found_entities
 
 def message_to_text(list_of_messages):
     text = ""

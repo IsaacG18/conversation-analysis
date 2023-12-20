@@ -19,7 +19,7 @@
                     <span class="sender"><small>{{ message.sender }}:</small></span>
                     <small class="timestamp text-body-secondary">{{ message.timestamp }}</small>
                 </div>
-                <small class="content">{{ message.content }}</small>
+                <small class="content">{{ message.content|safe}}</small>
                 </div>
                 </li>
             {% endfor %}
