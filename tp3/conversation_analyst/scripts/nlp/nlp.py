@@ -5,12 +5,26 @@ nlp = spacy.load("en_core_web_sm")
 
 
 def tag_text(Message_Text, keywords):
-    for message in Message_Text[1]:
+    for message in Message_Text:
+        message["risk"] = 0
         message["doc"] = nlp(message["Message"])
         doc = nlp(message["doc"])
-        message["tags"] = [(token.text, keywords.get_keyword(token.text)["risk"] if token.text.lower() in keywords.get_keywords() else 0, keywords.get_keyword_topics(token.text.lower()) if token.text.lower() in keywords.get_keywords() else None) for token in doc]
-    doc = nlp(Message_Text[0])
-    return Message_Text[1]
+        
+        tag_list = []
+        for token in doc:
+            token_text = token.text
+            if token_text.lower() in keywords.get_keywords():
+                risk = keywords.get_keyword(token_text)["risk"]
+                topics = keywords.get_keyword_topics(token_text.lower())
+                message["risk"] += risk
+            else:
+                risk = 0
+                topics = None
+            
+            tag_list.append((token_text, risk, topics))
+
+        message["tags"] = tag_list
+    return Message_Text
 
 def get_top_n_risk_keywords(messages, n):
     token_risk = {}
@@ -76,9 +90,12 @@ def get_date_messages(parsed_data):
 def extract(messages, labels):
     found_entities = {label: [] for label in labels}
     for message in messages:
+        for label in labels:
+            message[label]=0
         for entity in message["doc"].ents:
             if entity.label_ in labels:
                 found_entities[entity.label_].append(entity.text)
+                message[entity.label_]+=1
     return found_entities
 
 def message_to_text(list_of_messages):
