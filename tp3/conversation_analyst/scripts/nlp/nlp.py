@@ -3,6 +3,8 @@ import spacy
 import numpy as np
 nlp = spacy.load("en_core_web_sm")
 
+def classify(text):
+    return text.replace(' ', '_')
 
 def tag_text(messages, keywords, labels):
     found_entities = {label: [] for label in labels}
@@ -16,7 +18,7 @@ def tag_text(messages, keywords, labels):
             message[label] = 0
         for entity in message["doc"].ents:
             if entity.label_ in labels:
-                start_tag = f'<span class="{entity.label_}"><span class="{entity.text}">'
+                start_tag = f'<span class="{classify(entity.label_)}"><span class="{classify(entity.text)}">'
                 end_tag = '</span></span>'
                 
                 found_entities[entity.label_].append((entity.text))
@@ -31,10 +33,10 @@ def tag_text(messages, keywords, labels):
                 risk = keywords.get_keyword(token_text)["risk"]
                 topics = keywords.get_keyword_topics(token_text.lower())
                 message["risk"] += risk
-                start_tag = f'<span class="{token_text} risk">'
+                start_tag = f'<span class="{classify(token_text)} risk">'
                 end_tag = '</span>'
                 for topic in topics:
-                    start_tag = f'<span class="{topic}">' + start_tag
+                    start_tag = f'<span class="{classify(topic)}">' + start_tag
                     end_tag += '</span>'
                 start = message["Display_Message"].find(token_text)
                 input_text= start_tag + input_text + end_tag
@@ -136,3 +138,4 @@ def create_arrays(parsed_data):
         data['message_lengths'] = np.array(data['message_lengths'])
 
     return person_arrays
+

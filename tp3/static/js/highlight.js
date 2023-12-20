@@ -1,10 +1,10 @@
 $(document).ready(function () {
     $(".filter").mouseenter(function () {
-        var buttonValue =  "." + $(this).text();
-        var nestedDiv = riskElement.querySelector(buttonValue);
+        var buttonValue = "." + classify($(this).text());
         if ($(this).hasClass("person-button")) {
             var personElements = document.querySelectorAll('.PERSON');
             personElements.forEach(function (personElement) {
+                var nestedDiv = personElement.querySelector(buttonValue);
                 if (nestedDiv) {
                     nestedDiv.classList.add("green-text");
                 }
@@ -12,13 +12,15 @@ $(document).ready(function () {
         } else if ($(this).hasClass("location-button")) {
             var locationElements = document.querySelectorAll('.GPE');
             locationElements.forEach(function (locationElement) {
+                var nestedDiv = locationElement.querySelector(buttonValue);
                 if (nestedDiv) {
                     nestedDiv.classList.add("yellow-background");
                 }
             });
         } else if ($(this).hasClass("risk-button")) {
             var riskElements = document.querySelectorAll('.risk');
-            riskElements.forEach(function (riskElement) {            
+            riskElements.forEach(function (riskElement) {
+                var nestedDiv = riskElement.querySelector(buttonValue);
                 if (nestedDiv) {
                     nestedDiv.classList.add("bold");
                 }
@@ -26,11 +28,11 @@ $(document).ready(function () {
         }
     }).mouseleave(function () {
         // Handle mouseleave event here
-        var buttonValue = "." + $(this).text();
-        var nestedDiv = locationElement.querySelector(buttonValue);
+        var buttonValue = "." + classify($(this).text());
         if ($(this).hasClass("person-button")) {
             var personElements = document.querySelectorAll('.PERSON');
             personElements.forEach(function (personElement) {
+                var nestedDiv = personElement.querySelector(buttonValue);
                 if (nestedDiv) {
                     nestedDiv.classList.remove("green-text");
                 }
@@ -38,6 +40,7 @@ $(document).ready(function () {
         } else if ($(this).hasClass("location-button")) {
             var locationElements = document.querySelectorAll('.GPE');
             locationElements.forEach(function (locationElement) {
+                var nestedDiv = locationElement.querySelector(buttonValue);
                 if (nestedDiv) {
                     nestedDiv.classList.remove("yellow-background");
                 }
@@ -45,6 +48,7 @@ $(document).ready(function () {
         } else if ($(this).hasClass("risk-button")) {
             var riskElements = document.querySelectorAll('.risk');
             riskElements.forEach(function (riskElement) {
+                var nestedDiv = riskElement.querySelector(buttonValue);
                 if (nestedDiv) {
                     nestedDiv.classList.remove("bold");
                 }
@@ -70,3 +74,8 @@ var styles = `
   </style>
 `;
 document.head.insertAdjacentHTML('beforeend', styles);
+
+function classify(inputString) {
+    const resultString = inputString.replace(/ /g, '_');
+    return resultString;
+  }
