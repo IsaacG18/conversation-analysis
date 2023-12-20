@@ -8,7 +8,7 @@ def tag_text(messages, keywords, labels):
     found_entities = {label: [] for label in labels}
     for message in messages:
         distance = 0
-        
+        message["Display_Message"] = message["Message"]
         message["risk"] = 0
         message["doc"] = nlp(message["Message"])
         tag_list = []
@@ -20,9 +20,8 @@ def tag_text(messages, keywords, labels):
                 end_tag = '</span></span>'
                 
                 found_entities[entity.label_].append((entity.text))
-                message["Message"] = message["Message"][:entity.start_char + distance] + start_tag + entity.text + end_tag + message["Message"][entity.end_char+ distance:]
+                message["Display_Message"] = message["Display_Message"][:entity.start_char + distance] + start_tag + entity.text + end_tag + message["Display_Message"][entity.end_char+ distance:]
                 distance += len(start_tag) + len(end_tag)
-                print(message["Message"])
                 
                 message[entity.label_] += 1
         for token in message["doc"]:
@@ -37,9 +36,9 @@ def tag_text(messages, keywords, labels):
                 for topic in topics:
                     start_tag = f'<span class="{topic}">' + start_tag
                     end_tag += '</span>'
-                start = message["Message"].find(token_text)
+                start = message["Display_Message"].find(token_text)
                 input_text= start_tag + input_text + end_tag
-                message["Message"] = message["Message"][:start] + start_tag + entity_tag + end_tag + message["Message"][start+ len(start):]
+                message["Display_Message"] = message["Display_Message"][:start] + start_tag + entity_tag + end_tag + message["Display_Message"][start+ len(start):]
             else:
                 risk = 0
                 topics = None

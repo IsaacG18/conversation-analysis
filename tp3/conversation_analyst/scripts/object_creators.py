@@ -1,7 +1,7 @@
 from ..models import File, Message, Analysis, Person, Location, RiskWord
 
-def add_message(file, timestamp, sender, message):
-    m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message)[0]
+def add_message(file, timestamp, sender, message, display_message):
+    m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message)[0]
     m.save()
     return m
 

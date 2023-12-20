@@ -78,7 +78,7 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
     locations = person_and_locations['GPE']
 
     for message in chat_messages:
-        m = add_message(file, message['Timestamp'], message['Sender'], message['Message'])
+        m = add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"])
     a = add_analysis(file)
     for person in persons:
         p = add_person(a, person)
