@@ -41,9 +41,7 @@ def parse_chat_file(file_path, delimiters):
 
     except FileNotFoundError:
         print(f"File not found: {file_path}")
-        return messages
     except Exception as e:
         print(f"An error occurred: {e}")
-        return messages
 
     return messages
