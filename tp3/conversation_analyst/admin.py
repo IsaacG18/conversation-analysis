@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import File, Message, Analysis, Person, Location, RiskWord
-
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord
 
 # Register your models here.
 
@@ -13,4 +12,5 @@ admin.site.register(Message)
 admin.site.register(Analysis)
 admin.site.register(Person)
 admin.site.register(Location)
+admin.site.register(KeywordSuite)
 admin.site.register(RiskWord)

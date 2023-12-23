@@ -1,0 +1,46 @@
+{% extends "conversation_analyst/base.html" %}
+
+{% block title %}
+    <title>Settings</title>
+{% endblock %}
+
+{% block body %}
+{% load static %}
+<!-- <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script type="text/javascript" src="{% static 'js/filterButton.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/highlight.js' %}"></script> -->
+<!-- <link rel="stylesheet" href="{% static 'css/highlight.css' %}"> -->
+
+<div class="container-fluid px-5">
+    <div id="div" class="row">
+        <div id="div" class="col-3">
+            <div class="list-group" id="suite-list">
+                {% if keyword_suites %}
+                {% for suite in keyword_suites %}
+                <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
+                    <a href="#" class="">{{ suite.name }}</a>
+                    <button type="button" class="btn btn-danger btn-sm">Delete</button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                <a href="#" class="list-group-item list-group-item-action">Add new suite</a>
+            </div>
+        </div>
+        <div class="col-9">
+            <div class="list-group" id="keyword-list">
+                {% if risk_words %}
+                {% for risk_word in risk_words %}
+                <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
+                    <a href="#" class="">{{ risk_word.keyword }}</a>
+                    <button type="button" class="btn btn-danger btn-sm">Delete</button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                <a href="#" class="list-group-item list-group-item-action">Add new keyword</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

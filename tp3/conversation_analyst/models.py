@@ -58,8 +58,15 @@ class Location(models.Model):
         return self.name.__str__()
 
 
+class KeywordSuite(models.Model):
+    name = models.CharField(max_length=128)
+    
+    def __str__(self):
+        return self.name.__str__()
+
+
 class RiskWord(models.Model):
-    analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
+    suite = models.ForeignKey(KeywordSuite, on_delete= models.CASCADE)
     keyword = models.CharField(max_length=50)
     risk_factor = models.FloatField(default=0)
     amount = models.IntegerField(default=0)

@@ -12,12 +12,13 @@ import json
 
 
 
-
 import os
 from django.conf import settings
 
 from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, RiskWord
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord
+
+# default_suite = Keywords()
 
 
 # Create your views here.
@@ -49,7 +50,7 @@ def content_review(request, file_slug):
         analysis = Analysis.objects.get(file=file)
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
-        risk_words = RiskWord.objects.filter(analysis=analysis)
+        risk_words = RiskWord.objects.all()
 
         context_dict = {'messages': messages, 'persons': persons,
                         'locations': locations, 'risk_words': risk_words}
@@ -129,4 +130,38 @@ def filter_view(request):
     context_dict = {'messages': serialize('json', messages), 'persons': serialize('json', persons),
                         'locations': serialize('json', locations), 'risk_words': serialize('json', risk_words)}
     return JsonResponse(context_dict)
-        
+    
+    
+    
+def settings_page(request):
+    keyword_suites = KeywordSuite.objects.all()
+    suite = keyword_suites[0]
+    risk_words = RiskWord.objects.filter(suite=suite)
+
+    context_dict = {'keyword_suites': keyword_suites, 'risk_words':risk_words}
+
+    return render(request, "conversation_analyst/settings.html", context=context_dict)
+
+
+# def demo_keywords():
+#     if default_suite.has_keywords() == False:
+#         default_suite.add_keyword("perfect", ["Good", "Really Good"], 8)
+#         default_suite.add_keyword("old", ["Time"], 2)
+#         default_suite.add_keyword("nice", ["Good"], 3)
+#         default_suite.add_keyword("galaxy", ["Space", "Time"], 5)
+#         default_suite.add_keyword("amazing", ["Awesome", "Fantastic"], 7)
+#         default_suite.add_keyword("young", ["Youthful"], 4)
+#         default_suite.add_keyword("awesome", ["Great", "Fantastic"], 6)
+#         default_suite.add_keyword("technology", ["Innovation", "Science"], 9)
+#         default_suite.add_keyword("beautiful", ["Attractive", "Stunning"], 5)
+#         default_suite.add_keyword("community", ["Society", "Neighbors"], 5)
+#         default_suite.add_keyword("innovation", ["Creativity", "Invention"], 6)
+#         default_suite.add_keyword("cozy", ["Comfortable", "Warm"], 4)
+#         default_suite.add_keyword("delicious", ["Tasty", "Yummy"], 7)
+#         default_suite.add_keyword("friendship", ["Companionship", "Buddy"], 6)
+#         default_suite.add_keyword("relaxing", ["Calming", "Unwinding"], 5)
+#         default_suite.add_keyword("celebration", ["Party", "Festivity"], 8)
+#         default_suite.add_keyword("curious", ["Inquisitive", "Interested"], 5)
+#         default_suite.add_keyword("efficient", ["Productive", "Streamlined"], 7)
+#         default_suite.add_keyword("refreshing", ["Invigorating", "Revitalizing"], 6)
+#     return default_suite
