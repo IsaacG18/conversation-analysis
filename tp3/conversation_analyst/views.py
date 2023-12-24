@@ -143,6 +143,14 @@ def settings_page(request):
     return render(request, "conversation_analyst/settings.html", context=context_dict)
 
 
+def create_suite(request):
+    if request.method == 'POST':
+        suite_name = request.POST['name']
+        suite_obj = KeywordSuite.objects.create(name=suite_name)
+        suite_obj.save()
+        return HttpResponse('New suite added')
+        
+
 # def demo_keywords():
 #     if default_suite.has_keywords() == False:
 #         default_suite.add_keyword("perfect", ["Good", "Really Good"], 8)
