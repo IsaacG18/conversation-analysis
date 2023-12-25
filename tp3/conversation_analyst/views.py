@@ -150,6 +150,23 @@ def create_suite(request):
         suite_obj.save()
         return HttpResponse('New suite added')
         
+def select_suite(request):
+    if request.method == 'GET':
+        suite_name = request.GET['suite'].strip()
+        suite = KeywordSuite.objects.get(name=suite_name)
+        keywords = RiskWord.objects.filter(suite=suite)
+        # field_values_1 = [obj.your_field for obj in your_objects_queryset]
+        serialized_keywords = serialize('json', keywords)
+        return JsonResponse({'objects': serialized_keywords}, safe=False)
+    
+def create_keyword(request):
+    if request.method == 'POST':
+        keyword = request.POST['keyword']
+        suite_name = request.POST['suite'].strip()
+        suite = KeywordSuite.objects.get(name=suite_name)
+        suite_obj = RiskWord.objects.create(suite=suite,keyword=keyword)
+        suite_obj.save()
+        return HttpResponse('New keyword added')
 
 # def demo_keywords():
 #     if default_suite.has_keywords() == False:

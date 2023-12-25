@@ -17,7 +17,7 @@
             <div class="list-group" id="suite-list">
                 {% if keyword_suites %}
                 {% for suite in keyword_suites %}
-                <div class="list-group-item list-group-item-action">
+                <div class="list-group-item list-group-item-action suite-item">
                     <div class="row d-flex align-items-center justify-content-between">
                         <div class="col-9 form-check">
                             <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
@@ -49,7 +49,7 @@
             <div class="list-group" id="keyword-list">
                 {% if risk_words %}
                 {% for risk_word in risk_words %}
-                <div class="list-group-item list-group-item-action">
+                <div class="list-group-item list-group-item-action keyword-item">
                     <div class="row d-flex align-items-center justify-content-between">
                       <div class="col-9">
                             <a href="#" class="text-reset text-decoration-none">{{ risk_word.keyword }}</a>
@@ -61,11 +61,11 @@
                 </div>
                 {% endfor %}
                 {% endif %}
-                <form action="js/settings.js" method="post" class="list-group-item list-group-item-action">
-
+                <form action="js/settings.js" method="post" class="list-group-item list-group-item-action" id="new-keyword-form">
+                    {% csrf_token %} 
                     <div class="row align-items-center d-flex justify-content-between">
                         <div class="col-9 ps-1">
-                          <input type="text" class="form-control ps-2" placeholder="Suite name" aria-label="First name">
+                          <input id="new-keyword" type="text" class="form-control ps-2" placeholder="Suite name" aria-label="First name">
                         </div>
                         <div class="col-3">
                             <button type="submit" class="btn btn-primary btn-sm">Add</button>
