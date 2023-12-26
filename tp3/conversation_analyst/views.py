@@ -16,7 +16,7 @@ import os
 from django.conf import settings
 
 from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan
 
 # default_suite = Keywords()
 
@@ -50,7 +50,9 @@ def content_review(request, file_slug):
         analysis = Analysis.objects.get(file=file)
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
-        risk_words = RiskWord.objects.all()
+        default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
+        keyword_suites = default_plan.keywordsuite_set.all()
+        risk_words = RiskWord.objects.filter(suite__in=keyword_suites)
 
         context_dict = {'messages': messages, 'persons': persons,
                         'locations': locations, 'risk_words': risk_words}
@@ -185,6 +187,30 @@ def delete_keyword(request):
         keyword_id = request.GET['keywordId']
         RiskWord.objects.get(id=keyword_id).delete()
         return HttpResponse('keyword deleted')
+
+  
+def check_suite(request):
+    if request.method == 'POST':
+        response = ''
+        suite_id = request.POST['suiteId']
+        isChecked = json.loads(request.POST['value'])
+        suite = KeywordSuite.objects.get(id=suite_id)
+        keyword_plan = KeywordPlan.objects.get_or_create(name='global')[0]
+        is_keyword_in_plan = keyword_plan in suite.plans.all()
+        if (is_keyword_in_plan != isChecked):
+            print(isChecked)
+            if (isChecked):
+                suite.plans.add(keyword_plan)
+                suite.default = True
+                response+="checked"
+            else:
+                suite.plans.remove(keyword_plan)
+                suite.default = False
+                response+="unchecked"
+        suite.save()
+        print(suite.plans.all())
+        return HttpResponse(suite.name + " is " + response + " in " + keyword_plan.name + " plan")
+
 
 # def demo_keywords():
 #     if default_suite.has_keywords() == False:

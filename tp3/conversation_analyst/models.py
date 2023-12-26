@@ -32,10 +32,14 @@ class Message(models.Model):
     def __str__(self):
         return self.sender + self.timestamp.__str__()
 
+class KeywordPlan(models.Model):
+    name = models.CharField(max_length=128, null=True)
+    def __str__(self):
+        return self.name.__str__()
 
 class Analysis(models.Model):
     file = models.ForeignKey(File, null=True, on_delete=models.SET_NULL)
-
+    KeywordPlan = models.ForeignKey(KeywordPlan, null=True, on_delete=models.SET_NULL)
     class Meta:
         verbose_name_plural = "Analyses"
     def __str__(self):
@@ -56,10 +60,12 @@ class Location(models.Model):
 
     def __str__(self):
         return self.name.__str__()
-
+    
 
 class KeywordSuite(models.Model):
     name = models.CharField(max_length=128)
+    plans = models.ManyToManyField(KeywordPlan, blank=True)
+    default = models.BooleanField(default=False)
     
     def __str__(self):
         return self.name.__str__()
@@ -73,3 +79,5 @@ class RiskWord(models.Model):
 
     def __str__(self):
         return self.keyword.__str__()
+    
+

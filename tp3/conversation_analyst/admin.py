@@ -1,16 +1,29 @@
 from django.contrib import admin
-from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord
+from django import forms
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan
 
 # Register your models here.
 
 class FileAdmin(admin.ModelAdmin):
     readonly_fields = ('date',)
 
+class SuiteAdminForm(forms.ModelForm):
+    class Meta:
+        model = KeywordSuite
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['plans'].required = False
+
+class SuiteAdmin(admin.ModelAdmin):
+    form = SuiteAdminForm
 
 admin.site.register(File, FileAdmin)
 admin.site.register(Message)
 admin.site.register(Analysis)
 admin.site.register(Person)
 admin.site.register(Location)
-admin.site.register(KeywordSuite)
+admin.site.register(KeywordSuite, SuiteAdmin)
 admin.site.register(RiskWord)
+admin.site.register(KeywordPlan)

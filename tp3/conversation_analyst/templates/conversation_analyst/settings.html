@@ -18,8 +18,12 @@
                 {% for suite in keyword_suites %}
                 <div class="list-group-item list-group-item-action suite-item" id="suite-item-{{ suite.id }}">
                     <div class="row d-flex align-items-center justify-content-between">
-                        <div class="col-9 form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="checkbox-{{ suite.id }}">
+                        <div class="col-9 form-check" id="suite-check-{{ suite.id }}">
+                            {% if suite.default %}
+                            <input class="form-check-input" type="checkbox" value="{{ suite.id }}" id="checkbox-{{ suite.id }}" checked>
+                            {% else %}
+                            <input class="form-check-input" type="checkbox" value="{{ suite.id }}" id="checkbox-{{ suite.id }}">
+                            {% endif %}
                             <label class="form-check-label" for="checkbox-{{ suite.id }}">
                             {{ suite.name }}
                             </label>
@@ -64,7 +68,7 @@
                     {% csrf_token %} 
                     <div class="row align-items-center d-flex justify-content-between">
                         <div class="col-9 ps-1">
-                          <input id="new-keyword" type="text" class="form-control ps-2" placeholder="Suite name" aria-label="First name">
+                          <input id="new-keyword" type="text" class="form-control ps-2" placeholder="Add new keyword" aria-label="Keyword Input">
                         </div>
                         <div class="col-3">
                             <button type="submit" class="btn btn-primary btn-sm">Add</button>

@@ -1,7 +1,6 @@
 $(document).ready(function(){
 
     const newSuiteForm = $('#new-suite-form');
-    const add_suite = $('#add-suite');
     var activeSuite = $('#suite-list div:first');
     var activeSuiteName = getSuiteName(activeSuite);
 
@@ -16,18 +15,17 @@ $(document).ready(function(){
             },
             data: {'name': newSuiteName},
             success: function(response){
+                var suiteId = response.suiteId;
                 $('#suite-name').val('');
                 newSuiteForm.before(`
-                <div class="list-group-item list-group-item-action suite-item" id="suite-item-` + response.suiteId +`">
+                <div class="list-group-item list-group-item-action suite-item" id="suite-item-${suiteId}">
                 <div class="row d-flex align-items-center justify-content-between">
-                    <div class="col-9 form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">`
-                        + newSuiteName +
-                        `</label>
+                <div class="col-9 form-check" id="suite-check-${suiteId}">
+                        <input class="form-check-input" type="checkbox" value="${suiteId}" id="checkbox-${suiteId}">
+                        <label class="form-check-label" for="checkbox-${suiteId}">${newSuiteName}</label>
                   </div>
                   <div class="col-3">
-                    <button type="button" class="btn btn-danger btn-sm delete-suite" id = "delete-` + response.suiteId + `" value="` + response.suiteId + `">Delete</button>
+                    <button type="button" class="btn btn-danger btn-sm delete-suite" id = "delete-${suiteId}" value="${suiteId}">Delete</button>
                   </div>
                 </div>
             </div>
@@ -39,6 +37,10 @@ $(document).ready(function(){
                 btn = '#delete-' + response.suiteId;
                 $(btn).click(function(e){
                     deleteSuiteClick(e);
+                })
+                checkbox = '#checkbox-' + response.suiteId;
+                $(checkbox).click(function(e){
+                    suiteCheck(e);
                 })
 
                 activeSuite = $('.suite-item:last');
@@ -71,13 +73,13 @@ $(document).ready(function(){
             success: function(response){
                 keywordId = response.keywordId;
                 $('#new-keyword').val('');
-                $('#new-keyword-form').before(`<div class="list-group-item list-group-item-action keyword-item" id="keyword-item-` + keywordId +`">
+                $('#new-keyword-form').before(`<div class="list-group-item list-group-item-action keyword-item" id="keyword-item-${keywordId}">
                 <div class="row d-flex align-items-center justify-content-between">
                   <div class="col-9">
-                        <a href="#" class="text-reset text-decoration-none">`+newKeyword+`</a>
+                        <a href="#" class="text-reset text-decoration-none">${newKeyword}</a>
                   </div>
                   <div class="col-3">
-                  <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "`+ keywordId + `" id="delete-keyword-`+ keywordId + `">Delete</button>
+                  <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "${keywordId}" id="delete-keyword-${keywordId}">Delete</button>
                   </div>
                 </div>
             </div>`);
@@ -106,6 +108,11 @@ $(document).ready(function(){
         deleteKeywordClick(e);
     })
 
+    $('.form-check-input').click(function(e){
+        suiteCheck(e);
+    })
+
+
     function displayKeywords(data){
         array = JSON.parse(data.objects);
         var toAppend = '';
@@ -115,7 +122,7 @@ $(document).ready(function(){
             `<div class="list-group-item list-group-item-action keyword-item">
             <div class="row d-flex align-items-center justify-content-between">
               <div class="col-9">
-                    <a href="#" class="text-reset text-decoration-none">`+keyword+`</a>
+                    <a href="#" class="text-reset text-decoration-none">${keyword}</a>
               </div>
               <div class="col-3">
                 <button type="button" class="btn btn-danger btn-sm">Delete</button>
@@ -180,7 +187,35 @@ $(document).ready(function(){
         })
     }
 
+    function suiteCheck(e){
+        var suiteId = $(e.target).val();
+        var isChecked = $(e.target).is(':checked');
+        console.log(`${suiteId} ${isChecked}`)
+        $.ajax({
+            type: 'POST',
+            url: "/check_suite",
+            headers: {
+                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            data: {'suiteId': suiteId, 'value': isChecked},
+            success: function(response){
+                console.log(response);
+            },
+            error: function(jqXHR) {
+                var errorMessage = 'An error occurred';
+                if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
+                    errorMessage = jqXHR.responseJSON.detail;
+                }
+                alert(errorMessage);
+            }
+        })
+    }
+
     function getSuiteName(suite){
         return suite.find('.form-check-label').text();
+    }
+
+    function initialiseCheckbox(){
+        
     }
 })
