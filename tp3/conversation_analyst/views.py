@@ -148,7 +148,17 @@ def create_suite(request):
         suite_name = request.POST['name']
         suite_obj = KeywordSuite.objects.create(name=suite_name)
         suite_obj.save()
-        return HttpResponse('New suite added')
+        context_dict = {'message': 'New suite added', 'suiteId': suite_obj.id}
+        return JsonResponse(context_dict)
+    
+def delete_suite(request):
+    if request.method == 'GET':
+        suite_id = request.GET['suiteId']
+        suite_obj = KeywordSuite.objects.get(id=suite_id)
+        RiskWord.objects.filter(suite=suite_obj).delete()
+        suite_obj.delete()
+        return HttpResponse('suite deleted')
+        
         
 def select_suite(request):
     if request.method == 'GET':
@@ -164,9 +174,17 @@ def create_keyword(request):
         keyword = request.POST['keyword']
         suite_name = request.POST['suite'].strip()
         suite = KeywordSuite.objects.get(name=suite_name)
-        suite_obj = RiskWord.objects.create(suite=suite,keyword=keyword)
-        suite_obj.save()
-        return HttpResponse('New keyword added')
+        keyword_obj = RiskWord.objects.create(suite=suite,keyword=keyword)
+        keyword_obj.save()
+        context_dict = {'message': 'New keyword added', 'keywordId': keyword_obj.id}
+        return JsonResponse(context_dict)
+    
+    
+def delete_keyword(request):
+    if request.method == 'GET':
+        keyword_id = request.GET['keywordId']
+        RiskWord.objects.get(id=keyword_id).delete()
+        return HttpResponse('keyword deleted')
 
 # def demo_keywords():
 #     if default_suite.has_keywords() == False:

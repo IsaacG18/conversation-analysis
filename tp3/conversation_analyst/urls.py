@@ -10,4 +10,6 @@ urlpatterns = [
     path('create_suite', views.create_suite, name='create_suite'),
     path('select_suite', views.select_suite, name='select_suite'),
     path('create_keyword', views.create_keyword, name='create_keyword'),
+    path('delete_suite', views.delete_suite, name='delete_suite'),
+    path('delete_keyword', views.delete_keyword, name='delete_keyword'),
 ] 

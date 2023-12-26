@@ -7,7 +7,6 @@
 {% block body %}
 {% load static %}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<!-- <script type="text/javascript" src="{% static 'js/filterButton.js' %}"></script> -->
 <script type="text/javascript" src="{% static 'js/settings.js' %}"></script>
 <!-- <link rel="stylesheet" href="{% static 'css/highlight.css' %}"> -->
 
@@ -17,16 +16,16 @@
             <div class="list-group" id="suite-list">
                 {% if keyword_suites %}
                 {% for suite in keyword_suites %}
-                <div class="list-group-item list-group-item-action suite-item">
+                <div class="list-group-item list-group-item-action suite-item" id="suite-item-{{ suite.id }}">
                     <div class="row d-flex align-items-center justify-content-between">
                         <div class="col-9 form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                            <label class="form-check-label" for="flexCheckDefault">
+                            <input class="form-check-input" type="checkbox" value="" id="checkbox-{{ suite.id }}">
+                            <label class="form-check-label" for="checkbox-{{ suite.id }}">
                             {{ suite.name }}
                             </label>
                       </div>
                       <div class="col-3">
-                        <button type="button" class="btn btn-danger btn-sm">Delete</button>
+                        <button type="button" class="btn btn-danger btn-sm delete-suite" value="{{ suite.id }}">Delete</button>
                       </div>
                     </div>
                 </div>
@@ -39,7 +38,7 @@
                           <input id="suite-name" type="text" class="form-control ps-3" placeholder="Add new suite" aria-label="Suite name">
                         </div>
                         <div class="col-3">
-                            <button id="submit-suite" type="submit" class="btn btn-primary btn-sm">Add</button>
+                            <button id="submit-suite" type="submit" class="btn btn-primary btn-sm" id = "delete-{{ suite.id }}">Add</button>
                         </div>
                       </div>
                 </form>
@@ -49,13 +48,13 @@
             <div class="list-group" id="keyword-list">
                 {% if risk_words %}
                 {% for risk_word in risk_words %}
-                <div class="list-group-item list-group-item-action keyword-item">
+                <div class="list-group-item list-group-item-action keyword-item" id="keyword-item-{{ risk_word.id }}">
                     <div class="row d-flex align-items-center justify-content-between">
                       <div class="col-9">
                             <a href="#" class="text-reset text-decoration-none">{{ risk_word.keyword }}</a>
                       </div>
                       <div class="col-3">
-                        <button type="button" class="btn btn-danger btn-sm">Delete</button>
+                        <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "{{ risk_word.id }}" id="delete-keyword-{{ risk_word.id }}">Delete</button>
                       </div>
                     </div>
                 </div>
