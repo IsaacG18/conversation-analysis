@@ -154,7 +154,6 @@ def create_suite(request):
         suite_name = request.POST['name']
         suite_obj = KeywordSuite.objects.create(name=suite_name)
         suite_obj.save()
-        suite_nlp = Keywords()
         context_dict = {'message': 'New suite added', 'suiteId': suite_obj.id}
         return JsonResponse(context_dict)
     
@@ -180,8 +179,9 @@ def create_keyword(request):
     if request.method == 'POST':
         keyword = request.POST['keyword']
         suite_name = request.POST['suite'].strip()
+        risk = request.POST['risk']
         suite = KeywordSuite.objects.get(name=suite_name)
-        keyword_obj = RiskWord.objects.create(suite=suite,keyword=keyword)
+        keyword_obj = RiskWord.objects.create(suite=suite,keyword=keyword,risk_factor=risk)
         keyword_obj.save()
         
         context_dict = {'message': 'New keyword added', 'keywordId': keyword_obj.id}
@@ -216,6 +216,17 @@ def check_suite(request):
         suite.save()
         print(suite.plans.all())
         return HttpResponse(suite.name + " is " + response + " in " + keyword_plan.name + " plan")
+    
+    
+def risk_update(request):
+    if request.method == 'POST':
+        keywordId = request.POST['keyword']
+        risk = int(request.POST['risk'])
+        keyword_obj = RiskWord.objects.filter(id=keywordId).first()
+        keyword_obj.risk_factor = risk
+        keyword_obj.save()
+        
+        return HttpResponse("risk factor of" + keyword_obj.keyword + "is updated to " + str(risk))
 
 
 # def demo_keywords():

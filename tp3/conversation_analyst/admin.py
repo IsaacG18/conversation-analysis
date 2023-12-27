@@ -15,9 +15,14 @@ class SuiteAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['plans'].required = False
+        
 
 class SuiteAdmin(admin.ModelAdmin):
     form = SuiteAdminForm
+    
+    def save_model(self, request, obj, form, change):
+        obj.save()
+
 
 admin.site.register(File, FileAdmin)
 admin.site.register(Message)

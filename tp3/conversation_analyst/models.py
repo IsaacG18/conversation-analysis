@@ -69,8 +69,9 @@ class KeywordSuite(models.Model):
     
     def save(self, *args, **kwargs):
         global_plan = KeywordPlan.objects.get_or_create(name='global')[0]
+        print(global_plan)
         super(KeywordSuite, self).save(*args, **kwargs)
-        if self.default is True:
+        if self.default:
             self.plans.add(global_plan)
         else:
             self.plans.remove(global_plan)
@@ -90,7 +91,7 @@ class RiskWord(models.Model):
     suite = models.ForeignKey(KeywordSuite, on_delete= models.CASCADE)
     topics = models.ManyToManyField(Topic, blank=True)
     keyword = models.CharField(max_length=50)
-    risk_factor = models.FloatField(default=0)
+    risk_factor = models.IntegerField(default=0)
     amount = models.IntegerField(default=0)
     
     def save(self, *args, **kwargs):
@@ -103,7 +104,7 @@ class RiskWord(models.Model):
 class RiskWordResult(models.Model):
     riskword = models.ForeignKey(RiskWord, on_delete= models.CASCADE)
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
-    risk_factor = models.FloatField(default=0, blank=True)
+    risk_factor = models.IntegerField(default=0, blank=True)
     amount = models.IntegerField(default=0)
 
     def __str__(self):

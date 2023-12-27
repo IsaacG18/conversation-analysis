@@ -62,29 +62,37 @@ $(document).ready(function(){
 
     $('#new-keyword-form').submit(function(e){
         e.preventDefault();
-        newKeyword = $('#new-keyword').val().toLowerCase()
+        var newKeyword = $('#new-keyword').val().toLowerCase()
+        var newKeywordRisk = $('#new-keyword-risk').val()
         $.ajax({
             type: 'POST',
             url: "/create_keyword",
             headers: {
                 'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
             },
-            data: {'keyword': newKeyword, 'suite': activeSuiteName},
+            data: {'keyword': newKeyword, 'suite': activeSuiteName, 'risk': newKeywordRisk},
             success: function(response){
                 keywordId = response.keywordId;
                 $('#new-keyword').val('');
                 $('#new-keyword-form').before(`<div class="list-group-item list-group-item-action keyword-item" id="keyword-item-${keywordId}">
                 <div class="row d-flex align-items-center justify-content-between">
-                  <div class="col-9">
+                  <div class="col-8">
                         <a href="#" class="text-reset text-decoration-none">${newKeyword}</a>
                   </div>
+                  <div class="col-1">
+                  <input type="number" class="form-control keyword-risk"  value="${newKeywordRisk}" id="risk-${keywordId}">
+                </div>
                   <div class="col-3">
                   <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "${keywordId}" id="delete-keyword-${keywordId}">Delete</button>
                   </div>
                 </div>
             </div>`);
-            $('.delete-keyword').click(function(e){
+            $(`#delete-keyword-${keywordId}`).click(function(e){
                 deleteKeywordClick(e);
+            })
+            $(`#risk-${keywordId}`).blur(function(e){
+                console.log($(`#risk-${keywordId}`))
+                RiskFactorFocus(e);
             })
                 alert(response.message);
             },
@@ -110,6 +118,10 @@ $(document).ready(function(){
 
     $('.form-check-input').click(function(e){
         suiteCheck(e);
+    })
+
+    $('.keyword-risk').blur(function(e){
+        RiskFactorFocus(e);
     })
 
 
@@ -211,11 +223,33 @@ $(document).ready(function(){
         })
     }
 
+    function RiskFactorFocus(e){
+        var risk = $(e.target).val();
+        var keywordId = $(e.target).attr('id').split("-")[1]
+        $.ajax({
+            type: 'POST',
+            url: "/risk_update",
+            headers: {
+                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            data: {'keyword': keywordId, 'risk': risk},
+            success: function(response){
+                console.log(response);
+            },
+            error: function(jqXHR) {
+                var errorMessage = 'An error occurred';
+                if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
+                    errorMessage = jqXHR.responseJSON.detail;
+                }
+                alert(errorMessage);
+            }
+        })  
+    }
+
+
     function getSuiteName(suite){
         return suite.find('.form-check-label').text();
     }
 
-    function initialiseCheckbox(){
 
-    }
 })
