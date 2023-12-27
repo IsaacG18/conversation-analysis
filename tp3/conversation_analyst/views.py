@@ -20,10 +20,16 @@ from .forms import UploadFileForm
 from .models import File, Message, Analysis, Person, Location, RiskWord
 
 
-# Create your views here.
-def homepage(request):
-    files = File.objects.order_by('-date') # newest at the top
-    return render(request, "conversation_analyst/homepage.html", {"files": files})
+def homepage(request, query=None):
+    files = File.objects.order_by('-date')
+    try:
+        query = request.GET['query']
+        if len(query) > 0:
+            files=files.filter(title__icontains=query[0])
+        return render(request, "conversation_analyst/search_result.html", {"files": files})
+    except KeyError:
+        return render(request, "conversation_analyst/homepage.html", {"files": files})
+
 
 
 def upload(request):
@@ -94,7 +100,6 @@ def filter_view(request):
     file_slug = request.GET['file_slug']
     start_date = request.GET.get('startDate')
     end_date = request.GET.get('endDate')
-    print(filter_buttons)
     filter_buttons
 
     try:
@@ -111,7 +116,6 @@ def filter_view(request):
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
         risk_words = RiskWord.objects.filter(analysis=analysis)
-        print(filter_buttons)
         if len(filter_buttons)> 0:
             return_messages = []
             if filter_buttons[0]:
@@ -130,3 +134,4 @@ def filter_view(request):
                         'locations': serialize('json', locations), 'risk_words': serialize('json', risk_words)}
     return JsonResponse(context_dict)
         
+    
