@@ -62,7 +62,7 @@ $(document).ready(function(){
 
     $('#new-keyword-form').submit(function(e){
         e.preventDefault();
-        newKeyword = $('#new-keyword').val();
+        newKeyword = $('#new-keyword').val().toLowerCase()
         $.ajax({
             type: 'POST',
             url: "/create_keyword",
@@ -216,6 +216,6 @@ $(document).ready(function(){
     }
 
     function initialiseCheckbox(){
-        
+
     }
 })

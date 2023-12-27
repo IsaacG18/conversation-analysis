@@ -67,17 +67,46 @@ class KeywordSuite(models.Model):
     plans = models.ManyToManyField(KeywordPlan, blank=True)
     default = models.BooleanField(default=False)
     
+    def save(self, *args, **kwargs):
+        global_plan = KeywordPlan.objects.get_or_create(name='global')[0]
+        super(KeywordSuite, self).save(*args, **kwargs)
+        if self.default is True:
+            self.plans.add(global_plan)
+        else:
+            self.plans.remove(global_plan)
+        super(KeywordSuite, self).save(*args, **kwargs)
+        
     def __str__(self):
         return self.name.__str__()
+    
+    
+class Topic(models.Model):
+    name = models.CharField(max_length=128)
+    def __str__(self):
+        return self.name.__str__()    
 
 
 class RiskWord(models.Model):
     suite = models.ForeignKey(KeywordSuite, on_delete= models.CASCADE)
+    topics = models.ManyToManyField(Topic, blank=True)
     keyword = models.CharField(max_length=50)
     risk_factor = models.FloatField(default=0)
     amount = models.IntegerField(default=0)
+    
+    def save(self, *args, **kwargs):
+        self.keyword = self.keyword.lower()
+        super(RiskWord, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.keyword.__str__()
+    
+class RiskWordResult(models.Model):
+    riskword = models.ForeignKey(RiskWord, on_delete= models.CASCADE)
+    analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
+    risk_factor = models.FloatField(default=0, blank=True)
+    amount = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.analysis.__str__() + "-" + self.riskword.__str__()
     
 

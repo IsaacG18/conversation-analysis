@@ -7,6 +7,8 @@ def classify(text):
     return text.replace(' ', '_')
 
 def tag_text(messages, keywords, labels):
+    print("keywords: ")
+    print(keywords)
     found_entities = {label: [] for label in labels}
     for message in messages:
         distance = 0
@@ -29,9 +31,10 @@ def tag_text(messages, keywords, labels):
         for token in message["doc"]:
             token_text = token.text
             input_text = token_text
-            if token_text.lower() in keywords.get_keywords():
-                risk = keywords.get_keyword(token_text)["risk"]
-                topics = keywords.get_keyword_topics(token_text.lower())
+            if (keyword := keywords.filter(keyword=token_text.lower()).first()) is not None:
+                print(token_text + " spotted")
+                risk = keyword.risk_factor
+                topics = keyword.topics.all()
                 message["risk"] += risk
                 start_tag = f'<span class="{classify(token_text)} risk">'
                 end_tag = '</span>'
@@ -40,7 +43,8 @@ def tag_text(messages, keywords, labels):
                     end_tag += '</span>'
                 start = message["Display_Message"].find(token_text)
                 input_text= start_tag + input_text + end_tag
-                message["Display_Message"] = message["Display_Message"][:start] + start_tag + entity_tag + end_tag + message["Display_Message"][start+ len(start):]
+                message["Display_Message"] = message["Display_Message"][:start] + start_tag + end_tag
+                # message["Display_Message"] = message["Display_Message"][:start] + start_tag + entity_tag + end_tag + message["Display_Message"][start+ len(start):]
             else:
                 risk = 0
                 topics = None

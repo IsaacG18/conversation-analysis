@@ -16,7 +16,7 @@ import os
 from django.conf import settings
 
 from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult
 
 # default_suite = Keywords()
 
@@ -35,7 +35,11 @@ def upload(request):
             uploaded = request.FILES["file"]
             file_obj = File.objects.create(file=uploaded)
             file_obj.save()
-            process_file(file_obj)
+            default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
+            keyword_suites = default_plan.keywordsuite_set.all()
+            keywords = RiskWord.objects.filter(suite__in=keyword_suites)
+            print()
+            process_file(file_obj, keywords=keywords)
             # display file analysis
             return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
     else:
@@ -50,9 +54,7 @@ def content_review(request, file_slug):
         analysis = Analysis.objects.get(file=file)
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
-        default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
-        keyword_suites = default_plan.keywordsuite_set.all()
-        risk_words = RiskWord.objects.filter(suite__in=keyword_suites)
+        risk_words = RiskWordResult.objects.filter(analysis=analysis)
 
         context_dict = {'messages': messages, 'persons': persons,
                         'locations': locations, 'risk_words': risk_words}
@@ -72,6 +74,8 @@ def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keyword
     message_count = create_arrays(chat_messages)
     nlp_text, person_and_locations = tag_text(chat_messages, keywords, ["PERSON", "GPE"])
     risk_words = get_top_n_risk_keywords(nlp_text, 3)
+    print("risk words: ")
+    print(risk_words)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
     generate_analysis_objects(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
 
@@ -88,7 +92,7 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
     for location in locations:
         p = add_location(a, location)
     for risk_word in risk_words:
-        r = add_risk_word(a, risk_word[0], risk_word[1], risk_word[2])
+        r = add_risk_word_result(a, risk_word[0], risk_word[2], risk_word[1])
 
 
 def filter_view(request):
@@ -150,6 +154,7 @@ def create_suite(request):
         suite_name = request.POST['name']
         suite_obj = KeywordSuite.objects.create(name=suite_name)
         suite_obj.save()
+        suite_nlp = Keywords()
         context_dict = {'message': 'New suite added', 'suiteId': suite_obj.id}
         return JsonResponse(context_dict)
     
@@ -178,6 +183,7 @@ def create_keyword(request):
         suite = KeywordSuite.objects.get(name=suite_name)
         keyword_obj = RiskWord.objects.create(suite=suite,keyword=keyword)
         keyword_obj.save()
+        
         context_dict = {'message': 'New keyword added', 'keywordId': keyword_obj.id}
         return JsonResponse(context_dict)
     
