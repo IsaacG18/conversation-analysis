@@ -130,15 +130,20 @@ $(document).ready(function(){
         var toAppend = '';
         $.each(array, function(index, object) {
             var keyword = object.fields.keyword;
+            var risk = object.fields.risk_factor;
+            var keywordId = object.pk
             toAppend += 
-            `<div class="list-group-item list-group-item-action keyword-item">
+            `<div class="list-group-item list-group-item-action keyword-item" id="keyword-item-${keywordId}">
             <div class="row d-flex align-items-center justify-content-between">
-              <div class="col-9">
+              <div class="col-8">
                     <a href="#" class="text-reset text-decoration-none">${keyword}</a>
               </div>
-              <div class="col-3">
-                <button type="button" class="btn btn-danger btn-sm">Delete</button>
-              </div>
+              <div class="col-1">
+              <input type="number" class="form-control keyword-risk"  value="${risk}" id="risk-${keywordId}">
+            </div>
+            <div class="col-3">
+              <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "${keywordId}" id="delete-keyword-${keywordId}">Delete</button>
+            </div>
             </div>
         </div>`
         });
@@ -156,6 +161,12 @@ $(document).ready(function(){
             data: {'suite': activeSuiteName},
             success: function(data){
                 displayKeywords(data);
+                $('.delete-keyword').click(function(e){
+                    deleteKeywordClick(e);
+                })
+                $('.keyword-risk').blur(function(e){
+                    RiskFactorFocus(e);
+                })
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('AJAX Error:', textStatus, errorThrown);

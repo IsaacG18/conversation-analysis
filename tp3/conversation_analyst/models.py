@@ -69,13 +69,12 @@ class KeywordSuite(models.Model):
     
     def save(self, *args, **kwargs):
         global_plan = KeywordPlan.objects.get_or_create(name='global')[0]
-        print(global_plan)
         super(KeywordSuite, self).save(*args, **kwargs)
         if self.default:
             self.plans.add(global_plan)
         else:
             self.plans.remove(global_plan)
-        super(KeywordSuite, self).save(*args, **kwargs)
+        super(KeywordSuite, self).save(force_insert=False)
         
     def __str__(self):
         return self.name.__str__()

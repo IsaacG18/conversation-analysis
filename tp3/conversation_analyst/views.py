@@ -226,7 +226,7 @@ def risk_update(request):
         keyword_obj.risk_factor = risk
         keyword_obj.save()
         
-        return HttpResponse("risk factor of" + keyword_obj.keyword + "is updated to " + str(risk))
+        return HttpResponse("risk factor of " + keyword_obj.keyword + " is updated to " + str(risk))
 
 
 # def demo_keywords():
