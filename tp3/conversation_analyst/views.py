@@ -8,6 +8,7 @@ from django.core.serializers import serialize
 from itertools import chain
 from django.utils import timezone
 from datetime import datetime
+from django.template.loader import render_to_string
 import json
 
 
@@ -125,8 +126,6 @@ def filter_view(request):
     except Exception as e:
         print(e)
         return JsonResponse({'result': 'error', 'message': 'Internal Server Error'})
-
-    context_dict = {'messages': serialize('json', messages), 'persons': serialize('json', persons),
-                        'locations': serialize('json', locations), 'risk_words': serialize('json', risk_words)}
-    return JsonResponse(context_dict)
+    return JsonResponse({"results": render_to_string('conversation_analyst/messages.html', {'messages': messages, 'persons': persons,
+                        'locations': locations, 'risk_words': risk_words})})
         
