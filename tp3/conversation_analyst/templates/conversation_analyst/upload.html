@@ -8,9 +8,14 @@
     <span>
         <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <p>
-                {{ form }}
-            </p>
+            <div style="position: relative;">
+              <p>{{ form.file }}</p>
+            </div>
+      
+            <p>Sender delimiter: {{ form.sender_delim }}</p>
+            <p>Timestamp delimiter: {{ form.timestamp_delim }}</p>
+            <p>Custom delimeter: {{ form.custom_delim }}</p>
+      
             <p><input type="submit" value="Upload" /></p>
         </form>
     </span>
