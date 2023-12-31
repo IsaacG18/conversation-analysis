@@ -7,8 +7,6 @@ def classify(text):
     return text.replace(' ', '_')
 
 def tag_text(messages, keywords, labels):
-    print("keywords: ")
-    print(keywords)
     found_entities = {label: [] for label in labels}
     for message in messages:
         distance = 0
@@ -26,30 +24,29 @@ def tag_text(messages, keywords, labels):
                 found_entities[entity.label_].append((entity.text))
                 message["Display_Message"] = message["Display_Message"][:entity.start_char + distance] + start_tag + entity.text + end_tag + message["Display_Message"][entity.end_char+ distance:]
                 distance += len(start_tag) + len(end_tag)
-                
                 message[entity.label_] += 1
+        ptr = 0
         for token in message["doc"]:
             token_text = token.text
             input_text = token_text
             if (keyword := keywords.filter(keyword=token_text.lower()).first()) is not None:
-                print(token_text + " spotted")
                 risk = keyword.risk_factor
                 topics = keyword.topics.all()
                 message["risk"] += risk
                 start_tag = f'<span class="{classify(token_text)} risk">'
                 end_tag = '</span>'
-                for topic in topics:
-                    start_tag = f'<span class="{classify(topic)}">' + start_tag
-                    end_tag += '</span>'
-                start = message["Display_Message"].find(token_text)
+                # for topic in topics:
+                #     start_tag = f'<span class="{classify(topic)}">' + start_tag
+                #     end_tag += '</span>'
+                start = message["Display_Message"].find(token_text,ptr)
                 input_text= start_tag + input_text + end_tag
-                message["Display_Message"] = message["Display_Message"][:start] + start_tag + end_tag
-                # message["Display_Message"] = message["Display_Message"][:start] + start_tag + entity_tag + end_tag + message["Display_Message"][start+ len(start):]
+                ptr = start + len(input_text)
+                message["Display_Message"] = message["Display_Message"][:start] + input_text + message["Display_Message"][start+len(token_text):]
             else:
                 risk = 0
                 topics = None
             tag_list.append((token_text, risk, topics))
-
+            
         message["tags"] = tag_list
     return messages, found_entities
 
