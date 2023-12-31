@@ -30,11 +30,16 @@ def upload(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
+            # get file delimeters
+            sender = form.cleaned_data.get('sender_delim')
+            timestamp = form.cleaned_data.get('timestamp_delim')
+            custom = form.cleaned_data.get('custom_delim')
+            file_delimeters = [["Timestamp", timestamp], ["Sender", sender]]
             # create file object
             uploaded = request.FILES["file"]
             file_obj = File.objects.create(file=uploaded)
             file_obj.save()
-            process_file(file_obj)
+            process_file(file_obj, delimiters=file_delimeters)
             # display file analysis
             return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
     else:

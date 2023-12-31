@@ -6,17 +6,12 @@ class UploadFileForm(forms.Form):
     sender_delim = forms.CharField()
     timestamp_delim = forms.CharField()
     custom_delim = forms.CharField()
-
-    def clean_sender_delim(self):
-        cleaned_data = self.cleaned_data
-        delim = cleaned_data.get('sender_delim')
-        if delim.strip().isalnum():
-            raise form.ValidationError('Alphanumerical character can not be a delimiter.')
-        return delim
     
-    def clean_timestamp_delim(self):
+    def clean(self):
         cleaned_data = self.cleaned_data
-        delim = cleaned_data.get('timestamp_delim')
-        if delim.strip().isalnum():
-            raise form.ValidationError('Alphanumerical character can not be a delimiter.')
-        return delim
+        sender = cleaned_data.get('sender_delim')
+        timestamp = cleaned_data.get('timestamp_delim')
+        custom = cleaned_data.get('custom_delim')
+        if sender.strip().isalnum():
+            self.add_error('sender_delim', 'Alphanumerical character can not be a delimiter.')
+        return cleaned_data
