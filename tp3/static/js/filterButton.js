@@ -21,9 +21,6 @@ $(document).ready(function () {
                     messageOutputDiv.innerHTML = formatMessagesHTML(extractMessageDetails(data));
                 });
     })
-
-
-
     $(".filter").click(function () {
         var button = document.getElementsByClassName("existing");
         var filter_vals = []
@@ -94,7 +91,6 @@ function extractMessageDetails(data) {
 function formatMessagesHTML(messageDetails) {
     if (messageDetails.length > 0) {
         let html = '<div class="list-group">';
-        console.log("here")
         messageDetails.forEach(message => {
             // Format timestamp using JavaScript Date object
             const formattedTimestamp = new Date(message.timestamp).toLocaleString('en-US', {

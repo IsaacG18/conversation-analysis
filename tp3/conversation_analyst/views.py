@@ -9,6 +9,7 @@ from itertools import chain
 from django.utils import timezone
 from datetime import datetime
 import json
+import xml.etree.ElementTree as ET
 
 
 
@@ -52,7 +53,7 @@ def content_review(request, file_slug):
         risk_words = RiskWord.objects.filter(analysis=analysis)
 
         context_dict = {'messages': messages, 'persons': persons,
-                        'locations': locations, 'risk_words': risk_words}
+                        'locations': locations, 'risk_words': risk_words, 'file': file}
 
         return render(request, "conversation_analyst/content_review.html", context=context_dict)
 
@@ -129,4 +130,12 @@ def filter_view(request):
     context_dict = {'messages': serialize('json', messages), 'persons': serialize('json', persons),
                         'locations': serialize('json', locations), 'risk_words': serialize('json', risk_words)}
     return JsonResponse(context_dict)
+        
+def export_view(request, file_slug):
+    file = File.objects.get(slug=file_slug)
+    messages = Message.objects.filter(file=file)
+    xml_data = serialize('xml', messages)
+    response = HttpResponse(xml_data, content_type='application/xml')
+    response['Content-Disposition'] = f'attachment; filename="{file_slug}_exported_data.xml"'
+    return response
         
