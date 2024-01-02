@@ -18,8 +18,7 @@
       <div class="list-group">
         {% for message in messages %}
         <div class="conversation-item-content">
-          {% if forloop.counter|divisibleby:2 %}
-            {# Odd messages are outgoing #}
+          {% if main_sender != message.sender%}
             <div style="display: flex; justify-content: start;">
               <span class="sender"><small><b>{{ message.sender }}</b></small></span>
             </div>            
@@ -32,7 +31,6 @@
               </div>
             </div>
           {% else %}
-            {# Even messages are incoming #}
             <div style="display: flex; justify-content: end; ">
               <span class="sender"><small><b>{{ message.sender }}</b></small></span>
             </div>            

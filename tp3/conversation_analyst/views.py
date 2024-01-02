@@ -51,7 +51,7 @@ def content_review(request, file_slug):
         locations = Location.objects.filter(analysis=analysis)
         risk_words = RiskWord.objects.filter(analysis=analysis)
 
-        context_dict = {'messages': messages, 'persons': persons,
+        context_dict = {'main_sender': messages[0].sender,'messages': messages, 'persons': persons,
                         'locations': locations, 'risk_words': risk_words}
 
         return render(request, "conversation_analyst/content_review.html", context=context_dict)
