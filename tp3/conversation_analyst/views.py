@@ -47,6 +47,8 @@ def content_review(request, file_slug):
     try:
         file = File.objects.get(slug=file_slug)
         messages = Message.objects.filter(file=file)
+        for message in messages:
+            message.set_main_sender(messages[0].sender)
         analysis = Analysis.objects.get(file=file)
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
@@ -106,7 +108,6 @@ def filter_view(request):
         if end_date:
             filter_params['timestamp__lte'] = datetime.strptime(end_date, '%Y-%m-%dT%H:%M')
 
-        
         messages = Message.objects.filter(**filter_params)
         analysis = Analysis.objects.get(file=file)
         persons = Person.objects.filter(analysis=analysis)
