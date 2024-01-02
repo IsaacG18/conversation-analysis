@@ -119,7 +119,7 @@ def filter_view(request):
         analysis = Analysis.objects.get(file=file)
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
-        risk_words = RiskWord.objects.filter(analysis=analysis)
+        risk_words = RiskWordResult.objects.filter(analysis=analysis)
         print(filter_buttons)
         if len(filter_buttons)> 0:
             return_messages = []
