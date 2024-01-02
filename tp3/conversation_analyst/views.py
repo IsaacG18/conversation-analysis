@@ -9,7 +9,8 @@ from itertools import chain
 from django.utils import timezone
 from datetime import datetime
 import json
-import xml.etree.ElementTree as ET
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom import minidom
 
 
 
@@ -134,7 +135,39 @@ def filter_view(request):
 def export_view(request, file_slug):
     file = File.objects.get(slug=file_slug)
     messages = Message.objects.filter(file=file)
-    xml_data = serialize('xml', messages)
+    analysis = Analysis.objects.get(file=file)
+    persons = Person.objects.filter(analysis=analysis)
+    locations = Location.objects.filter(analysis=analysis)
+    risk_words = RiskWord.objects.filter(analysis=analysis)
+
+    root = Element('exported_data')
+
+    persons_element = SubElement(root, 'persons')
+    for person in persons:
+        entry_element = SubElement(persons_element, 'person')
+        SubElement(entry_element, 'name').text = person.name
+
+    locations_element = SubElement(root, 'locations')
+    for location in locations:
+        entry_element = SubElement(locations_element, 'location')
+        SubElement(entry_element, 'name').text = location.name
+
+    risk_words_element = SubElement(root, 'risk_words')
+    for risk_word in risk_words:
+        entry_element = SubElement(risk_words_element, 'risk_word')
+        SubElement(entry_element, 'keyword').text = risk_word.keyword
+        SubElement(entry_element, 'risk_factor').text = str(risk_word.risk_factor)
+        SubElement(entry_element, 'amount').text = str(risk_word.amount)
+
+    messages_element = SubElement(root, 'messages')
+    for message in messages:
+        entry_element = SubElement(messages_element, 'message')
+        SubElement(entry_element, 'timestamp').text = str(message.timestamp)
+        SubElement(entry_element, 'sender').text = message.sender
+        SubElement(entry_element, 'content').text = message.content
+        SubElement(entry_element, 'display_content').text = message.display_content
+    xml_data = minidom.parseString(tostring(root)).toprettyxml(indent="  ")
+
     response = HttpResponse(xml_data, content_type='application/xml')
     response['Content-Disposition'] = f'attachment; filename="{file_slug}_exported_data.xml"'
     return response
