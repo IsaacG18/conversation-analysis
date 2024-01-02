@@ -9,6 +9,7 @@ from itertools import chain
 from django.utils import timezone
 from django.db import IntegrityError
 from datetime import datetime
+from django.template.loader import render_to_string
 import json
 
 
@@ -133,10 +134,10 @@ def filter_view(request):
     except Exception as e:
         print(e)
         return JsonResponse({'result': 'error', 'message': 'Internal Server Error'})
+    render_to_string('conversation_analyst/messages.html', {'messages': messages, 'persons': persons,
+        context_dict = {'messages': serialize('json', messages), 'persons': serialize('json', persons),
+                            'locations': locations, 'risk_words': risk_words})})
 
-    context_dict = {'messages': serialize('json', messages), 'persons': serialize('json', persons),
-                        'locations': serialize('json', locations), 'risk_words': serialize('json', risk_words)}
-    return JsonResponse(context_dict)
     
     
     
@@ -171,6 +172,10 @@ def delete_suite(request):
         RiskWord.objects.filter(suite=suite_obj).delete()
         suite_obj.delete()
         return HttpResponse('suite deleted')
+
+    return JsonResponse({"results": render_to_string('conversation_analyst/messages.html', {'messages': messages, 'persons': persons,
+                        'locations': locations, 'risk_words': risk_words})})
+
         
         
 def select_suite(request):

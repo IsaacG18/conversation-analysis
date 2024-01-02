@@ -12,24 +12,7 @@
 
   <div class="container-fluid mt-2">
   <div class="row">
-    <div class="col-6" id="message_output">
-        {% if messages %}
-            <div class="list-group">
-            {% for message in messages %}
-                <div class="list-group-item">
-                <div class="d-flex justify-content-between">
-                    <span class="sender"><small>{{ message.sender }}:</small></span>
-                    <small class="timestamp text-body-secondary">{{ message.timestamp }}</small>
-                </div>
-                <small class="content">{{ message.display_content|safe }}</small>
-                </div>
-                </li>
-            {% endfor %}
-            </div>
-        {% else %}
-            <strong>There are no messages present.</strong>
-        {% endif %}
-    </div>
+    {% include "conversation_analyst/messages.html" %}
   <div class="col-6">
       <div class="accordion" id="analysis">
           {% if persons %}
