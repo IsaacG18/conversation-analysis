@@ -3,7 +3,7 @@
     <div class="list-group">
       {% for message in messages %}
       <div class="conversation-item-content">
-        {% if main_sender != message.sender%}
+        {% if message.main_sender != message.sender %}
           <div style="display: flex; justify-content: start;">
             <span class="sender"><small><b>{{ message.sender }}</b></small></span>
           </div>            
