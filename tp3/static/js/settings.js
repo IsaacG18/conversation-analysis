@@ -1,69 +1,119 @@
 $(document).ready(function(){
-
-    const newSuiteForm = $('#new-suite-form');
-    var activeSuite = $('#suite-list div:first');
-    var activeSuiteName = getSuiteName(activeSuite);
+    $('#suite-list div:first').addClass('active-suite'); // set the first suite active by default
 
     $('#new-suite-form').submit(function(e){
         e.preventDefault();
-        newSuiteName = $('#suite-name').val();
-        $.ajax({
-            type: 'POST',
-            url: "/create_suite",
-            headers: {
-                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
-            },
-            data: {'name': newSuiteName},
-            success: function(response){
-                var suiteId = response.suiteId;
-                $('#suite-name').val('');
-                newSuiteForm.before(`
-                <div class="list-group-item list-group-item-action suite-item" id="suite-item-${suiteId}">
-                <div class="row d-flex align-items-center justify-content-between">
-                <div class="col-9 form-check" id="suite-check-${suiteId}">
-                        <input class="form-check-input" type="checkbox" value="${suiteId}" id="checkbox-${suiteId}">
-                        <label class="form-check-label" for="checkbox-${suiteId}">${newSuiteName}</label>
-                  </div>
-                  <div class="col-3">
-                    <button type="button" class="btn btn-danger btn-sm delete-suite" id = "delete-${suiteId}" value="${suiteId}">Delete</button>
-                  </div>
+        if ($(this).valid() == true){
+            newSuiteName = $('#suite-name').val();
+            $.ajax({
+                type: 'POST',
+                url: "/create_suite",
+                headers: {
+                    'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                data: {'name': newSuiteName},
+                success: function(response){
+                    var suiteId = response.suiteId;
+                    $('#suite-name').val('');
+                    // insert new suite item
+                    $(e.target).before(`
+                    <div class="list-group-item list-group-item-action suite-item" id="suite-item-${suiteId}">
+                    <div class="row d-flex align-items-center justify-content-between">
+                    <div class="col-9 form-check" id="suite-check-${suiteId}">
+                            <input class="form-check-input" type="checkbox" value="${suiteId}" id="checkbox-${suiteId}">
+                            <label class="form-check-label" for="checkbox-${suiteId}">${newSuiteName}</label>
+                    </div>
+                    <div class="col-3">
+                        <button type="button" class="btn btn-danger btn-sm delete-suite" id = "delete-${suiteId}" value="${suiteId}">Delete</button>
+                    </div>
+                    </div>
                 </div>
-            </div>
-                `)
-                id = '#suite-item-' + response.suiteId;
-                $(id).click(function(e) {
-                    suiteClick(e);
-                });
-                btn = '#delete-' + response.suiteId;
-                $(btn).click(function(e){
-                    deleteSuiteClick(e);
-                })
-                checkbox = '#checkbox-' + response.suiteId;
-                $(checkbox).click(function(e){
-                    suiteCheck(e);
-                })
+                    `)
+                    // add event listners
+                    id = '#suite-item-' + response.suiteId;
+                    $(id).click(function(e) {
+                        suiteClick(e);
+                    });
+                    btn = '#delete-' + response.suiteId;
+                    $(btn).click(function(e){
+                        deleteSuiteClick(e);
+                    })
+                    checkbox = '#checkbox-' + response.suiteId;
+                    $(checkbox).click(function(e){
+                        suiteCheck(e);
+                    })
 
-                activeSuite = $('.suite-item:last');
-                alert(response.message);
-            },
-            error: function(jqXHR) {
-                var errorMessage = 'An error occurred';
-                if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
-                    errorMessage = jqXHR.responseJSON.detail;
+                    alert(response.message);
+                },
+                error: function(jqXHR) {
+                    var errorMessage = 'An error occurred';
+                    if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                        errorMessage = jqXHR.responseJSON.message;
+                    }
+                    alert(errorMessage);
                 }
-                alert(errorMessage);
-            }
-        })
+            })
+    }
     })
+
+    $('#new-suite-form').validate({
+        rules:{
+            suite_input: "required",
+        },
+        messages: {
+            suite_input: "Please input a suite name",
+        },
+        errorElement: "span",
+        errorPlacement: function(error, element) {
+            error_row = $('#suite-error-row');
+            error.appendTo(error_row);
+
+            setTimeout(function() {
+                error.remove();
+            }, 3000);
+          },
+          onfocusout: false,
+          onkeyup: false,
+    })
+
 
     $('.suite-item').click(function(e) {
         suiteClick(e);
     });
 
+    $('#new-keyword-form').validate({
+        rules:{
+            keyword: "required",
+            risk_factor: {
+                required: true,
+                min: 0,
+                max: 10,
+            },
+        },
+        messages: {
+            keyword: "Please input a keyword",
+            risk_factor: "Please input a risk factor between 0 and 10"
+        },
+        errorClass: "invalid",
+        errorElement: "span",
+        errorPlacement: function(error, element) {
+            error_row = $('#keyword-error-row');
+            error.appendTo(error_row);
+
+            setTimeout(function() {
+                error.remove();
+            }, 3000);
+          },
+          onfocusout: false,
+          onkeyup: false,
+    })
+
     $('#new-keyword-form').submit(function(e){
         e.preventDefault();
+        if ($(this).valid() == true){
         var newKeyword = $('#new-keyword').val().toLowerCase()
         var newKeywordRisk = $('#new-keyword-risk').val()
+        var activeSuiteName = getSuiteName($('.active-suite'));
         $.ajax({
             type: 'POST',
             url: "/create_keyword",
@@ -86,13 +136,15 @@ $(document).ready(function(){
                   <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "${keywordId}" id="delete-keyword-${keywordId}">Delete</button>
                   </div>
                 </div>
+                </div>
+                <div class="row align-items-center error-row" id="error-row-${keywordId}">
+                </div>
             </div>`);
             $(`#delete-keyword-${keywordId}`).click(function(e){
                 deleteKeywordClick(e);
             })
             $(`#risk-${keywordId}`).blur(function(e){
-                console.log($(`#risk-${keywordId}`))
-                RiskFactorFocus(e);
+                RiskFactorBlur(e);
             })
                 alert(response.message);
             },
@@ -104,11 +156,13 @@ $(document).ready(function(){
                 alert(errorMessage);
             }
         })
+    }
     })
 
 
+
     $('.delete-suite').click(function(e){
-        deleteSuiteClick(e);
+        confirmDelete(e);
     })
 
 
@@ -121,7 +175,7 @@ $(document).ready(function(){
     })
 
     $('.keyword-risk').blur(function(e){
-        RiskFactorFocus(e);
+        RiskFactorBlur(e);
     })
 
 
@@ -145,6 +199,9 @@ $(document).ready(function(){
               <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "${keywordId}" id="delete-keyword-${keywordId}">Delete</button>
             </div>
             </div>
+            <div class="row align-items-center error-row" id="error-row-${keywordId}">
+            </div>
+            </div>
         </div>`
         });
         $('.keyword-item').remove();
@@ -152,8 +209,9 @@ $(document).ready(function(){
     }
 
     function suiteClick(e){
-        activeSuite = $(e.currentTarget);
-        activeSuiteName = getSuiteName(activeSuite);
+        $('.active-suite').removeClass('active-suite');
+        $(e.currentTarget).addClass('active-suite')
+        activeSuiteName = getSuiteName($(e.currentTarget));
         $.ajax({
             type: 'GET',
             url: "/select_suite",
@@ -161,17 +219,25 @@ $(document).ready(function(){
             data: {'suite': activeSuiteName},
             success: function(data){
                 displayKeywords(data);
+                initialiseKeywordForm();
                 $('.delete-keyword').click(function(e){
                     deleteKeywordClick(e);
                 })
                 $('.keyword-risk').blur(function(e){
-                    RiskFactorFocus(e);
+                    RiskFactorBlur(e);
                 })
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('AJAX Error:', textStatus, errorThrown);
             }
         })
+    }
+
+    function initialiseKeywordForm(){
+        $('#new-keyword-risk-error').remove();
+        $('#new-keyword-error').remove();
+        $('#new-keyword').val('');
+        $('#new-keyword-risk').val('0');
     }
 
     function deleteSuiteClick(e){
@@ -190,6 +256,13 @@ $(document).ready(function(){
                 console.error('AJAX Error:', textStatus, errorThrown);
             }
         })
+    }
+
+    function confirmDelete(e) {
+        var userConfirmed = window.confirm("Deleting suite will remove all contained keywords. Are you sure you want to proceed?");
+        if (userConfirmed) {
+            deleteSuiteClick(e);
+        }
     }
 
     function deleteKeywordClick(e){
@@ -234,27 +307,40 @@ $(document).ready(function(){
         })
     }
 
-    function RiskFactorFocus(e){
+    function validateRiskInput(input){
+        if (input<0 || input>10){return false;}
+        else return true;
+    }
+
+    function RiskFactorBlur(e){
         var risk = $(e.target).val();
-        var keywordId = $(e.target).attr('id').split("-")[1]
-        $.ajax({
-            type: 'POST',
-            url: "/risk_update",
-            headers: {
-                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
-            },
-            data: {'keyword': keywordId, 'risk': risk},
-            success: function(response){
-                console.log(response);
-            },
-            error: function(jqXHR) {
-                var errorMessage = 'An error occurred';
-                if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
-                    errorMessage = jqXHR.responseJSON.detail;
+        var keywordId = $(e.target).attr('id').split("-")[1];
+
+        if (validateRiskInput(risk) == true){
+            $(`#error-row-${keywordId}`).empty();
+            $.ajax({
+                type: 'POST',
+                url: "/risk_update",
+                headers: {
+                    'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                data: {'keyword': keywordId, 'risk': risk},
+                success: function(response){
+                    console.log(response);
+                },
+                error: function(jqXHR) {
+                    var errorMessage = 'An error occurred';
+                    if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
+                        errorMessage = jqXHR.responseJSON.detail;
+                    }
+                    alert(errorMessage);
                 }
-                alert(errorMessage);
+            })
+        }
+        else {
+            error_row = $(`#error-row-${keywordId}`);
+            error_row.append('<span>Please input a number between 0 and 10</span>');
             }
-        })  
     }
 
 

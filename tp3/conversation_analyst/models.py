@@ -63,7 +63,7 @@ class Location(models.Model):
     
 
 class KeywordSuite(models.Model):
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128,unique=True)
     plans = models.ManyToManyField(KeywordPlan, blank=True)
     default = models.BooleanField(default=False)
     

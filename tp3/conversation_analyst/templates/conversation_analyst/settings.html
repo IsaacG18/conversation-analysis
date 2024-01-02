@@ -7,10 +7,13 @@
 {% block body %}
 {% load static %}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 <script type="text/javascript" src="{% static 'js/settings.js' %}"></script>
-<!-- <link rel="stylesheet" href="{% static 'css/highlight.css' %}"> -->
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
 
 <div class="container-fluid px-5">
+  <div id="div" class="row">
+  </div>
     <div id="div" class="row">
         <div id="div" class="col-3">
             <div class="list-group" id="suite-list">
@@ -39,10 +42,12 @@
                     {% csrf_token %}
                     <div class="row align-items-center d-flex justify-content-between">
                         <div class="col-9 ps-1">
-                          <input id="suite-name" type="text" class="form-control ps-3" placeholder="Add new suite" aria-label="Suite name">
+                          <input id="suite-name" type="text" class="form-control ps-3" placeholder="Add new suite" aria-label="Suite name" name="suite_input">
                         </div>
                         <div class="col-3">
                             <button id="submit-suite" type="submit" class="btn btn-primary btn-sm" id = "delete-{{ suite.id }}">Add</button>
+                        </div>
+                        <div class="row align-items-center error-row" id="suite-error-row">
                         </div>
                       </div>
                 </form>
@@ -58,11 +63,13 @@
                             <a href="#" class="text-reset text-decoration-none">{{ risk_word.keyword }}</a>
                       </div>
                       <div class="col-1">
-                        <input type="number" class="form-control keyword-risk"  value="{{ risk_word.risk_factor }}" id="risk-{{ risk_word.id }}">
+                        <input type="number" class="form-control keyword-risk"  value="{{ risk_word.risk_factor }}" id="risk-{{ risk_word.id }}" name="risk_input">
                       </div>
                       <div class="col-3">
                         <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "{{ risk_word.id }}" id="delete-keyword-{{ risk_word.id }}">Delete</button>
                       </div>
+                    </div>
+                    <div class="row align-items-center error-row" id="error-row-{{risk_word.id}}">
                     </div>
                 </div>
                 {% endfor %}
@@ -71,14 +78,16 @@
                     {% csrf_token %} 
                     <div class="row align-items-center d-flex justify-content-between">
                         <div class="col-8 ps-1">
-                          <input id="new-keyword" type="text" class="form-control ps-2" placeholder="Add new keyword" aria-label="Keyword Input">
+                          <input id="new-keyword" type="text" class="form-control ps-2" placeholder="Add new keyword" aria-label="Keyword Input" name="keyword">
                         </div>
                         <div class="col-1">
-                            <input type="number" class="form-control"  value="0" id="new-keyword-risk">
+                            <input type="number" class="form-control"  value="0" id="new-keyword-risk" name="risk_factor">
                           </div>
                         <div class="col-3">
-                            <button type="submit" class="btn btn-primary btn-sm">Add</button>
+                            <button type="submit" value="Submit" class="btn btn-primary btn-sm">Add</button>
                         </div>
+                      </div>
+                      <div class="row align-items-center error-row" id="keyword-error-row">
                       </div>
                 </form>
             </div>

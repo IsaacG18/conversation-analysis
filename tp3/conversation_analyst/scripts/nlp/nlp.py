@@ -55,13 +55,14 @@ def get_top_n_risk_keywords(messages, n):
     token_count = {}
     for message in messages:
         for token, risk, topics in message["tags"]:
+            token_lower = token.lower() # convert to lower case to avoid duplicate
             if risk != 0:
-                if token not in token_risk:
-                    token_risk[token] = risk
-                if token in token_count:
-                    token_count[token] += 1
+                if token_lower not in token_risk:
+                    token_risk[token_lower] = risk
+                if token_lower in token_count:
+                    token_count[token_lower] += 1
                 else:
-                    token_count[token] = 1
+                    token_count[token_lower] = 1
     
     sorted_tokens = sorted(token_risk, key=lambda x: token_risk[x], reverse=True)[:n]
     result = [(token, token_risk[token], token_count[token]) for token in sorted_tokens]

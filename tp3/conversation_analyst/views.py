@@ -7,6 +7,7 @@ from .scripts.object_creators import *
 from django.core.serializers import serialize
 from itertools import chain
 from django.utils import timezone
+from django.db import IntegrityError
 from datetime import datetime
 import json
 
@@ -151,11 +152,15 @@ def settings_page(request):
 
 def create_suite(request):
     if request.method == 'POST':
-        suite_name = request.POST['name']
-        suite_obj = KeywordSuite.objects.create(name=suite_name)
-        suite_obj.save()
-        context_dict = {'message': 'New suite added', 'suiteId': suite_obj.id}
-        return JsonResponse(context_dict)
+        try:
+            suite_name = request.POST['name']
+            suite_obj = KeywordSuite.objects.create(name=suite_name)
+            suite_obj.save()
+            context_dict = {'message': 'New suite added', 'suiteId': suite_obj.id}
+            return JsonResponse(context_dict, status=201)
+        except IntegrityError as e:
+            print(e)
+            return JsonResponse({'message': 'Suite name has to be unique'},status=500)  
     
 def delete_suite(request):
     if request.method == 'GET':
