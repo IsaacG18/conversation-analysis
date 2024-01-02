@@ -134,9 +134,9 @@ def filter_view(request):
     except Exception as e:
         print(e)
         return JsonResponse({'result': 'error', 'message': 'Internal Server Error'})
-    render_to_string('conversation_analyst/messages.html', {'messages': messages, 'persons': persons,
-        context_dict = {'messages': serialize('json', messages), 'persons': serialize('json', persons),
-                            'locations': locations, 'risk_words': risk_words})})
+    return JsonResponse({"results": render_to_string('conversation_analyst/messages.html', {'messages': messages, 'persons': persons,
+                        'locations': locations, 'risk_words': risk_words})})
+
 
     
     
