@@ -142,10 +142,12 @@ def filter_view(request):
     
 def settings_page(request):
     keyword_suites = KeywordSuite.objects.all()
-    suite = keyword_suites[0]
-    risk_words = RiskWord.objects.filter(suite=suite)
-
-    context_dict = {'keyword_suites': keyword_suites, 'risk_words':risk_words}
+    if len(keyword_suites) == 0:
+        context_dict = {}
+    else:
+        suite = keyword_suites[0]
+        risk_words = RiskWord.objects.filter(suite=suite)
+        context_dict = {'keyword_suites': keyword_suites, 'risk_words':risk_words}
 
     return render(request, "conversation_analyst/settings.html", context=context_dict)
 
@@ -159,7 +161,7 @@ def create_suite(request):
             context_dict = {'message': 'New suite added', 'suiteId': suite_obj.id}
             return JsonResponse(context_dict, status=201)
         except IntegrityError as e:
-            print(e)
+            # print(e)
             return JsonResponse({'message': 'Suite name has to be unique'},status=500)  
     
 def delete_suite(request):

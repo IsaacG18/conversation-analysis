@@ -1,5 +1,5 @@
 $(document).ready(function(){
-    $('#suite-list div:first').addClass('active-suite'); // set the first suite active by default
+    $('#suite-list .suite-item:first').addClass('active-suite'); // set the first suite active by default
 
     $('#new-suite-form').submit(function(e){
         e.preventDefault();
@@ -32,7 +32,7 @@ $(document).ready(function(){
                     // add event listners
                     id = '#suite-item-' + response.suiteId;
                     $(id).click(function(e) {
-                        suiteClick(e);
+                        suiteClick(targetGrabber(e));
                     });
                     btn = '#delete-' + response.suiteId;
                     $(btn).click(function(e){
@@ -42,6 +42,7 @@ $(document).ready(function(){
                     $(checkbox).click(function(e){
                         suiteCheck(e);
                     })
+                    refreshSuiteFocusOnCreation($(`#suite-item-${suiteId}`));
 
                     alert(response.message);
                 },
@@ -78,7 +79,7 @@ $(document).ready(function(){
 
 
     $('.suite-item').click(function(e) {
-        suiteClick(e);
+        suiteClick(targetGrabber(e));
     });
 
     $('#new-keyword-form').validate({
@@ -111,52 +112,53 @@ $(document).ready(function(){
     $('#new-keyword-form').submit(function(e){
         e.preventDefault();
         if ($(this).valid() == true){
-        var newKeyword = $('#new-keyword').val().toLowerCase()
-        var newKeywordRisk = $('#new-keyword-risk').val()
-        var activeSuiteName = getSuiteName($('.active-suite'));
-        $.ajax({
-            type: 'POST',
-            url: "/create_keyword",
-            headers: {
-                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
-            },
-            data: {'keyword': newKeyword, 'suite': activeSuiteName, 'risk': newKeywordRisk},
-            success: function(response){
-                keywordId = response.keywordId;
-                $('#new-keyword').val('');
-                $('#new-keyword-form').before(`<div class="list-group-item list-group-item-action keyword-item" id="keyword-item-${keywordId}">
-                <div class="row d-flex align-items-center justify-content-between">
-                  <div class="col-8">
-                        <a href="#" class="text-reset text-decoration-none">${newKeyword}</a>
-                  </div>
-                  <div class="col-1">
-                  <input type="number" class="form-control keyword-risk"  value="${newKeywordRisk}" id="risk-${keywordId}">
-                </div>
-                  <div class="col-3">
-                  <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "${keywordId}" id="delete-keyword-${keywordId}">Delete</button>
-                  </div>
-                </div>
-                </div>
-                <div class="row align-items-center error-row" id="error-row-${keywordId}">
-                </div>
-            </div>`);
-            $(`#delete-keyword-${keywordId}`).click(function(e){
-                deleteKeywordClick(e);
-            })
-            $(`#risk-${keywordId}`).blur(function(e){
-                RiskFactorBlur(e);
-            })
-                alert(response.message);
-            },
-            error: function(jqXHR) {
-                var errorMessage = 'An error occurred';
-                if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
-                    errorMessage = jqXHR.responseJSON.detail;
-                }
-                alert(errorMessage);
-            }
-        })
-    }
+            if (checkIfSuiteExist()==true){
+                var newKeyword = $('#new-keyword').val().toLowerCase()
+                var newKeywordRisk = $('#new-keyword-risk').val()
+                var activeSuiteName = getSuiteName($('.active-suite'));
+                $.ajax({
+                    type: 'POST',
+                    url: "/create_keyword",
+                    headers: {
+                        'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    data: {'keyword': newKeyword, 'suite': activeSuiteName, 'risk': newKeywordRisk},
+                    success: function(response){
+                        keywordId = response.keywordId;
+                        $('#new-keyword').val('');
+                        $('#new-keyword-form').before(`<div class="list-group-item list-group-item-action keyword-item" id="keyword-item-${keywordId}">
+                        <div class="row d-flex align-items-center justify-content-between">
+                        <div class="col-8">
+                                <a href="#" class="text-reset text-decoration-none">${newKeyword}</a>
+                        </div>
+                        <div class="col-1">
+                        <input type="number" class="form-control keyword-risk"  value="${newKeywordRisk}" id="risk-${keywordId}">
+                        </div>
+                        <div class="col-3">
+                        <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "${keywordId}" id="delete-keyword-${keywordId}">Delete</button>
+                        </div>
+                        </div>
+                        </div>
+                        <div class="row align-items-center error-row" id="error-row-${keywordId}">
+                        </div>
+                    </div>`);
+                    $(`#delete-keyword-${keywordId}`).click(function(e){
+                        deleteKeywordClick(e);
+                    })
+                    $(`#risk-${keywordId}`).blur(function(e){
+                        RiskFactorBlur(e);
+                    })
+                        alert(response.message);
+                    },
+                    error: function(jqXHR) {
+                        var errorMessage = 'An error occurred';
+                        if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
+                            errorMessage = jqXHR.responseJSON.detail;
+                        }
+                        alert(errorMessage);
+                    }
+                })
+    }}
     })
 
 
@@ -208,10 +210,32 @@ $(document).ready(function(){
         $('#new-keyword-form').before(toAppend);
     }
 
-    function suiteClick(e){
+    function refreshSuiteFocusOnCreation(suite){
         $('.active-suite').removeClass('active-suite');
-        $(e.currentTarget).addClass('active-suite')
-        activeSuiteName = getSuiteName($(e.currentTarget));
+        $(suite).addClass('active-suite');
+        console.log(suite);
+        $('.keyword-item').empty();
+    }
+
+    function refreshSuiteFocusOnDeletion(suite){
+        if (suite.hasClass('active-suite')){
+            suite.removeClass('active-suite');
+            if ($('.suite-item').length>1){
+                suite.remove();
+                focusSuite = $('.suite-item:first');
+                suiteClick(focusSuite);
+                return;
+            }else{
+                $('.keyword-item').remove();
+            }
+        }
+        suite.remove();
+    }
+
+    function suiteClick(suite){
+        $('.active-suite').removeClass('active-suite');
+        suite.addClass('active-suite')
+        activeSuiteName = getSuiteName(suite);
         $.ajax({
             type: 'GET',
             url: "/select_suite",
@@ -233,6 +257,12 @@ $(document).ready(function(){
         })
     }
 
+    function targetGrabber(e){
+        return $(e.currentTarget);
+    }
+
+
+
     function initialiseKeywordForm(){
         $('#new-keyword-risk-error').remove();
         $('#new-keyword-error').remove();
@@ -249,8 +279,7 @@ $(document).ready(function(){
             data: {'suiteId': suiteId},
             success: function(data){
                 alert(data);
-                id = '#suite-item-' + suiteId;
-                $(id).remove();
+                refreshSuiteFocusOnDeletion($(`#suite-item-${suiteId}`));
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('AJAX Error:', textStatus, errorThrown);
@@ -346,6 +375,17 @@ $(document).ready(function(){
 
     function getSuiteName(suite){
         return suite.find('.form-check-label').text();
+    }
+
+    function checkIfSuiteExist(){
+        console.log($('.active-suite'));
+        if (!$('.active-suite').length) {
+            $('#keyword-error-row').append(`<span>Please create a suite frist</span>`);
+            return false;
+        } else{
+            $('#keyword-error-row').empty();
+            return true;
+        }
     }
 
 
