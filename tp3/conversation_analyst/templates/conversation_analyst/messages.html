@@ -1,18 +1,38 @@
 <div class="col-6 results" id="message_output">
     {% if messages %}
-        <div class="list-group">
-        {% for message in messages %}
-            <div class="list-group-item">
-            <div class="d-flex justify-content-between">
-                <span class="sender"><small>{{ message.sender }}:</small></span>
-                <small class="timestamp text-body-secondary">{{ message.timestamp }}</small>
+    <div class="list-group">
+      {% for message in messages %}
+      <div class="conversation-item-content">
+        {% if message.main_sender != message.sender %}
+          <div style="display: flex; justify-content: start;">
+            <span class="sender"><small><b>{{ message.sender }}</b></small></span>
+          </div>            
+          <div class="conversation-item-box incoming">
+            <div class="details">
+              <div class="conversation-item-text">
+                {{ message.display_content|safe }}
+                <div class="conversation-item-time">{{ message.timestamp }}</div>
+              </div>
             </div>
-            <small class="content">{{ message.display_content|safe }}</small>
+          </div>
+        {% else %}
+          <div style="display: flex; justify-content: end; ">
+            <span class="sender"><small><b>{{ message.sender }}</b></small></span>
+          </div>            
+          <div class="conversation-item-box outgoing">
+            <div class="details">
+              <div class="conversation-item-text">
+                {{ message.display_content|safe }}
+                <div class="conversation-item-time">{{ message.timestamp }}</div>
+              </div>
             </div>
-            </li>
-        {% endfor %}
-        </div>
+          </div>
+        {% endif %}
+      </div>
+      </li>
+      {% endfor %}
+    </div>
     {% else %}
-        <strong>There are no messages present.</strong>
+    <strong>There are no messages present.</strong>
     {% endif %}
-</div>
+  </div>
