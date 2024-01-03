@@ -24,28 +24,29 @@ def tag_text(messages, keywords, labels):
                 found_entities[entity.label_].append((entity.text))
                 message["Display_Message"] = message["Display_Message"][:entity.start_char + distance] + start_tag + entity.text + end_tag + message["Display_Message"][entity.end_char+ distance:]
                 distance += len(start_tag) + len(end_tag)
-                
                 message[entity.label_] += 1
+        ptr = 0
         for token in message["doc"]:
             token_text = token.text
             input_text = token_text
-            if token_text.lower() in keywords.get_keywords():
-                risk = keywords.get_keyword(token_text)["risk"]
-                topics = keywords.get_keyword_topics(token_text.lower())
+            if (keyword := keywords.filter(keyword=token_text.lower()).first()) is not None:
+                risk = keyword.risk_factor
+                topics = keyword.topics.all()
                 message["risk"] += risk
                 start_tag = f'<span class="{classify(token_text)} risk">'
                 end_tag = '</span>'
-                for topic in topics:
-                    start_tag = f'<span class="{classify(topic)}">' + start_tag
-                    end_tag += '</span>'
-                start = message["Display_Message"].find(token_text)
+                # for topic in topics:
+                #     start_tag = f'<span class="{classify(topic)}">' + start_tag
+                #     end_tag += '</span>'
+                start = message["Display_Message"].find(token_text,ptr)
                 input_text= start_tag + input_text + end_tag
-                message["Display_Message"] = message["Display_Message"][:start] + start_tag + entity_tag + end_tag + message["Display_Message"][start+ len(start):]
+                ptr = start + len(input_text)
+                message["Display_Message"] = message["Display_Message"][:start] + input_text + message["Display_Message"][start+len(token_text):]
             else:
                 risk = 0
                 topics = None
             tag_list.append((token_text, risk, topics))
-
+            
         message["tags"] = tag_list
     return messages, found_entities
 
@@ -54,13 +55,14 @@ def get_top_n_risk_keywords(messages, n):
     token_count = {}
     for message in messages:
         for token, risk, topics in message["tags"]:
+            token_lower = token.lower() # convert to lower case to avoid duplicate
             if risk != 0:
-                if token not in token_risk:
-                    token_risk[token] = risk
-                if token in token_count:
-                    token_count[token] += 1
+                if token_lower not in token_risk:
+                    token_risk[token_lower] = risk
+                if token_lower in token_count:
+                    token_count[token_lower] += 1
                 else:
-                    token_count[token] = 1
+                    token_count[token_lower] = 1
     
     sorted_tokens = sorted(token_risk, key=lambda x: token_risk[x], reverse=True)[:n]
     result = [(token, token_risk[token], token_count[token]) for token in sorted_tokens]
