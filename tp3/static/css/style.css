@@ -58,3 +58,18 @@
     margin-top: 4px;
     line-height: 1;
 }
+
+#message_output{
+    height: 90vh;
+    overflow-y: scroll;
+}
+
+#timeline{
+    height: 90vh;
+}
+
+.timeline-item{
+    height: 30px;
+    line-height: 60%;
+    padding: 0%;
+}
