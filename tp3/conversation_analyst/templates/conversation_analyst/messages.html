@@ -1,8 +1,9 @@
 <div class="col-6 results" id="message_output">
     {% if messages %}
-    <div class="list-group">
+    <div class="list-group ">
+      <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabindex="0">
       {% for message in messages %}
-      <div class="conversation-item-content">
+      <div class="conversation-item-content" id="conversation-item-{{ message.id }}">
         {% if message.main_sender != message.sender %}
           <div style="display: flex; justify-content: start;">
             <span class="sender"><small><b>{{ message.sender }}</b></small></span>
@@ -32,6 +33,7 @@
       </li>
       {% endfor %}
     </div>
+  </div>
     {% else %}
     <strong>There are no messages present.</strong>
     {% endif %}
