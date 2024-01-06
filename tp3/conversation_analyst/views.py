@@ -131,7 +131,8 @@ def filter_view(request):
         if len(filters)> 0:
             filter_condition = Q()
             for word in filters:
-                filter_condition |= Q(content__contains=word)
+                search_term = r'(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])'.format(word)
+                filter_condition |= Q(content__iregex=search_term)
             messages = messages.filter(filter_condition)
 
     except Exception as e:

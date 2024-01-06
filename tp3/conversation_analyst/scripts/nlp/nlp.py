@@ -1,6 +1,7 @@
 from .Keywords import *
 import spacy
 import numpy as np
+import re
 nlp = spacy.load("en_core_web_sm")
 
 def classify(text):
@@ -29,22 +30,25 @@ def tag_text(messages, keywords, labels):
         for token in message["doc"]:
             token_text = token.text
             input_text = token_text
+            word_regex = re.compile(r'(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])'.format(re.escape(token_text.lower())))
+            
             if (keyword := keywords.filter(keyword=token_text.lower()).first()) is not None:
                 risk = keyword.risk_factor
                 topics = keyword.topics.all()
                 message["risk"] += risk
                 start_tag = f'<span class="{classify(token_text)} risk">'
                 end_tag = '</span>'
-                # for topic in topics:
-                #     start_tag = f'<span class="{classify(topic)}">' + start_tag
-                #     end_tag += '</span>'
-                start = message["Display_Message"].find(token_text,ptr)
-                input_text= start_tag + input_text + end_tag
-                ptr = start + len(input_text)
-                message["Display_Message"] = message["Display_Message"][:start] + input_text + message["Display_Message"][start+len(token_text):]
+
+                match = word_regex.search(message["Display_Message"], ptr)
+                if match:
+                    start = match.start()
+                    input_text = start_tag + input_text + end_tag
+                    ptr = match.end()
+                    message["Display_Message"] = message["Display_Message"][:start] + input_text + message["Display_Message"][start + len(token_text):]
             else:
                 risk = 0
                 topics = None
+
             tag_list.append((token_text, risk, topics))
             
         message["tags"] = tag_list

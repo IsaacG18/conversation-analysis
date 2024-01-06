@@ -65,15 +65,8 @@ $(document).ready(function () {
     });
 });
 
-function removeNumberedSuffix(inputString) {
-    if (inputString.match(/\(\d\)$/)) {
-        var resultString = inputString.slice(0, -3); 
-        return resultString;
-    }
-    if (inputString.endsWith("(10)")) {
-        return inputString.slice(0, -4);
-    }
-    return inputString
+function removeNumberedSuffix(input) {
+    return input.replace(/\(\d+\)$/, '');
 }
 var styles = `
   <style>
