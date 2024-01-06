@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
@@ -40,10 +41,12 @@ def upload(request):
             default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
             keyword_suites = default_plan.keywordsuite_set.all()
             keywords = RiskWord.objects.filter(suite__in=keyword_suites)
-            print()
-            process_file(file_obj, keywords=keywords)
-            # display file analysis
-            return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
+            try:
+                process_file(file_obj, keywords=keywords)
+                return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
+            except ValueError as e:
+                file_obj.delete()
+                return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e)})
     else:
         form = UploadFileForm()
     return render(request, "conversation_analyst/upload.html", {"form": form})
@@ -73,6 +76,10 @@ def content_review(request, file_slug):
 def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keywords=Keywords()):
     directory = os.path.join(settings.MEDIA_ROOT, 'uploads')
     file_path = os.path.join(directory, file.title)
+
+    if not file.title.endswith(('.docx', '.txt', '.csv')):
+        raise ValueError("Unsupported file type. Only .txt, .csv and .docx are supported.")
+
 
     chat_messages = ingestion.parse_chat_file(file_path, delimiters)
     message_count = create_arrays(chat_messages)
