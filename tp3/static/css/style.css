@@ -58,3 +58,8 @@
     margin-top: 4px;
     line-height: 1;
 }
+
+#message_output{
+    height: 90vh;
+    overflow-y: scroll;
+}
