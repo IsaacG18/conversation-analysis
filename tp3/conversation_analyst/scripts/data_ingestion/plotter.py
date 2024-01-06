@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-def plots(chat_messages):
+def plots(chat_messages, name):
+    name = name.split('.')[0]+'_plot.png'
+    file_location = "/media/vis_uploads/"
     senders = set(message['Sender'] for message in chat_messages)
     data = {sender: {'timestamps': [], 'message_lengths': [], 'message_risk':[], 'message_name_count':[], 'message_location_count':[] } for sender in senders}
     for message in chat_messages:
@@ -42,6 +44,7 @@ def plots(chat_messages):
     plt.title('Message Length Over Time')
     plt.legend()
     plt.grid(True)
-    plots_folder = 'plots'
-    os.makedirs(plots_folder, exist_ok=True)
-    plt.savefig(os.path.join(plots_folder, 'message_plot.png'))
+    plots_folder = os.getcwd()+ file_location
+    plt.savefig(os.path.join(plots_folder, name))
+    plt.close()
+    return file_location + name
