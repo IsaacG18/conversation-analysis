@@ -11,7 +11,9 @@ from django.utils import timezone
 from django.db import IntegrityError
 from datetime import datetime
 from django.template.loader import render_to_string
+from django.db.models import Q
 import json
+
 
 
 
@@ -107,13 +109,11 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
 
 
 def filter_view(request):
-    filter_buttons = request.GET.get('filters','[]')
-    filter_buttons = json.loads(filter_buttons)
+    filters = request.GET.get('filters','[]')
+    filters = json.loads(filters)
     file_slug = request.GET['file_slug']
     start_date = request.GET.get('startDate')
     end_date = request.GET.get('endDate')
-    print(filter_buttons)
-    filter_buttons
 
     try:
         file = File.objects.get(slug=file_slug)
@@ -128,16 +128,11 @@ def filter_view(request):
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
         risk_words = RiskWordResult.objects.filter(analysis=analysis)
-        print(filter_buttons)
-        if len(filter_buttons)> 0:
-            return_messages = []
-            if filter_buttons[0]:
-                return_messages = messages.filter(content__icontains=filter_buttons[0])
-            if len(filter_buttons)> 1:
-                for filter_button in filter_buttons[1]:
-                    if filter_button:
-                        return_messages = chain(return_messages, messages.filter(content__icontains=filter_button))
-            messages = set(list(return_messages))
+        if len(filters)> 0:
+            filter_condition = Q()
+            for word in filters:
+                filter_condition |= Q(content__contains=word)
+            messages = messages.filter(filter_condition)
 
     except Exception as e:
         print(e)
