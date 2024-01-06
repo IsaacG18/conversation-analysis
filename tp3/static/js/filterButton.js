@@ -10,7 +10,7 @@ $(document).ready(function () {
         var pageSlug = window.location.pathname.split('/').pop(); 
         for (var i = 0; i < button.length; i++) {
             var buttonText = button[i].textContent || button[i].innerText;
-            filter_vals.push(buttonText)
+            filter_vals.push(removeNumberedSuffix(buttonText))
         }
 
         $.get('/filter/',
@@ -31,10 +31,10 @@ $(document).ready(function () {
         if (!$(this).hasClass("existing")) {
             for (var i = 0; i < button.length; i++) {
                 var buttonText = button[i].textContent || button[i].innerText;
-                filter_vals.push(buttonText)
+                filter_vals.push(removeNumberedSuffix(buttonText))
             }
 
-            filter_vals.push(buttonValue);
+            filter_vals.push(removeNumberedSuffix(buttonValue));
 
             $.get('/filter/',
             {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug},
@@ -48,7 +48,7 @@ $(document).ready(function () {
             for (var i = 0; i < button.length; i++) {
                 var buttonText = button[i].textContent || button[i].innerText;
                 if (buttonText != buttonValue){
-                    filter_vals.push(buttonText)
+                    filter_vals.push(removeNumberedSuffix(buttonText))
                 }
                     
             }
@@ -65,6 +65,16 @@ $(document).ready(function () {
     });
 });
 
+function removeNumberedSuffix(inputString) {
+    if (inputString.match(/\(\d\)$/)) {
+        var resultString = inputString.slice(0, -3); 
+        return resultString;
+    }
+    if (inputString.endsWith("(10)")) {
+        return inputString.slice(0, -4);
+    }
+    return inputString
+}
 var styles = `
   <style>
     /* Add your custom styles here */
