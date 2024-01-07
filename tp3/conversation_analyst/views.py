@@ -11,8 +11,6 @@ from datetime import datetime
 import json
 
 
-
-
 import os
 from django.conf import settings
 
@@ -51,17 +49,16 @@ def delimiter_settings(request):
 def upload(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            # get file delimeters
-            # sender = form.cleaned_data.get('sender_delim')
-            # timestamp = form.cleaned_data.get('timestamp_delim')
-            # custom = form.cleaned_data.get('custom_delim')
+        delimiter_form = DelimeterForm()
+        if not delimiter_form.is_valid:
+            file_delimeters = [["Timestamp", ','], ["Sender", ':']]
+        else: 
             sender = request.session.get('sender_delim')
             timestamp = request.session.get('timestamp_delim')
             custom = request.session.get('custom_delim')
-
             file_delimeters = [["Timestamp", timestamp], ["Sender", sender]]
-            
+
+        if form.is_valid() and delimiter_form.is_valid:       
             # Create file object
             uploaded_file = request.FILES["file"]
 
