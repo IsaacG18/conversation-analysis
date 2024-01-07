@@ -1,0 +1,17 @@
+{% extends "conversation_analyst/base.html" %}
+{% block title %}
+Delimiter Settings
+{% endblock %}
+
+{% block body %}
+    <form method="post">
+        {% csrf_token %}
+        {{ delimiter_form.as_p }}
+        <input type="submit" value="Save">
+    </form>
+{% endblock %}
+
+
+{% block card-color %} border-dark bg-warning {% endblock card-color %}
+{% block card-title %} <strong> Delimiter Settings </strong> {% endblock card-title %}
+

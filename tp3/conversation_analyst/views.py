@@ -16,7 +16,7 @@ import json
 import os
 from django.conf import settings
 
-from .forms import UploadFileForm
+from .forms import UploadFileForm, DelimeterForm
 from .models import File, Message, Analysis, Person, Location, RiskWord
 
 
@@ -31,14 +31,35 @@ def validate_delimiters(delimiters):
             return False
     return True
 
+def delimiter_settings(request):
+    if request.method == "POST":
+        delimiter_form = DelimeterForm(request.POST)
+
+        if delimiter_form.is_valid():
+            # Save delimiter settings to session
+            request.session['sender_delim'] = delimiter_form.cleaned_data.get('sender_delim')
+            request.session['timestamp_delim'] = delimiter_form.cleaned_data.get('timestamp_delim')
+            request.session['custom_delim'] = delimiter_form.cleaned_data.get('custom_delim')
+
+            return HttpResponseRedirect(reverse('upload'))
+    else:
+        delimiter_form = DelimeterForm()
+
+    return render(request, "conversation_analyst/delimiter_settings.html", {"delimiter_form": delimiter_form})
+
+
 def upload(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             # get file delimeters
-            sender = form.cleaned_data.get('sender_delim')
-            timestamp = form.cleaned_data.get('timestamp_delim')
-            custom = form.cleaned_data.get('custom_delim')
+            # sender = form.cleaned_data.get('sender_delim')
+            # timestamp = form.cleaned_data.get('timestamp_delim')
+            # custom = form.cleaned_data.get('custom_delim')
+            sender = request.session.get('sender_delim')
+            timestamp = request.session.get('timestamp_delim')
+            custom = request.session.get('custom_delim')
+
             file_delimeters = [["Timestamp", timestamp], ["Sender", sender]]
             
             # Create file object
