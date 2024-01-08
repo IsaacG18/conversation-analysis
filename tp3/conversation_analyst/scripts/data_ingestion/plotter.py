@@ -20,7 +20,6 @@ def plots(chat_messages, name):
         data[sender]['message_risk'].append(risk)
         data[sender]['message_name_count'].append(person)
         data[sender]['message_location_count'].append(location)
-
     fig = go.Figure()
 
     colors = {'message_risk': 'red', 'message_name_count': 'green', 'message_location_count': 'blue'}
@@ -28,7 +27,7 @@ def plots(chat_messages, name):
 
     for sender, sender_data in data.items():
         timestamps = np.array(sender_data['timestamps'])
-
+        
         fig.add_trace(go.Scatter(x=timestamps, y=sender_data['message_lengths'],
                                  mode='lines',
                                  name=f"{sender} - Message Length"))
@@ -41,7 +40,8 @@ def plots(chat_messages, name):
                                          y=np.array(sender_data['message_lengths'])[non_zero_indices],
                                          mode='markers',
                                          marker=dict(color=color, symbol=markers[category]),
-                                         name=f"{sender} - {category}"))
+                                         name=None,
+                                         showlegend=False)) 
 
     fig.update_layout(
         xaxis=dict(title='Timestamp'),
@@ -49,9 +49,9 @@ def plots(chat_messages, name):
         title='Message Length Over Time',
         legend=dict(orientation="h"),
     )
-
     plots_folder = os.getcwd() + file_location
     plot_path = os.path.join(plots_folder, name)
     fig.write_image(plot_path)
 
     return file_location + name
+
