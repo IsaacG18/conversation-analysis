@@ -14,5 +14,9 @@
             <p><input type="submit" value="Upload" /></p>
         </form>
     </span>
+    {% if error_message %}
+    <p>{{ error_message }}</p>
+    {% endif %}
+
   </div>
 {% endblock %}
