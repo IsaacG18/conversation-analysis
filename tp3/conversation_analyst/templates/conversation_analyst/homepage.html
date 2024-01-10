@@ -3,27 +3,18 @@
 
 {% endblock %}
     <title>Homepage</title>
+
+
 {% block body %}
+{% load static %}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script type="text/javascript" src="{% static 'js/search.js' %}"></script>
+    <input type="text" id="search-input" placeholder="Search...">
+    <button id="search-button">Search</button>
   <div class="container text-center">
   <div class="row justify-content-center">
       <div class="col-md-8 col-12">
-          <div class="container-md">
-            {% if files %}
-                <div class="list-group">
-                {% for file in files %}
-                    <div class="list-group-item">
-                    <div class="d-flex justify-content-between">
-                        <a href="{%  url 'content_review' file.slug %}" class="title text-reset text-decoration-none"><small class="title">{{ file.title }}</small></a>
-                        <small class="timestamp text-body-secondary">{{ file.date }}</small>
-                    </div>
-                    </div>
-                    </li>
-                {% endfor %}
-                </div>
-            {% else %}
-                <strong>There are no files present.</strong>
-            {% endif %}
-         </div>
+        {% include 'conversation_analyst/search_result.html' %}
       </div>
   </div>
 

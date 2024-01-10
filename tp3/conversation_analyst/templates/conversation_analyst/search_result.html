@@ -1,0 +1,19 @@
+<div id="results">
+    <div class="container-md">
+        {% if files %}
+            <div class="list-group">
+            {% for file in files %}
+                <div class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <a href="{%  url 'content_review' file.slug %}" class="title text-reset text-decoration-none"><small class="title">{{ file.title }}</small></a>
+                    <small class="timestamp text-body-secondary">{{ file.date }}</small>
+                </div>
+                </div>
+                </li>
+            {% endfor %}
+            </div>
+        {% else %}
+            <strong>There are no files present.</strong>
+        {% endif %}
+     </div>
+</div>
