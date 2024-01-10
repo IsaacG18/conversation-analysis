@@ -4,6 +4,7 @@ from django.urls import reverse
 from .scripts.data_ingestion import ingestion
 from .scripts.nlp.nlp import *
 from .scripts.object_creators import *
+from .scripts.data_ingestion.plotter import plots
 from django.core.serializers import serialize
 from itertools import chain
 from django.utils import timezone
@@ -17,7 +18,9 @@ import os
 from django.conf import settings
 
 from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, RiskWord
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile
+
+# default_suite = Keywords()
 
 
 def homepage(request, query=None):
@@ -55,10 +58,11 @@ def content_review(request, file_slug):
         analysis = Analysis.objects.get(file=file)
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
-        risk_words = RiskWord.objects.filter(analysis=analysis)
+        risk_words = RiskWordResult.objects.filter(analysis=analysis)
+        vis_path = VisFile.objects.filter(analysis=analysis)
 
         context_dict = {'messages': messages, 'persons': persons,
-                        'locations': locations, 'risk_words': risk_words}
+                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path[0].file_path}
 
         return render(request, "conversation_analyst/content_review.html", context=context_dict)
 
@@ -86,6 +90,7 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
     for message in chat_messages:
         m = add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"])
     a = add_analysis(file)
+    add_vis(a, plots(chat_messages, file.slug))
     for person in persons:
         p = add_person(a, person)
     for location in locations:
