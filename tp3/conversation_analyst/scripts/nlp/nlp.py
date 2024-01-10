@@ -2,7 +2,7 @@ from .Keywords import *
 import spacy
 import numpy as np
 import re
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load("en_core_web_md")
 
 def classify(text):
     return text.replace(' ', '_')
