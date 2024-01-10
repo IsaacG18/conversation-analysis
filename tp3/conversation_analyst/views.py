@@ -23,12 +23,6 @@ def homepage(request):
     files = File.objects.order_by('-date') # newest at the top
     return render(request, "conversation_analyst/homepage.html", {"files": files})
 
-def validate_delimiters(delimiters):
-    for delimiter in delimiters:
-        if not delimiter[1].strip():
-            return False
-    return True
-
 def delimiter_settings(request):
     if request.method == "POST":
         delimiter_form = DelimeterForm(request.POST)
@@ -50,6 +44,7 @@ def upload(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         delimiter_form = DelimeterForm()
+        file_delimeters = []
         if not delimiter_form.is_valid:
             file_delimeters = [["Timestamp", ','], ["Sender", ':']]
         else: 
@@ -62,11 +57,6 @@ def upload(request):
             # Create file object
             uploaded_file = request.FILES["file"]
 
-            # Check if delimiters are valid for the given file
-            if not validate_delimiters_for_file(uploaded_file, file_delimeters):
-                # Handle invalid delimiters (e.g., return an error message)
-                return HttpResponse("Invalid delimiters provided", status=400)
-
             # Save the file and process
             file_obj = File.objects.create(file=uploaded_file)
             file_obj.save()
@@ -78,32 +68,6 @@ def upload(request):
     else:
         form = UploadFileForm()
     return render(request, "conversation_analyst/upload.html", {"form": form})
-
-def validate_delimiters_for_file(uploaded_file, delimiters):
-    try:
-        for _ in range(5):
-            line = uploaded_file.readline().decode()
-            if not line:
-                break
-            if not validate_delimiters_in_line(line, delimiters):
-                return False
-        return True
-    except Exception as e:
-        print(f"Error during validation: {e}")
-        return False
-    
-def validate_delimiters_in_line(line, delimiters):
-    parts = line.split(delimiters[0][1])
-    if len(parts) < 2:
-        return False
-
-    subparts = parts[1].split(delimiters[1][1])
-    if len(subparts) < 2:
-        return False
-
-    # Additional checks can be added here based on the expected structure
-    return True
-
 
 def content_review(request, file_slug):
     try:
