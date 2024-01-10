@@ -1,4 +1,7 @@
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 from . import views
 urlpatterns = [
@@ -14,4 +17,4 @@ urlpatterns = [
     path('delete_keyword', views.delete_keyword, name='delete_keyword'),
     path('check_suite', views.check_suite, name='check_suite'),
     path('risk_update', views.risk_update, name='risk_update'),
-] 
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

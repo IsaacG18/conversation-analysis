@@ -41,3 +41,4 @@ urllib3==2.1.0
 wasabi==1.1.2
 weasel==0.3.4
 wheel==0.41.3
+plotly==5.9.0

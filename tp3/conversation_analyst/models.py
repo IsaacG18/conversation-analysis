@@ -114,3 +114,8 @@ class RiskWordResult(models.Model):
         return self.analysis.__str__() + "-" + self.riskword.__str__()
     
 
+class VisFile(models.Model):
+    file_path = models.CharField(max_length=255)
+    analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.file_path.__str__()
