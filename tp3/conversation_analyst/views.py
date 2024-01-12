@@ -15,8 +15,6 @@ from django.db.models import Q
 import json
 
 
-
-
 import os
 from django.conf import settings
 
@@ -37,14 +35,42 @@ def homepage(request, query=None):
         return render(request, "conversation_analyst/homepage.html", {"files": files})
 
 
+def delimiter_settings(request):
+    if request.method == "POST":
+        delimiter_form = DelimeterForm(request.POST)
+
+        if delimiter_form.is_valid():
+            # Save delimiter settings to session
+            request.session['sender_delim'] = delimiter_form.cleaned_data.get('sender_delim')
+            request.session['timestamp_delim'] = delimiter_form.cleaned_data.get('timestamp_delim')
+            request.session['custom_delim'] = delimiter_form.cleaned_data.get('custom_delim')
+
+            return HttpResponseRedirect(reverse('upload'))
+    else:
+        delimiter_form = DelimeterForm()
+
+    return render(request, "conversation_analyst/delimiter_settings.html", {"delimiter_form": delimiter_form})
+
 
 def upload(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            # create file object
-            uploaded = request.FILES["file"]
-            file_obj = File.objects.create(file=uploaded)
+        delimiter_form = DelimeterForm()
+        file_delimeters = []
+        if not delimiter_form.is_valid:
+            file_delimeters = [["Timestamp", ','], ["Sender", ':']]
+        else: 
+            sender = request.session.get('sender_delim')
+            timestamp = request.session.get('timestamp_delim')
+            custom = request.session.get('custom_delim')
+            file_delimeters = [["Timestamp", timestamp], ["Sender", sender]]
+
+        if form.is_valid() and delimiter_form.is_valid:       
+            # Create file object
+            uploaded_file = request.FILES["file"]
+
+            # Save the file and process
+            file_obj = File.objects.create(file=uploaded_file)
             file_obj.save()
             default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
             keyword_suites = default_plan.keywordsuite_set.all()
@@ -58,7 +84,6 @@ def upload(request):
     else:
         form = UploadFileForm()
     return render(request, "conversation_analyst/upload.html", {"form": form})
-
 
 def content_review(request, file_slug):
     try:

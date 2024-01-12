@@ -1,8 +1,9 @@
 {% extends "conversation_analyst/base.html" %}
 {% block title %}
-
-{% endblock %}
     <title>Homepage</title>
+{% endblock %}
+
+<body>
 {% block body %}
   <div class="container mt-5 text-center">
     <span>
@@ -18,5 +19,11 @@
     <p>{{ error_message }}</p>
     {% endif %}
 
+    <form action="{% url 'delimiter_settings' %}" method="get">
+        <p><input type="submit" value="Delimiter Settings" /></p>
+    </form>
+
   </div>
+
+</body>
 {% endblock %}
