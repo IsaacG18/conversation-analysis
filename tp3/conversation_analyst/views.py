@@ -28,8 +28,8 @@ def homepage(request, query=None):
     files = File.objects.order_by('-date')
     try:
         query = request.GET['query']
-        if len(query) > 0:
-            files=files.filter(title__icontains=query[0])
+        if len(query) > 0 and query.strip() != "":
+            files=files.filter(title__icontains=query)
         return render(request, "conversation_analyst/search_result.html", {"files": files})
     except KeyError:
         return render(request, "conversation_analyst/homepage.html", {"files": files})
