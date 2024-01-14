@@ -18,7 +18,7 @@ import json
 import os
 from django.conf import settings
 
-from .forms import UploadFileForm
+from .forms import UploadFileForm, DelimeterForm
 from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile
 
 # default_suite = Keywords()
