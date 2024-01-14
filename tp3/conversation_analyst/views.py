@@ -81,6 +81,9 @@ def upload(request):
             except ValueError as e:
                 file_obj.delete()
                 return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e)})
+            except ValidationError as e:
+                file_obj.delete()
+                return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e)})
     else:
         form = UploadFileForm()
     return render(request, "conversation_analyst/upload.html", {"form": form})
