@@ -22,7 +22,7 @@ def plots(chat_messages, name):
         data[sender]['message_location_count'].append(location)
     fig = go.Figure()
 
-    colors = {'message_risk': 'red', 'message_name_count': 'green', 'message_location_count': 'blue'}
+    colors = {'message_risk': 'yellow', 'message_name_count': 'blue', 'message_location_count': 'green'}
     markers = {'message_risk': 'circle', 'message_name_count': 'square', 'message_location_count': 'triangle-up'}
 
     for sender, sender_data in data.items():
