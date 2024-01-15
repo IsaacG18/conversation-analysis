@@ -31,17 +31,35 @@ def plots(chat_messages, name):
         fig.add_trace(go.Scatter(x=timestamps, y=sender_data['message_lengths'],
                                  mode='lines',
                                  name=f"{sender} - Message Length"))
-        for category, color in colors.items():
-            values = sender_data[category]
-            non_zero_indices = np.nonzero(values)[0]
 
-            if non_zero_indices.size > 0:
-                fig.add_trace(go.Scatter(x=timestamps[non_zero_indices], 
-                                         y=np.array(sender_data['message_lengths'])[non_zero_indices],
-                                         mode='markers',
-                                         marker=dict(color=color, symbol=markers[category]),
-                                         name=None,
-                                         showlegend=False)) 
+        name_count_values = np.array(sender_data['message_name_count'])
+        name_non_zero_indices = np.nonzero(name_count_values)[0]
+        if name_non_zero_indices.size > 0:
+            fig.add_trace(go.Scatter(x=timestamps[name_non_zero_indices], 
+                                     y=np.array(sender_data['message_lengths'])[name_non_zero_indices],
+                                     mode='markers',
+                                     marker=dict(color=colors['message_name_count'], symbol=markers['message_name_count']),
+                                     name=None,
+                                     showlegend=False)) 
+
+        location_count_values = np.array(sender_data['message_location_count'])
+        location_non_zero_indices = np.nonzero(location_count_values)[0]
+        if location_non_zero_indices.size > 0:
+            fig.add_trace(go.Scatter(x=timestamps[location_non_zero_indices], 
+                                     y=np.array(sender_data['message_lengths'])[location_non_zero_indices] + 5, 
+                                     mode='markers',
+                                     marker=dict(color=colors['message_location_count'], symbol=markers['message_location_count']),
+                                     name=None,
+                                     showlegend=False)) 
+        risk_values = np.array(sender_data['message_risk'])
+        risk_non_zero_indices = np.nonzero(risk_values)[0]
+        if risk_non_zero_indices.size > 0:
+            fig.add_trace(go.Scatter(x=timestamps[risk_non_zero_indices], 
+                                     y=np.array(sender_data['message_lengths'])[risk_non_zero_indices] - 5,
+                                     mode='markers',
+                                     marker=dict(color=colors['message_risk'], symbol=markers['message_risk']),
+                                     name=None,
+                                     showlegend=False)) 
 
     fig.update_layout(
         xaxis=dict(title='Timestamp'),
@@ -54,4 +72,3 @@ def plots(chat_messages, name):
     fig.write_image(plot_path)
 
     return file_location + name
-
