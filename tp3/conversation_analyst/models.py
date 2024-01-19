@@ -11,7 +11,7 @@ class File(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True)
 
-    def save(self, *args, **kwargs):
+    def init_save(self, *args, **kwargs):
         self.title = Path(self.file.name).stem
         partition = self.file.name.partition(".")
         self.title = self.title + "." + partition[2]

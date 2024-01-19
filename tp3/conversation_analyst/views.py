@@ -71,7 +71,7 @@ def upload(request):
 
             # Save the file and process
             file_obj = File.objects.create(file=uploaded_file)
-            file_obj.save()
+            file_obj.init_save()
             default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
             keyword_suites = default_plan.keywordsuite_set.all()
             keywords = RiskWord.objects.filter(suite__in=keyword_suites)
@@ -211,10 +211,6 @@ def delete_suite(request):
         suite_obj.delete()
         return HttpResponse('suite deleted')
 
-    return JsonResponse({"results": render_to_string('conversation_analyst/messages.html', {'messages': messages, 'persons': persons,
-                        'locations': locations, 'risk_words': risk_words})})
-
-        
         
 def select_suite(request):
     if request.method == 'GET':
@@ -277,7 +273,23 @@ def risk_update(request):
         keyword_obj.save()
         
         return HttpResponse("risk factor of " + keyword_obj.keyword + " is updated to " + str(risk))
-
+    
+    
+def rename_file(request):
+    if request.method == 'POST':
+        try: 
+            newTitle = request.POST['fileName']
+            fileId = request.POST['fileId']
+            file_obj = File.objects.filter(id=fileId).first()
+            file_obj.title = newTitle
+            file_obj.save()
+            
+            return HttpResponse("file name of file " + str(file_obj.id) + " is updated to " + str(newTitle))
+        except Exception as e:
+            print("exception caught")
+            return JsonResponse({'message': 'error!!!!!!!'})  
+        
+    
 
 # def demo_keywords():
 #     if default_suite.has_keywords() == False:

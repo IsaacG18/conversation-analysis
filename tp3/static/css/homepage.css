@@ -1,0 +1,11 @@
+body{
+    padding-top: 5em;
+}
+button span{
+    width: 1.8em;
+    height: 1.8em;
+}
+
+input .file-rename.focus{
+    height: 12px;
+}

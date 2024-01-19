@@ -5,7 +5,8 @@
             {% for file in files %}
                 <div class="list-group-item">
                 <div class="d-flex justify-content-between">
-                    <a href="{%  url 'content_review' file.slug %}" class="title text-reset text-decoration-none"><small class="title">{{ file.title }}</small></a>
+                    <a href="{%  url 'content_review' file.slug %}" class="file-title text-reset text-decoration-none" id="file-title-{{ file.id }}"><small>{{ file.title }}</small></a>
+                    <form id="file-rename-{{ file.id }}" class="file-rename-form d-none input-group-sm">{% csrf_token %}<input class="file-rename form-control" type="text" value="{{ file.title }}" name="file_rename"></form>
                     <small class="timestamp text-body-secondary">{{ file.date }}</small>
                 </div>
                 </div>
