@@ -29,6 +29,7 @@ class Message(models.Model):
     main_sender = models.CharField(max_length=50)
     content = models.CharField(max_length=1000)
     display_content = models.CharField(max_length=1100)
+    risk_rating = models.IntegerField(default=0)
 
     def set_main_sender(self, new_sender):
         self.main_sender = new_sender
