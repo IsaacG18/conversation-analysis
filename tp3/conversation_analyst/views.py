@@ -123,8 +123,6 @@ def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keyword
     message_count = create_arrays(chat_messages)
     nlp_text, person_and_locations = tag_text(chat_messages, keywords, ["PERSON", "GPE"])
     risk_words = get_top_n_risk_keywords(nlp_text, 10)
-    print("risk words: ")
-    print(risk_words)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
     generate_analysis_objects(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
 
@@ -134,7 +132,6 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
     locations = person_and_locations['GPE']
 
     for message in chat_messages:
-        print(message["risk"])
         m = add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"],  message["risk"])
     a = add_analysis(file)
     add_vis(a, plots(chat_messages, file.slug))
