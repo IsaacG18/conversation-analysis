@@ -1,28 +1,30 @@
-var clickState = false;
+var clickState = false; // logging if the item has been clicked in a short time frame
 var clickTimeout;
 $(document).ready(function(){
     $('.file-title').click(function(e){
         e.preventDefault();
         if (clickState === false){
-            clickTimeout = setTimeout(()=>window.location=this.href, 250);
+            clickTimeout = setTimeout(()=>window.location=this.href, 250); // wait for 250 microseconds if it's a single click
             clickState = true;
         }
-        else {
+        else { // double click
             clearTimeout(clickTimeout);
             clickState = false;
 
-            fileName = $(e.target).text().split(".");
+            fileName = $(e.target).text().split("."); // split file name from suffix
             suffix = fileName.pop();
             editable = fileName.join("");
-            if ($(e.target).is("small")){
+
+            if ($(e.target).is("small")){  // in case <small></small> is clicked
                 file = $(e.target).parent();
             }
             else file = $(e.target);
-            fileId = file.attr('id').split("-")[2];
+
+            fileId = file.attr('id').split("-")[2]; // update rename form
             $(`#file-rename-${fileId}`).attr('value', editable);
             $(`#suffix-${fileId}`).text(`.${suffix}`);
 
-            renameInput = file.next(".file-rename-form")
+            renameInput = file.next(".file-rename-form") // show rename form
             renameInput.removeClass('d-none');
             renameInput.children('.file-rename').focus();
             file.toggle();
