@@ -4,8 +4,6 @@ from django import forms
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
-    
-class DelimeterForm(forms.Form):
     sender_delim = forms.CharField(max_length=10, initial=':')
     timestamp_delim = forms.CharField(max_length=10, initial=',')
     
