@@ -43,7 +43,6 @@ $(document).ready(function(){
     })
 
     function renameSubmit(form, fileName, fileId){
-        console.log(form);
         $.ajax({
             type: 'POST',
             url: "/rename_file",
