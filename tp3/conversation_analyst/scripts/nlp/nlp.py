@@ -1,19 +1,22 @@
 from .Keywords import *
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import spacy
 import numpy as np
 import re
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load("en_core_web_md")
 
 def classify(text):
     return text.replace(' ', '_')
 
 def tag_text(messages, keywords, labels):
+    analyzer = SentimentIntensityAnalyzer()
     found_entities = {label: [] for label in labels}
     for message in messages:
         distance = 0
         message["Display_Message"] = message["Message"]
         message["risk"] = 0
         message["doc"] = nlp(message["Message"])
+        message['sentiment'] = analyzer.polarity_scores(message["Message"])['compound']
         tag_list = []
         for label in labels:
             message[label] = 0

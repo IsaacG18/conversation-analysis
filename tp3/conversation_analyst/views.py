@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .scripts.data_ingestion import ingestion
 from .scripts.nlp.nlp import *
+from .scripts.data_ingestion.plotter import plots
 from .scripts.object_creators import *
 from django.core.serializers import serialize
 from itertools import chain
@@ -18,16 +19,22 @@ import json
 import os
 from django.conf import settings
 
-from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult
+from .forms import UploadFileForm, DelimeterForm
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile
 
 # default_suite = Keywords()
 
 
-# Create your views here.
-def homepage(request):
-    files = File.objects.order_by('-date') # newest at the top
-    return render(request, "conversation_analyst/homepage.html", {"files": files})
+def homepage(request, query=None):
+    files = File.objects.order_by('-date')
+    try:
+        query = request.GET['query']
+        if len(query) > 0 and query.strip() != "":
+            files=files.filter(title__icontains=query)
+        return render(request, "conversation_analyst/search_result.html", {"files": files})
+    except KeyError:
+        return render(request, "conversation_analyst/homepage.html", {"files": files})
+
 
 def delimiter_settings(request):
     if request.method == "POST":
@@ -75,6 +82,9 @@ def upload(request):
             except ValueError as e:
                 file_obj.delete()
                 return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e)})
+            except ValidationError as e:
+                file_obj.delete()
+                return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e)})
     else:
         form = UploadFileForm()
     return render(request, "conversation_analyst/upload.html", {"form": form})
@@ -89,9 +99,10 @@ def content_review(request, file_slug):
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
         risk_words = RiskWordResult.objects.filter(analysis=analysis)
+        vis_path = VisFile.objects.filter(analysis=analysis)
 
         context_dict = {'messages': messages, 'persons': persons,
-                        'locations': locations, 'risk_words': risk_words}
+                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path[0].file_path}
 
         return render(request, "conversation_analyst/content_review.html", context=context_dict)
 
@@ -125,6 +136,7 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
     for message in chat_messages:
         m = add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"])
     a = add_analysis(file)
+    add_vis(a, plots(chat_messages, file.slug))
     for person in persons:
         p = add_person(a, person)
     for location in locations:
