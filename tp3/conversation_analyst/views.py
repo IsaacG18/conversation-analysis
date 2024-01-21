@@ -281,13 +281,17 @@ def rename_file(request):
             newTitle = request.POST['fileName']
             fileId = request.POST['fileId']
             file_obj = File.objects.filter(id=fileId).first()
-            file_obj.title = newTitle
+            fullTitle = newTitle+"."+file_obj.format
+            file_obj.title = fullTitle
             file_obj.save()
             
-            return HttpResponse("file name of file " + str(file_obj.id) + " is updated to " + str(newTitle))
+            context_dict = {'message': "file name of file " + str(file_obj.id) + " is updated to " + fullTitle,
+                            'fileName': fullTitle}
+            return JsonResponse(context_dict)
+        
         except Exception as e:
-            print("exception caught")
-            return JsonResponse({'message': 'error!!!!!!!'})  
+            print(e)
+            return JsonResponse({'message': 'error'})  
         
     
 

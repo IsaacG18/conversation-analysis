@@ -8,13 +8,15 @@ from pathlib import Path
 class File(models.Model):
     file = models.FileField(upload_to="uploads/")
     title = models.CharField(max_length=128, unique=False)
+    format = models.CharField(max_length=128, unique=False)
     date = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True)
 
     def init_save(self, *args, **kwargs):
         self.title = Path(self.file.name).stem
         partition = self.file.name.partition(".")
-        self.title = self.title + "." + partition[2]
+        self.format = partition[-1]
+        self.title = self.title + "." + self.format
         self.slug = slugify(self.title+" "+str(self.date))
         super(File, self).save(*args, **kwargs)
 

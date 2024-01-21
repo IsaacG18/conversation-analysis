@@ -10,12 +10,22 @@ $(document).ready(function(){
         else {
             clearTimeout(clickTimeout);
             clickState = false;
-            file = $(e.target).parent();
+
+            fileName = $(e.target).text().split(".");
+            suffix = fileName.pop();
+            editable = fileName.join("");
+            if ($(e.target).is("small")){
+                file = $(e.target).parent();
+            }
+            else file = $(e.target);
+            fileId = file.attr('id').split("-")[2];
+            $(`#file-rename-${fileId}`).attr('value', editable);
+            $(`#suffix-${fileId}`).text(`.${suffix}`);
+
             renameInput = file.next(".file-rename-form")
             renameInput.removeClass('d-none');
             renameInput.children('.file-rename').focus();
             file.toggle();
-
         }
     })
 
@@ -26,11 +36,12 @@ $(document).ready(function(){
 
     $('.file-rename').blur(function(e){
         fileName = $(this).val();
-        fileId = $(this).parent().attr('id').split("-")[2];
-        renameSubmit($(this).parent(), fileName, fileId);
+        fileId = $(this).attr('id').split("-")[2];
+        renameSubmit($(`#file-rename-form-${fileId}`), fileName, fileId);
     })
 
     function renameSubmit(form, fileName, fileId){
+        console.log(form);
         $.ajax({
             type: 'POST',
             url: "/rename_file",
@@ -39,8 +50,8 @@ $(document).ready(function(){
             },
             data: {'fileName': fileName, 'fileId': fileId},
             success: function(response){
-                console.log(response);
-                $(form).prev(".file-title").children('small').html(fileName);
+                console.log(response.message);
+                $(form).prev(".file-title").children('small').html(response.fileName);
                 $(form).prev(".file-title").toggle();
                 $(form).addClass('d-none');
             },

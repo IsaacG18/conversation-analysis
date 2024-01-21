@@ -6,7 +6,10 @@
                 <div class="list-group-item">
                 <div class="d-flex justify-content-between">
                     <a href="{%  url 'content_review' file.slug %}" class="file-title text-reset text-decoration-none" id="file-title-{{ file.id }}"><small>{{ file.title }}</small></a>
-                    <form id="file-rename-{{ file.id }}" class="file-rename-form d-none input-group-sm">{% csrf_token %}<input class="file-rename form-control" type="text" value="{{ file.title }}" name="file_rename"></form>
+                    <form id="file-rename-form-{{ file.id }}" class="file-rename-form d-none input-group-sm d-flex align-items-center">{% csrf_token %}
+                        <input class="file-rename form-control" type="text" value="" name="file_rename" id="file-rename-{{ file.id }}">
+                        <span class="suffix" id="suffix-{{ file.id }}"></span>
+                    </form>
                     <small class="timestamp text-body-secondary">{{ file.date }}</small>
                 </div>
                 </div>
