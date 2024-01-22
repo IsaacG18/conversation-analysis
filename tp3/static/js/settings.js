@@ -358,7 +358,7 @@ $(document).ready(function(){
                     console.log(response);
                 },
                 error: function(jqXHR) {
-                    var errorMessage = 'An error occurred';
+                    var errorMessage = 'An error occurre';
                     if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
                         errorMessage = jqXHR.responseJSON.detail;
                     }
