@@ -9,19 +9,15 @@
     <span>
         <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <p>
-                {{ form }}
-            </p>
+            <div class="form-group">
+                <p>{{ form.as_p }}</p>
+            </div>  
             <p><input type="submit" value="Upload" /></p>
         </form>
     </span>
     {% if error_message %}
     <p>{{ error_message }}</p>
     {% endif %}
-
-    <form action="{% url 'delimiter_settings' %}" method="get">
-        <p><input type="submit" value="Delimiter Settings" /></p>
-    </form>
 
   </div>
 

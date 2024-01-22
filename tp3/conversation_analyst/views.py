@@ -19,7 +19,7 @@ import json
 import os
 from django.conf import settings
 
-from .forms import UploadFileForm, DelimeterForm
+from .forms import UploadFileForm
 from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile
 
 # default_suite = Keywords()
@@ -35,38 +35,15 @@ def homepage(request, query=None):
     except KeyError:
         return render(request, "conversation_analyst/homepage.html", {"files": files})
 
-
-def delimiter_settings(request):
-    if request.method == "POST":
-        delimiter_form = DelimeterForm(request.POST)
-
-        if delimiter_form.is_valid():
-            # Save delimiter settings to session
-            request.session['sender_delim'] = delimiter_form.cleaned_data.get('sender_delim')
-            request.session['timestamp_delim'] = delimiter_form.cleaned_data.get('timestamp_delim')
-            request.session['custom_delim'] = delimiter_form.cleaned_data.get('custom_delim')
-
-            return HttpResponseRedirect(reverse('upload'))
-    else:
-        delimiter_form = DelimeterForm()
-
-    return render(request, "conversation_analyst/delimiter_settings.html", {"delimiter_form": delimiter_form})
-
-
 def upload(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
-        delimiter_form = DelimeterForm()
-        file_delimeters = []
-        if not delimiter_form.is_valid:
-            file_delimeters = [["Timestamp", ','], ["Sender", ':']]
-        else: 
-            sender = request.session.get('sender_delim')
-            timestamp = request.session.get('timestamp_delim')
-            custom = request.session.get('custom_delim')
+        if form.is_valid():       
+            # get file delimeters
+            sender = form.cleaned_data.get('sender_delim')
+            timestamp = form.cleaned_data.get('timestamp_delim')
             file_delimeters = [["Timestamp", timestamp], ["Sender", sender]]
 
-        if form.is_valid() and delimiter_form.is_valid:       
             # Create file object
             uploaded_file = request.FILES["file"]
 
@@ -77,7 +54,7 @@ def upload(request):
             keyword_suites = default_plan.keywordsuite_set.all()
             keywords = RiskWord.objects.filter(suite__in=keyword_suites)
             try:
-                process_file(file_obj, keywords=keywords)
+                process_file(file_obj, delimiters=file_delimeters, keywords=keywords)
                 return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
             except ValueError as e:
                 file_obj.delete()
