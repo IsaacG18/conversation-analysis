@@ -1,3 +1,4 @@
+from xml.dom import ValidationErr
 from django.db import models
 from django.template.defaultfilters import slugify
 from pathlib import Path
@@ -121,3 +122,19 @@ class VisFile(models.Model):
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
     def __str__(self):
         return self.file_path.__str__()
+    
+class Delimiter(models.Model):
+    name = models.CharField(max_length=100)
+    value = models.CharField(max_length=10)
+    order = models.IntegerField(default=0)
+    
+    def clean(self):
+        if self.value.strip().isalnum():
+            raise ValidationErr('Alphanumeric character cannot be a delimiter.')
+        
+    def save(self, *args, **kwargs):
+        self.value = self.value
+        super(Delimiter, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.keyword.__str__()

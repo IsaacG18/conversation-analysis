@@ -20,7 +20,7 @@ import os
 from django.conf import settings
 
 from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, Delimiter
 
 # default_suite = Keywords()
 
@@ -297,3 +297,34 @@ def rename_file(request):
 #         default_suite.add_keyword("efficient", ["Productive", "Streamlined"], 7)
 #         default_suite.add_keyword("refreshing", ["Invigorating", "Revitalizing"], 6)
 #     return default_suite
+
+def create_delimiter(request):
+    if request.method == 'POST':
+        try:
+            delim_name = request.POST['name']
+            delim_value = request.POST['value']
+            delim_order = request.POST['order']
+            delim_obj =  Delimiter.objects.create(name=delim_name, value=delim_value, order=delim_order)
+            delim_obj.save()
+            context_dict = {'message': 'New delimiter added', 'delimId': delim_obj.id}
+            return JsonResponse(context_dict, status=201)
+        except IntegrityError as e:
+            return JsonResponse({'message': 'Delimiter has to be unique'},status=500)  
+    
+def delete_delimiter(request):
+    if request.method == 'GET':
+        delim_id = request.GET['delimId']
+        delim_obj = Delimiter.objects.get(id=delim_id)
+        delim_obj.delete()
+        return HttpResponse('Delimiter deleted')
+    
+def order_update(request):
+    if request.method == 'POST':
+        delimId = request.POST['delim']
+        order = int(request.POST['order'])
+        delim_obj = Delimiter.objects.filter(id=delimId).first()
+        delim_obj.order = order
+        delim_obj.save()
+        
+        return HttpResponse("Order of " + delim_obj.name + " is updated to " + str(order))
+    
