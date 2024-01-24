@@ -1,21 +1,23 @@
 {% extends "conversation_analyst/base.html" %}
 
 {% block title %}
-    <title>Delimiter Settings</title>
+<title>Delimiter Settings</title>
 {% endblock %}
 
 {% block body %}
 {% load static %}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-<script type="text/javascript" src="{% static 'js/delimiters.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/delim_value.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 
 <div class="container-fluid px-5">
     <div class="row justify-content-center mb-3">
         <div class="col-md-6"> <!-- Adjust the column width as needed -->
             <table class="table table-bordered table-hover caption-top">
-                <caption class="text-center"><h4>Delimiter Settings</h4></caption>
+                <caption class="text-center">
+                    <h4>Delimiter Settings</h4>
+                </caption>
                 <thead class="table-light text-center">
                     <tr>
                         <th scope="col">Component</th>
@@ -24,23 +26,24 @@
                 </thead>
                 <tbody>
                     {% if delimiters %}
-                        {% for delim in delimiters %}
-                            <tr>
-                                <td>
-                                    <div class="row align-items-center">
-                                        <div class="col-2">
-                                            <input type="number" class="form-control delim-order" value="{{ delim.order }}" id="delim-{{ delim.id }}" name="order">
-                                        </div>
-                                        <div class="col-10">
-                                            <a href="#" class="text-reset text-decoration-none">{{ delim.name }}</a>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <a href="#" class="text-reset text-decoration-none">{{ delim.value }}</a>
-                                </td>
-                            </tr>
-                        {% endfor %}
+                    {% for delim in delimiters %}
+                    <tr>
+                        <td>
+                            <div class="row align-items-center">
+                                <div class="col-3">
+                                    <input type="number" class="form-control delim-order" value="{{ delim.order }}"
+                                        id="delim-{{ delim.id }}" name="order">
+                                </div>
+                                <div class="col-8">
+                                    <a href="#" class="text-reset text-decoration-none">{{ delim.name }}</a>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="col-6 text-center">
+                            <input type="text" href="#" class="form-control delim-value" value="{{ delim.value }}">
+                        </td>
+                    </tr>
+                    {% endfor %}
                     {% endif %}
                 </tbody>
             </table>
@@ -51,31 +54,50 @@
         <div class="col-9 mx-auto">
             <div class="list-group" id="timestamp-list">
                 <table class="table table-bordered table-hover caption-top">
-                    <caption class="text-center"><h4>Tmestamp Formats</h4></caption>
-                    <thead class ="table-light text-center">
-                      <tr>
-                        <th scope="col">#</th>        
-                        <th scope="col">Title</th>
-                        <th scope="col">Example</th>
-                      </tr>
+                    <caption class="text-center">
+                        <h4>Timestamp Formats</h4>
+                    </caption>
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Example</th>
+                        </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <th scope="row">1</th>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">2</th>
-                        <td>Jacob</td>
-                        <td>Thornton</td>
-                      </tr>
+                        <tr>
+                            <th scope="row">1</th>
+                            <td>ISO 8601 Format (UTC)</td>
+                            <td>2024-01-24T12:34:56Z</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">2</th>
+                            <td>RFC 3339 Format (Extended)</td>
+                            <td>2024-01-24T12:34:56.789Z</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">3</th>
+                            <td>Unix Timestamp (Epoch Time)</td>
+                            <td>1643040896</td>
+                        </tr>
                     </tbody>
-                  </table>
+                </table>
             </div>
         </div>
     </div>
 </div>
+
+<div class="container-fluid">
+    <div class="clearfix">
+        <div class="row justify-content-end">
+            <div class="col-md-1 mr-2">
+                <button type="button" class="btn btn-primary btn-md btn-block">Apply</button>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-danger btn-md btn-block">Cancel</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 
