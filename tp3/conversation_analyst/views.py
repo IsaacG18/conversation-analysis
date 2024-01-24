@@ -301,11 +301,19 @@ def rename_file(request):
 def settings_delim(request):
     delims = Delimiter.objects.all()
     if len(delims) == 0:
-        context_dict = {}
-    else:
-        context_dict = {'delimiters': delims}
+        initialise_delim("Timestamp", ",", 1)
+        initialise_delim("Sender", ":", 2)
+        initialise_delim("Device", ":", 3)
+        initialise_delim("IP-Adress", ":", 4)
+    delims = Delimiter.objects.all()
+    context_dict = {'delimiters': delims}
 
     return render(request, "conversation_analyst/settings_delim.html", context=context_dict)
+
+def initialise_delim(delim_name, delim_value, order_value):
+    new_obj = Delimiter.objects.create(name=delim_name, value=delim_value, order=order_value)
+    new_obj.save()
+    return new_obj
 
 def create_delimiter(request):
     if request.method == 'POST':
