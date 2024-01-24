@@ -1,5 +1,4 @@
-$(document).ready(function(){
-    // Validation rules for the new delimiter form
+$(document).ready(function(){ 
     $('#new-delim-form').validate({
         rules: {
             name: "required",
@@ -18,11 +17,9 @@ $(document).ready(function(){
         errorClass: "invalid",
         errorElement: "span",
         errorPlacement: function(error, element) {
-            // Display validation errors in the designated row
             error_row = $('#delim-error-row');
             error.appendTo(error_row);
 
-            // Remove error message after 3 seconds
             setTimeout(function() {
                 error.remove();
             }, 3000);
@@ -31,57 +28,70 @@ $(document).ready(function(){
         onkeyup: false,
     });
 
-    // Handle form submission for new delimiter creation
     $('#new-delim-form').submit(function(e){
         e.preventDefault();
         if ($(this).valid() == true){
+            var newDelimName = $('#new-delim-name').val();
+            var newDelimValue = $('#new-delim-value').val();
+            var newDelimOrder = $('#new-delim-order').val();
             
-                var newDelimName = $('#new-delim-name').val();
-                var newDelimValue = $('#new-delim-value').val();
-                var newDelimOrder = $('#new-delim-order').val();
-                
-                $.ajax({
-                    type: 'POST',
-                    url: "/create_delim",
-                    headers: {
-                        'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
-                    },
-                    data: {'name': newDelimName, 'value': newDelimValue, 'order': newDelimOrder},
-                    success: function(response){
-                        delimId = response.delimId;
-                        $('#new-delim').val('');
-                        
-                        // Insert new delimiter item
-                        $('#new-delim-form').before(`
-                            <div class="list-group-item list-group-item-action delim-item" id="delim-item-${delimId}">
-                                <div class="row d-flex align-items-center justify-content-between">
-                                    <div class="col-3">
+            $.ajax({
+                type: 'POST',
+                url: "/create_delim",
+                headers: {
+                    'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                data: {'name': newDelimName, 'value': newDelimValue, 'order': newDelimOrder},
+                success: function(response){
+                    delimId = response.delimId;
+                    $('#new-delim').val('');
+                    $('tbody.delims').append(`
+                        <tr>
+                            <td>
+                                <div class="row align-items-center">
+                                    <div class="col-4">
+                                        <input type="number" class="form-control delim-order" value="${newDelimOrder}"
+                                            id="delim-${delimId}" name="order">
+                                    </div>
+                                    <div class="col-8">
                                         <a href="#" class="text-reset text-decoration-none">${newDelimName}</a>
                                     </div>
-                                    <div class="col-4">
-                                        <a href="#" class="text-reset text-decoration-none">${newDelimValue}</a>
-                                    </div>
-                                    <div class="col-1">
-                                        <input type="number" class="form-control delim-order"  value="${newDelimOrder}" id="order-${delimId}">
-                                    </div>
-                                    <div class="col-3">
-                                        <button type="button" class="btn btn-danger btn-sm delete-delim" value="${delimId}" id="delete-delim-${delimId}">Delete</button>
-                                    </div>
                                 </div>
-                            </div>
+                            </td>
+                            <td class="col-6 text-center">
+                                <input type="text" href="#" class="form-control delim-value" value="${newDelimValue}">
+                            </td>
+                            <td>
+                                <div class="col-3">
+                                    <button type="button" class="btn btn-danger btn-sm delete-delim" value="${delimId}" id="delete-delim-${delimId}">Delete</button>
+                                </div>
+                            </td>
                             <div class="row align-items-center error-row" id="error-row-${delimId}">
                             </div>
-                        `);
+                        </tr>
+                    `);
 
-                        // Add event listener for delete button
-                        $(`#delete-delim-${delimId}`).click(function(e){
-                            deleteDelimClick(e);
-                        });
+                    // Add event listener for delete button
+                    $(`#delete-delim-${delimId}`).click(function(e){
+                        deleteDelimClick(e);
+                    });
+                
+                    $(`#order-${delimId}`).blur(function (e) {
+                        OrderBlur(e);
+                    })
+                    alert(response.message);
+                },
+                error: function (jqXHR) {
+                    var errorMessage = 'An error occurred';
+                    if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
+                        errorMessage = jqXHR.responseJSON.detail;
                     }
-                });
-            
+                    alert(errorMessage);
+                }
+            });
         }
     });
+ });
 
     $('.delete-delim').click(function(e){
         deleteDelmClick(e);
@@ -146,6 +156,6 @@ $(document).ready(function(){
             }
     }
 
-})
+
 
 

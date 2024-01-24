@@ -303,11 +303,8 @@ def settings_delim(request):
     if len(delims) == 0:
         initialise_delim("Timestamp", ",", 1)
         initialise_delim("Sender", ":", 2)
-        initialise_delim("Device", ":", 3)
-        initialise_delim("IP-Adress", ":", 4)
     delims = Delimiter.objects.all()
     context_dict = {'delimiters': delims}
-
     return render(request, "conversation_analyst/settings_delim.html", context=context_dict)
 
 def initialise_delim(delim_name, delim_value, order_value):
@@ -315,43 +312,18 @@ def initialise_delim(delim_name, delim_value, order_value):
     new_obj.save()
     return new_obj
 
-#Call function when clicking apply
+def create_delimiter(request):
+    if request.method == 'POST':
+        try:
+            delim_name = request.POST['name']
+            delim_value = request.POST['value']
+            delim_order = request.POST['order']
+            delim_obj =  initialise_delim(delim_name, delim_value, delim_order)
+            context_dict = {'message': 'New delimiter added', 'delimId': delim_obj.id}
+            return JsonResponse(context_dict, status=201)
+        except IntegrityError as e:
+            return JsonResponse({'message': 'Delimiter has to be unique'},status=500)  
 
-# def change_delim(request):
-#     if request.method == 'POST':
-#         try:
-#             newDelimName = request.POST['delimName']
-#             newDelimValue = request.POST['delimValue']
-#             delimId = request.POST['delimId']
-            
-#             delim_obj = Delimiter.objects.filter(id=delimId).first()
-#             delim_obj.name = newDelimName
-#             delim_obj.value = newDelimValue
-#             delim_obj.save()
-
-#             context_dict = {'message': f'Delimiter with ID {delim_obj.id} is updated',
-#                             'delimName': newDelimName,
-#                             'delimValue': newDelimValue}
-#             return JsonResponse(context_dict)
-
-#         except Exception as e:
-#             print(e)
-#             return JsonResponse({'message': 'error'})
-
-
-# def create_delimiter(request):
-#     if request.method == 'POST':
-#         try:
-#             delim_name = request.POST['name']
-#             delim_value = request.POST['value']
-#             delim_order = request.POST['order']
-#             delim_obj =  Delimiter.objects.create(name=delim_name, value=delim_value, order=delim_order)
-#             delim_obj.save()
-#             context_dict = {'message': 'New delimiter added', 'delimId': delim_obj.id}
-#             return JsonResponse(context_dict, status=201)
-#         except IntegrityError as e:
-#             return JsonResponse({'message': 'Delimiter has to be unique'},status=500)  
-    
 # def delete_delimiter(request):
 #     if request.method == 'GET':
 #         delim_id = request.GET['delimId']
@@ -359,13 +331,13 @@ def initialise_delim(delim_name, delim_value, order_value):
 #         delim_obj.delete()
 #         return HttpResponse('Delimiter deleted')
     
-# def order_update(request):
-#     if request.method == 'POST':
-#         delimId = request.POST['delim']
-#         order = int(request.POST['order'])
-#         delim_obj = Delimiter.objects.filter(id=delimId).first()
-#         delim_obj.order = order
-#         delim_obj.save()
+def order_update(request):
+    if request.method == 'POST':
+        delimId = request.POST['delim']
+        order = int(request.POST['order'])
+        delim_obj = Delimiter.objects.filter(id=delimId).first()
+        delim_obj.order = order
+        delim_obj.save()
         
-#         return HttpResponse("Order of " + delim_obj.name + " is updated to " + str(order))
+        return HttpResponse("Order of " + delim_obj.name + " is updated to " + str(order))
     
