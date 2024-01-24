@@ -55,10 +55,10 @@ $(document).ready(function(){
                         $('#new-delim-form').before(`
                             <div class="list-group-item list-group-item-action delim-item" id="delim-item-${delimId}">
                                 <div class="row d-flex align-items-center justify-content-between">
-                                    <div class="col-8">
+                                    <div class="col-3">
                                         <a href="#" class="text-reset text-decoration-none">${newDelimName}</a>
                                     </div>
-                                    <div class="col-8">
+                                    <div class="col-4">
                                         <a href="#" class="text-reset text-decoration-none">${newDelimValue}</a>
                                     </div>
                                     <div class="col-1">

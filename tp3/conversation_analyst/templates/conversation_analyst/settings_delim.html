@@ -1,0 +1,72 @@
+{% extends "conversation_analyst/base.html" %}
+
+{% block title %}
+    <title>Delimiter Settings</title>
+{% endblock %}
+
+{% block body %}
+{% load static %}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+<script type="text/javascript" src="{% static 'js/delimiters.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+
+<div class="container-fluid px-5">
+    <div id="div" class="row"></div>
+    <div id="div" class="row">
+
+        <div class="col-9">
+            <div class="list-group" id="delim-list">
+                {% if delimiters %}
+                {% for delim in delimiters %}
+                <div class="list-group-item list-group-item-action delim-item" id="delim-item-{{ delim.id }}">
+                    <div class="row d-flex align-items-center justify-content-between">
+                      <div class="col-3 ps-1">
+                            <a href="#" class="text-reset text-decoration-none">{{ delim.name }}</a>
+                      </div>
+                      <div class="col-4 ps-2">
+                        <a href="#" class="text-reset text-decoration-none">{{ delim.value }}</a>
+                    </div>
+                      <div class="col-1">
+                        <input type="number" class="form-control delim-order"  value="{{ delim.order }}" id="delim-{{ delim.id }}" name="order">
+                      </div>
+                      <div class="col-3">
+                        <button type="button" class="btn btn-danger btn-sm delete-delim" value= "{{ delim.id }}" id="delete-delim-{{ delim.id }}">Delete</button>
+                      </div>
+                    </div>
+                    <div class="row align-items-center error-row" id="error-row-{{delim.id}}">
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+                <form action="js/delimiters.js" method="post" class="list-group-item list-group-item-action" id="new-delim-form">
+                    {% csrf_token %} 
+                    <div class="row align-items-center d-flex justify-content-between">
+                        <div class="col-3 ps-1">
+                          <input id="new-delim-name" type="text" class="form-control ps-2" placeholder="Add new delim name" aria-label="Name Input" name="name">
+                        </div>
+                        <div class="col-4 ps-2">
+                            <input id="new-delim-value" type="text" class="form-control ps-2" placeholder="Add new delim value" aria-label="Value Input" name="value">
+                          </div>
+                        <div class="col-1">
+                            <input  id="new-delim-order" type="number" class="form-control"  value="0" name="order">
+                          </div>
+                        <div class="col-3">
+                            <button type="submit" value="Submit" class="btn btn-primary btn-sm">Add</button>
+                        </div>
+                      </div>
+                      <div class="row align-items-center error-row" id="delim-error-row">
+                      </div>
+                </form>
+            </div>
+        </div>
+
+
+
+        <div class="col-3">
+            <!-- Your content for the right column goes here -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}

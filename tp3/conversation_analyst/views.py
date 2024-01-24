@@ -298,6 +298,15 @@ def rename_file(request):
 #         default_suite.add_keyword("refreshing", ["Invigorating", "Revitalizing"], 6)
 #     return default_suite
 
+def settings_delim(request):
+    delims = Delimiter.objects.all()
+    if len(delims) == 0:
+        context_dict = {}
+    else:
+        context_dict = {'delimiters': delims}
+
+    return render(request, "conversation_analyst/settings_delim.html", context=context_dict)
+
 def create_delimiter(request):
     if request.method == 'POST':
         try:
