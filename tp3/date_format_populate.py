@@ -17,7 +17,9 @@ def populate_dates():
     date_formats = [
         {"name": "ISO 8601", "example": "2022-01-24T12:34:56", "regex": r'^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(\.\d+)?(Z|[+-]\d{2}:\d{2})?$'},
         {"name": "Unix Timestamp", "example": "1643057699", "regex": r'^(\d+)$'},
-        {"name": "Common Log Format", "example": '127.0.0.1 - - [24/Jan/2022:12:34:56 +0300] "GET /example" 200 123', "regex": r'^(\S+) (\S+) (\S+) \[([^:]+):(\d+:){2}\d+ ([^\]]+)\] "(\S+ \S+ \S+)" (\d{3}) (\d+|-)$'}
+        {"name": "Common Log Format", "example": '127.0.0.1 - - [24/Jan/2022:12:34:56 +0300] "GET /example" 200 123', "regex": 
+            r'^(\S+) (\S+) (\S+) \[([^:]+):(\d+:){2}\d+ ([^\]]+)\] "(\S+ \S+ \S+)" (\d{3}) (\d+|-)$'},
+        {"name": "ISO 8601 Without Seconds", "example": "2022-03-05 17:30", "regex": r'^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})$'}
     ]
 
     for date_format_data in date_formats:
