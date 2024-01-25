@@ -1,0 +1,40 @@
+<div class="col-6 results" id="message_output">
+    {% if messages %}
+    <div class="list-group ">
+      <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabindex="0">
+      {% for message in messages %}
+      <div class="conversation-item-content" id="conversation-item-{{ message.id }}">
+        {% if message.main_sender != message.sender %}
+          <div style="display: flex; justify-content: start;">
+            <span class="sender"><small><b>{{ message.sender }}</b></small></span>
+          </div>            
+          <div class="conversation-item-box incoming">
+            <div class="details">
+              <div class="conversation-item-text">
+                {{ message.display_content|safe }}
+                <div class="conversation-item-time">{{ message.timestamp }}</div>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div style="display: flex; justify-content: end; ">
+            <span class="sender"><small><b>{{ message.sender }}</b></small></span>
+          </div>            
+          <div class="conversation-item-box outgoing">
+            <div class="details">
+              <div class="conversation-item-text">
+                {{ message.display_content|safe }}
+                <div class="conversation-item-time">{{ message.timestamp }}</div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      </li>
+      {% endfor %}
+    </div>
+  </div>
+    {% else %}
+    <strong>There are no messages present.</strong>
+    {% endif %}
+  </div>

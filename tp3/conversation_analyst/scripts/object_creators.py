@@ -1,4 +1,4 @@
-from ..models import File, Message, Analysis, Person, Location, RiskWord
+from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile
 
 def add_message(file, timestamp, sender, message, display_message):
     m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message)[0]
@@ -30,7 +30,14 @@ def add_location(analysis, name):
     return l
 
 
-def add_risk_word(analysis, keyword, risk_factor, amount):
-    r = RiskWord.objects.get_or_create(analysis=analysis, keyword=keyword, risk_factor=risk_factor, amount=amount)[0]
+def add_risk_word_result(analysis, keyword, amount, risk_factor=0):
+    keyword = keyword.lower()
+    k = RiskWord.objects.filter(keyword=keyword).first()
+    r = RiskWordResult.objects.get_or_create(analysis=analysis, riskword=k, amount=amount)[0]
     r.save()
     return r
+
+def add_vis(analysis, file_path):
+    v = VisFile.objects.get_or_create(analysis=analysis, file_path=file_path)[0]
+    v.save()
+    return v

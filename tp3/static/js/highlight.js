@@ -18,13 +18,10 @@ $(document).ready(function () {
                 }
             });
         } else if ($(this).hasClass("risk-button")) {
-            var riskElements = document.querySelectorAll('.risk');
-            riskElements.forEach(function (riskElement) {
-                var nestedDiv = riskElement.querySelector(buttonValue);
-                if (nestedDiv) {
-                    nestedDiv.classList.add("bold");
-                }
-            });
+            buttonValue = buttonValue.split("(")[0];
+            $(`.risk${buttonValue}`).addClass("bold");
+            buttonValue = buttonValue.toUpperCase();
+            $(`.risk${buttonValue}`).addClass("bold");
         }
     }).mouseleave(function () {
         // Handle mouseleave event here
@@ -46,16 +43,14 @@ $(document).ready(function () {
                 }
             });
         } else if ($(this).hasClass("risk-button")) {
-            var riskElements = document.querySelectorAll('.risk');
-            riskElements.forEach(function (riskElement) {
-                var nestedDiv = riskElement.querySelector(buttonValue);
-                if (nestedDiv) {
-                    nestedDiv.classList.remove("bold");
-                }
-            });
+            buttonValue = buttonValue.split("(")[0];
+            $(`.risk${buttonValue}`).removeClass("bold");
+            buttonValue = buttonValue.toUpperCase();
+            $(`.risk${buttonValue}`).removeClass("bold");
+            };
         }
-    });
-});
+    )
+})
 
 
 style = ""

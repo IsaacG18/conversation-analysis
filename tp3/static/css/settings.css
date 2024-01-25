@@ -1,0 +1,11 @@
+.error-row{
+    color: red;
+    font-size: 12px;
+}
+
+
+.list-group-item.active {
+    background-color: #D2D9DF;
+    border: #F0F8FF;
+    color: #000000;
+}

@@ -1,18 +1,22 @@
 from .Keywords import *
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import spacy
 import numpy as np
-nlp = spacy.load("en_core_web_sm")
+import re
+nlp = spacy.load("en_core_web_md")
 
 def classify(text):
     return text.replace(' ', '_')
 
 def tag_text(messages, keywords, labels):
+    analyzer = SentimentIntensityAnalyzer()
     found_entities = {label: [] for label in labels}
     for message in messages:
         distance = 0
         message["Display_Message"] = message["Message"]
         message["risk"] = 0
         message["doc"] = nlp(message["Message"])
+        message['sentiment'] = analyzer.polarity_scores(message["Message"])['compound']
         tag_list = []
         for label in labels:
             message[label] = 0
@@ -24,28 +28,32 @@ def tag_text(messages, keywords, labels):
                 found_entities[entity.label_].append((entity.text))
                 message["Display_Message"] = message["Display_Message"][:entity.start_char + distance] + start_tag + entity.text + end_tag + message["Display_Message"][entity.end_char+ distance:]
                 distance += len(start_tag) + len(end_tag)
-                
                 message[entity.label_] += 1
+        ptr = 0
         for token in message["doc"]:
             token_text = token.text
             input_text = token_text
-            if token_text.lower() in keywords.get_keywords():
-                risk = keywords.get_keyword(token_text)["risk"]
-                topics = keywords.get_keyword_topics(token_text.lower())
+            word_regex = re.compile(r'(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])'.format(re.escape(token_text.lower())))
+            
+            if (keyword := keywords.filter(keyword=token_text.lower()).first()) is not None:
+                risk = keyword.risk_factor
+                topics = keyword.topics.all()
                 message["risk"] += risk
                 start_tag = f'<span class="{classify(token_text)} risk">'
                 end_tag = '</span>'
-                for topic in topics:
-                    start_tag = f'<span class="{classify(topic)}">' + start_tag
-                    end_tag += '</span>'
-                start = message["Display_Message"].find(token_text)
-                input_text= start_tag + input_text + end_tag
-                message["Display_Message"] = message["Display_Message"][:start] + start_tag + entity_tag + end_tag + message["Display_Message"][start+ len(start):]
+
+                match = word_regex.search(message["Display_Message"], ptr)
+                if match:
+                    start = match.start()
+                    input_text = start_tag + input_text + end_tag
+                    ptr = match.end()
+                    message["Display_Message"] = message["Display_Message"][:start] + input_text + message["Display_Message"][start + len(token_text):]
             else:
                 risk = 0
                 topics = None
-            tag_list.append((token_text, risk, topics))
 
+            tag_list.append((token_text, risk, topics))
+            
         message["tags"] = tag_list
     return messages, found_entities
 
@@ -54,13 +62,14 @@ def get_top_n_risk_keywords(messages, n):
     token_count = {}
     for message in messages:
         for token, risk, topics in message["tags"]:
+            token_lower = token.lower() # convert to lower case to avoid duplicate
             if risk != 0:
-                if token not in token_risk:
-                    token_risk[token] = risk
-                if token in token_count:
-                    token_count[token] += 1
+                if token_lower not in token_risk:
+                    token_risk[token_lower] = risk
+                if token_lower in token_count:
+                    token_count[token_lower] += 1
                 else:
-                    token_count[token] = 1
+                    token_count[token_lower] = 1
     
     sorted_tokens = sorted(token_risk, key=lambda x: token_risk[x], reverse=True)[:n]
     result = [(token, token_risk[token], token_count[token]) for token in sorted_tokens]
