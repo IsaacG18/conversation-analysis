@@ -135,6 +135,23 @@
           {% if file %}
           <button class="btn btn-outline-success"><a href="{%  url 'export_view' file.slug %}">Download XML</a></button>
           {% endif %}
+          {% if vis_path %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
+                Visulation
+              </button>
+            </h2>
+            <div id="collapseDateFilter" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                <img src="{{vis_path}}" alt="No image found">
+              </div>
+            </div>
+          </div>
+          {% else %}
+            <strong>There are no Visulation present.</strong>
+          {% endif %}
+
       </div>
     </div>
   </div>
