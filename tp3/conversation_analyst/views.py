@@ -81,7 +81,7 @@ def content_review(request, file_slug):
         vis_path = VisFile.objects.filter(analysis=analysis)
 
         context_dict = {'messages': messages, 'persons': persons,
-                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path[0].file_path}
+                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path[0].file_path, "file":file}
 
         return render(request, "conversation_analyst/content_review.html", context=context_dict)
 
@@ -200,7 +200,7 @@ def export_view(request, file_slug):
     analysis = Analysis.objects.get(file=file)
     persons = Person.objects.filter(analysis=analysis)
     locations = Location.objects.filter(analysis=analysis)
-    risk_words = RiskWord.objects.filter(analysis=analysis)
+    risk_words = RiskWordResult.objects.filter(analysis=analysis)
 
     root = Element('exported_data')
 
