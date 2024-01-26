@@ -149,7 +149,8 @@ def filter_view(request):
     file_slug = request.GET['file_slug']
     start_date = request.GET.get('startDate')
     end_date = request.GET.get('endDate')
-
+    risk = request.GET.get('risk','[]')
+    risk = json.loads(risk)
     try:
         file = File.objects.get(slug=file_slug)
         filter_params = {'file': file}
@@ -168,6 +169,12 @@ def filter_view(request):
             for word in filters:
                 search_term = r'(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])'.format(word)
                 filter_condition |= Q(content__iregex=search_term)
+            messages = messages.filter(filter_condition)
+        
+        if len(risk)> 0:
+            filter_condition = Q()
+            for risk_number in risk:
+                filter_condition |= Q(risk_rating=risk_number)
             messages = messages.filter(filter_condition)
 
     except Exception as e:

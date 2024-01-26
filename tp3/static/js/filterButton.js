@@ -22,30 +22,36 @@ $(document).ready(function () {
     })
 
     $(".risk").click(function () {
+        var clickedElement = this; 
         var button = document.getElementsByClassName("existing");
         var filter_vals = []
-        var risk_value  = $(this).value
+        var risk_value  = parseInt($(this).val())
+        
         var pageSlug = window.location.pathname.split('/').pop(); 
         for (var i = 0; i < button.length; i++) {
             var buttonText = button[i].textContent || button[i].innerText;
             filter_vals.push(removeNumberedSuffix(buttonText))
         }
-        if(!$(this).hasClass("existing")){
+        if($(this).hasClass("clicked")){
             let index = risk.indexOf(risk_value);
             if (index !== -1) {
                 risk.splice(index, 1);
             }
-        }else{
-            risk.push(risk_value)
-        }
-
-        $.get('/filter/',
+            $.get('/filter/',
                 {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug, "risk":JSON.stringify(risk)},
                 function(data) {
                     $('.results').replaceWith(data.results);
-                    $(clickedElement).addClass("existing");
+                    $(clickedElement).removeClass("clicked");
+                });
+        }else{
+            risk.push(risk_value)
+            $.get('/filter/',
+                {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug, "risk":JSON.stringify(risk)},
+                function(data) {
+                    $('.results').replaceWith(data.results);
                     $(clickedElement).addClass("clicked");
                 });
+        }
     })
 
 
