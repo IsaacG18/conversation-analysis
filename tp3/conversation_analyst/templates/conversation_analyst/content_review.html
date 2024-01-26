@@ -86,6 +86,21 @@
               </div>
             </div>
           </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
+                Risk Levels
+              </button>
+            </h2>
+            <div id="collapseDateFilter" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                <button value=2 class="btn btn-outline-success risk">high risk</button>
+                <button value=1 class="btn btn-outline-success risk">medium risk</button>
+                <button value=0 class="btn btn-outline-success risk">medium risk</button>
+                <button class="btn btn-outline-success risk">low risk</button>
+              </div>
+            </div>
+          </div>
           {% if vis_path %}
           <div class="accordion-item">
             <h2 class="accordion-header">
