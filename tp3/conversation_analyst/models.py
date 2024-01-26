@@ -126,6 +126,6 @@ class VisFile(models.Model):
 class DateFormat(models.Model):
     name = models.CharField(max_length=255)
     example = models.CharField(max_length=255)
-    regex = models.CharField(max_length=255)
+    format = models.CharField(max_length=255)
     def __str__(self):
         return self.name.__str__()

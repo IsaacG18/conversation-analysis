@@ -42,7 +42,7 @@ def add_vis(analysis, file_path):
     v.save()
     return v
 
-def add_date(name, example,regex):
-    d = DateFormat.objects.get_or_create(name=name, example=example,regex=regex)[0]
+def add_date(name, example,format):
+    d = DateFormat.objects.get_or_create(name=name, example=example,format=format)[0]
     d.save()
     return d
