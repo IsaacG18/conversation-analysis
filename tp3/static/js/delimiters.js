@@ -59,7 +59,7 @@ $(document).ready(function () {
                     delimId = response.delimId;
                     $('#new-delim').val('');
                     $('tbody.delims').append(`
-                        <tr>
+                        <tr class="delim-item" id="delim-item-{{ delim.id }}">
                             <td>
                                 <div class="row align-items-center">
                                     <div class="col-4">
@@ -69,6 +69,8 @@ $(document).ready(function () {
                                     <div class="col-8">
                                         <a href="#" class="text-reset text-decoration-none">${newDelimName}</a>
                                     </div>
+                                    <div class="row align-items-center error-row" id="error-row-${delimId}">
+                            </div>
                                 </div>
                             </td>
                             <td class="col-6 text-center">
@@ -79,12 +81,9 @@ $(document).ready(function () {
                                     <button type="button" class="btn btn-danger btn-sm delete-delim" value="${delimId}" id="delete-delim-${delimId}">Delete</button>
                                 </div>
                             </td>
-                            <div class="row align-items-center error-row" id="error-row-${delimId}">
-                            </div>
                         </tr>
                     `);
 
-                    // Add event listener for delete button
                     $(`#delete-delim-${delimId}`).click(function (e) {
                         deleteDelimClick(e);
                     });

@@ -36,25 +36,28 @@ def homepage(request, query=None):
         return render(request, "conversation_analyst/homepage.html", {"files": files})
 
 def upload(request):
+    delims = Delimiter.objects.all()
+
+    if len(delims) == 0:
+        initialise_delim("Timestamp", ",", 1)
+        initialise_delim("Sender", ":", 2)
+
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():       
-            # get file delimeters
+        if form.is_valid():
             sender = form.cleaned_data.get('sender_delim')
             timestamp = form.cleaned_data.get('timestamp_delim')
-            file_delimeters = [["Timestamp", timestamp], ["Sender", sender]]
+            file_delimiters = [["Timestamp", timestamp], ["Sender", sender]]
 
-            # Create file object
             uploaded_file = request.FILES["file"]
-
-            # Save the file and process
             file_obj = File.objects.create(file=uploaded_file)
             file_obj.init_save()
             default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
             keyword_suites = default_plan.keywordsuite_set.all()
             keywords = RiskWord.objects.filter(suite__in=keyword_suites)
+
             try:
-                process_file(file_obj, delimiters=file_delimeters, keywords=keywords)
+                process_file(file_obj, delimiters=file_delimiters, keywords=keywords)
                 return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
             except ValueError as e:
                 file_obj.delete()
@@ -64,7 +67,9 @@ def upload(request):
                 return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e)})
     else:
         form = UploadFileForm()
-    return render(request, "conversation_analyst/upload.html", {"form": form})
+
+    return render(request, "conversation_analyst/upload.html", {"form": form, 'delimiters': Delimiter.objects.all()})
+
 
 def content_review(request, file_slug):
     try:
@@ -155,10 +160,6 @@ def filter_view(request):
     return JsonResponse({"results": render_to_string('conversation_analyst/messages.html', {'messages': messages, 'persons': persons,
                         'locations': locations, 'risk_words': risk_words})})
 
-
-    
-    
-    
 def settings_page(request):
     keyword_suites = KeywordSuite.objects.all()
     if len(keyword_suites) == 0:
