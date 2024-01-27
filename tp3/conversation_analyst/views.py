@@ -324,12 +324,11 @@ def create_delimiter(request):
         except IntegrityError as e:
             return JsonResponse({'message': 'Delimiter has to be unique'},status=500)  
 
-# def delete_delimiter(request):
-#     if request.method == 'GET':
-#         delim_id = request.GET['delimId']
-#         delim_obj = Delimiter.objects.get(id=delim_id)
-#         delim_obj.delete()
-#         return HttpResponse('Delimiter deleted')
+def delete_delimiter(request):
+    if request.method == 'GET':
+        delim_id = request.GET['delimId']
+        Delimiter.objects.get(id=delim_id).delete()
+        return HttpResponse('Delimiter deleted')
     
 def order_update(request):
     if request.method == 'POST':
@@ -340,4 +339,3 @@ def order_update(request):
         delim_obj.save()
         
         return HttpResponse("Order of " + delim_obj.name + " is updated to " + str(order))
-    
