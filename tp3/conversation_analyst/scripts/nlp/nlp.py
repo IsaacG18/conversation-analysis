@@ -4,8 +4,15 @@ import spacy
 import numpy as np
 import re
 nlp = spacy.load("en_core_web_md")
+AVERAGE_RISK = 0.8
+MAX_RISK = 40
+SENTIMENT_DIVIDER = 2
+RISK_LEVELS = 2
+
+
 
 def classify(text):
+
     return text.replace(' ', '_')
 
 def tag_text(messages, keywords, labels):
@@ -15,8 +22,9 @@ def tag_text(messages, keywords, labels):
         distance = 0
         message["Display_Message"] = message["Message"]
         message["risk"] = 0
+        risk_total = 0
         message["doc"] = nlp(message["Message"])
-        message['sentiment'] = analyzer.polarity_scores(message["Message"])['compound']
+        sentiment = analyzer.polarity_scores(message["Message"])['compound']
         tag_list = []
         for label in labels:
             message[label] = 0
@@ -36,9 +44,11 @@ def tag_text(messages, keywords, labels):
             word_regex = re.compile(r'(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])'.format(re.escape(token_text.lower())))
             
             if (keyword := keywords.filter(keyword=token_text.lower()).first()) is not None:
-                risk = keyword.risk_factor
+                risk = keyword.risk_factor * (1 + abs(sentiment)/SENTIMENT_DIVIDER)
                 topics = keyword.topics.all()
-                message["risk"] += risk
+                risk_total += risk
+                if risk >7:
+                    message["risk"] += 1
                 start_tag = f'<span class="{classify(token_text)} risk">'
                 end_tag = '</span>'
 
@@ -51,8 +61,13 @@ def tag_text(messages, keywords, labels):
             else:
                 risk = 0
                 topics = None
-
             tag_list.append((token_text, risk, topics))
+        if risk_total > 40:
+            message["risk"] += 1
+        if risk_total/len(message["Message"].split()) >AVERAGE_RISK:
+            message["risk"] += 1
+        if message["risk"] > RISK_LEVELS:
+            message["risk"]=RISK_LEVELS
             
         message["tags"] = tag_list
     return messages, found_entities
@@ -62,7 +77,7 @@ def get_top_n_risk_keywords(messages, n):
     token_count = {}
     for message in messages:
         for token, risk, topics in message["tags"]:
-            token_lower = token.lower() # convert to lower case to avoid duplicate
+            token_lower = token.lower()
             if risk != 0:
                 if token_lower not in token_risk:
                     token_risk[token_lower] = risk

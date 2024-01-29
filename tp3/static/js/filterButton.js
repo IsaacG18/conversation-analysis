@@ -1,6 +1,7 @@
 $(document).ready(function () {
     var startDate = document.getElementById('startDate').value;
     var endDate = document.getElementById('endDate').value;
+    var risk = []
 
     $(".date-fil").click(function () {
         startDate = document.getElementById('startDate').value;
@@ -14,10 +15,43 @@ $(document).ready(function () {
         }
 
         $.get('/filter/',
-                {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug},
+                {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug,"risk":JSON.stringify(risk)},
                 function(data) {
                     $('.results').replaceWith(data.results);
                 });
+    })
+
+    $(".risk").click(function () {
+        var clickedElement = this; 
+        var button = document.getElementsByClassName("existing");
+        var filter_vals = []
+        var risk_value  = parseInt($(this).val())
+        
+        var pageSlug = window.location.pathname.split('/').pop(); 
+        for (var i = 0; i < button.length; i++) {
+            var buttonText = button[i].textContent || button[i].innerText;
+            filter_vals.push(removeNumberedSuffix(buttonText))
+        }
+        if($(this).hasClass("clicked")){
+            let index = risk.indexOf(risk_value);
+            if (index !== -1) {
+                risk.splice(index, 1);
+            }
+            $.get('/filter/',
+                {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug, "risk":JSON.stringify(risk)},
+                function(data) {
+                    $('.results').replaceWith(data.results);
+                    $(clickedElement).removeClass("clicked");
+                });
+        }else{
+            risk.push(risk_value)
+            $.get('/filter/',
+                {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug, "risk":JSON.stringify(risk)},
+                function(data) {
+                    $('.results').replaceWith(data.results);
+                    $(clickedElement).addClass("clicked");
+                });
+        }
     })
 
 
@@ -37,7 +71,7 @@ $(document).ready(function () {
             filter_vals.push(removeNumberedSuffix(buttonValue));
 
             $.get('/filter/',
-            {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug},
+            {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug,"risk":JSON.stringify(risk)},
                 function(data) {
                     $(clickedElement).addClass("existing");
                     $(clickedElement).addClass("clicked");
@@ -54,7 +88,7 @@ $(document).ready(function () {
             }
     
             $.get('/filter/',
-            {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug},
+            {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug, "risk":JSON.stringify(risk)},
                 function(data) {
                     $(clickedElement).removeClass("existing");
                     $(clickedElement).removeClass("clicked");
