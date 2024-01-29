@@ -1,4 +1,4 @@
-from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile
+from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat
 
 def add_message(file, timestamp, sender, message, display_message):
     m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message)[0]
@@ -41,3 +41,8 @@ def add_vis(analysis, file_path):
     v = VisFile.objects.get_or_create(analysis=analysis, file_path=file_path)[0]
     v.save()
     return v
+
+def add_date(name, example,format):
+    d = DateFormat.objects.get_or_create(name=name, example=example,format=format)[0]
+    d.save()
+    return d

@@ -20,7 +20,7 @@ import os
 from django.conf import settings
 
 from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, Delimiter
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat, Delimiter
 
 # default_suite = Keywords()
 
