@@ -22,7 +22,7 @@ import os
 from django.conf import settings
 
 from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat
 
 # default_suite = Keywords()
 
@@ -101,9 +101,7 @@ def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keyword
     chat_messages = ingestion.parse_chat_file(file_path, delimiters)
     message_count = create_arrays(chat_messages)
     nlp_text, person_and_locations = tag_text(chat_messages, keywords, ["PERSON", "GPE"])
-    risk_words = get_top_n_risk_keywords(nlp_text, 3)
-    print("risk words: ")
-    print(risk_words)
+    risk_words = get_top_n_risk_keywords(nlp_text, 10)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
     generate_analysis_objects(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
 
@@ -113,7 +111,7 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
     locations = person_and_locations['GPE']
 
     for message in chat_messages:
-        m = add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"])
+        m = add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"],  message["risk"])
     a = add_analysis(file)
     add_vis(a, plots(chat_messages, file.slug))
     for person in persons:
@@ -130,7 +128,8 @@ def filter_view(request):
     file_slug = request.GET['file_slug']
     start_date = request.GET.get('startDate')
     end_date = request.GET.get('endDate')
-
+    risk = request.GET.get('risk','[]')
+    risk = json.loads(risk)
     try:
         file = File.objects.get(slug=file_slug)
         filter_params = {'file': file}
@@ -149,6 +148,12 @@ def filter_view(request):
             for word in filters:
                 search_term = r'(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])'.format(word)
                 filter_condition |= Q(content__iregex=search_term)
+            messages = messages.filter(filter_condition)
+        
+        if len(risk)> 0:
+            filter_condition = Q()
+            for risk_number in risk:
+                filter_condition |= Q(risk_rating=risk_number)
             messages = messages.filter(filter_condition)
 
     except Exception as e:

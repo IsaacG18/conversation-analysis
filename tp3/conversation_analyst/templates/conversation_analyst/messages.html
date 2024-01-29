@@ -6,7 +6,7 @@
       <div class="conversation-item-content" id="conversation-item-{{ message.id }}">
         {% if message.main_sender != message.sender %}
           <div style="display: flex; justify-content: start;">
-            <span class="sender"><small><b>{{ message.sender }}</b></small></span>
+            <span class="sender"><small><b>{{ message.sender }} </b>{% if message.risk_rating == 2 %} ☠ {% elif message.risk_rating == 1 %} ⚠  {% endif %}</small></span>
           </div>            
           <div class="conversation-item-box incoming">
             <div class="details">
@@ -18,7 +18,7 @@
           </div>
         {% else %}
           <div style="display: flex; justify-content: end; ">
-            <span class="sender"><small><b>{{ message.sender }}</b></small></span>
+            <span class="sender"><small><b>{{ message.sender }} </b>{% if message.risk_rating == 2 %} ☠ {% elif message.risk_rating == 1 %} ⚠  {% endif %}</small></span>
           </div>            
           <div class="conversation-item-box outgoing">
             <div class="details">
