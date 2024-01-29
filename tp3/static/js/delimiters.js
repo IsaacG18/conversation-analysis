@@ -1,16 +1,11 @@
 $(document).ready(function () {
+    $('.delete-delim').click(function (e) {
+        deleteDelimClick(e);
+    })
 
-    function initializeEventListeners() {
-        $('.delete-delim').click(function (e) {
-            deleteDelimClick(e);
-        })
-
-        $('.delim-order').blur(function (e) {
-            OrderBlur(e);
-        })
-    }
-
-    initializeEventListeners(); // Initialize event listeners on document ready
+    $('.delim-order').blur(function (e) {
+        OrderBlur(e);
+    })
 
     $('#new-delim-form').validate({
         rules: {
@@ -103,58 +98,59 @@ $(document).ready(function () {
             });
         }
     });
-});
 
-function deleteDelimClick(e) {
-    delimId = $(e.target).val();
-    $.ajax({
-        type: 'GET',
-        url: "/delete_delim",
-        datatype: 'json',
-        data: { 'delimId': delimId },
-        success: function (data) {
-            alert(data);
-            id = '#delim-item-' + delimId;
-            $(id).remove();
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.error('AJAX Error:', textStatus, errorThrown);
-        }
-    })
-}
-
-function validateOrderInput(input) {
-    if (input < 0 || input > 5) { return false; }
-    else return true;
-}
-
-function OrderBlur(e) {
-    var order = $(e.target).val();
-    var delimId = $(e.target).attr('id').split("-")[1];
-
-    if (validateOrderInput(order) == true) {
-        $(`#error-row-${delimId}`).empty();
+    function deleteDelimClick(e) {
+        delimId = $(e.target).val();
         $.ajax({
-            type: 'POST',
-            url: "/order_update",
-            headers: {
-                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+            type: 'GET',
+            url: "/delete_delim",
+            datatype: 'json',
+            data: { 'delimId': delimId },
+            success: function (data) {
+                alert(data);
+                id = '#delim-item-' + delimId;
+                $(id).remove();
             },
-            data: { 'delim': delimId, 'order': order },
-            success: function (response) {
-                console.log(response);
-            },
-            error: function (jqXHR) {
-                var errorMessage = 'An error occurre';
-                if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
-                    errorMessage = jqXHR.responseJSON.detail;
-                }
-                alert(errorMessage);
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('AJAX Error:', textStatus, errorThrown);
             }
         })
     }
-    else {
-        error_row = $(`#error-row-${delimId}`);
-        error_row.append('<span>Please input a number between 0 and 5</span>');
+    
+    function validateOrderInput(input) {
+        if (input < 0 || input > 5) { return false; }
+        else return true;
     }
-}
+    
+    function OrderBlur(e) {
+        var order = $(e.target).val();
+        var delimId = $(e.target).attr('id').split("-")[1];
+    
+        if (validateOrderInput(order) == true) {
+            $(`#error-row-${delimId}`).empty();
+            $.ajax({
+                type: 'POST',
+                url: "/order_update",
+                headers: {
+                    'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                data: { 'delim': delimId, 'order': order },
+                success: function (response) {
+                    console.log(response);
+                },
+                error: function (jqXHR) {
+                    var errorMessage = 'An error occurre';
+                    if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
+                        errorMessage = jqXHR.responseJSON.detail;
+                    }
+                    alert(errorMessage);
+                }
+            })
+        }
+        else {
+            error_row = $(`#error-row-${delimId}`);
+            error_row.append('<span>Please input a number between 0 and 5</span>');
+        }
+    }
+});
+
