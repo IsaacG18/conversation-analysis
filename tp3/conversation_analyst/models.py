@@ -121,3 +121,11 @@ class VisFile(models.Model):
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
     def __str__(self):
         return self.file_path.__str__()
+
+
+class DateFormat(models.Model):
+    name = models.CharField(max_length=255)
+    example = models.CharField(max_length=255)
+    format = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name.__str__()
