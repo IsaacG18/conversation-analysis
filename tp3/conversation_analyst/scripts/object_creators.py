@@ -1,4 +1,4 @@
-from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat
+from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, ChatGPTConvo, ChatGPTConvoAndDateFilters, ChatGPTConvoAndTextFilters, ChatGPTMessage, ChatGPTTextFilters, ChatGPTDateFilters
 
 def add_message(file, timestamp, sender, message, display_message, risk_rating=0):
     m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message, risk_rating=risk_rating)[0]
@@ -46,3 +46,21 @@ def add_date(name, example,format):
     d = DateFormat.objects.get_or_create(name=name, example=example,format=format)[0]
     d.save()
     return d
+
+def add_chat_message(type_of_message, content, convo):
+    return ChatGPTMessage.objects.create(typeOfMessage=type_of_message, content=content, convo=convo)
+
+def add_chat_convo(slug, title, file):
+    return ChatGPTConvo.objects.create(slug=slug, title=title, file=file)
+
+def add_text_filter(text):
+    return ChatGPTTextFilters.objects.create(text=text)
+
+def add_date_filter(timestamp):
+    return ChatGPTDateFilters.objects.create(timestamp=timestamp)
+
+def add_convo_and_text_filters(convo, text_filter):
+    return ChatGPTConvoAndTextFilters.objects.create(convo=convo, textFilter=text_filter)
+
+def add_convo_and_date_filters(convo, date_filter):
+    return ChatGPTConvoAndDateFilters.objects.create(convo=convo, dateFilter=date_filter)
