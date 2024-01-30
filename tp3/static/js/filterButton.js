@@ -75,7 +75,6 @@ $(document).ready(function () {
                 function(data) {
                     $(clickedElement).addClass("existing");
                     $(clickedElement).addClass("clicked");
-                    console.log(data.results);
                     $('.results').replaceWith(data.results);
                 });
         }else{
