@@ -70,5 +70,5 @@ def plots(chat_messages, name):
     plots_folder = os.getcwd() + file_location
     plot_path = os.path.join(plots_folder, name)
     fig.write_image(plot_path)
-
+    print("test")
     return file_location + name
