@@ -43,3 +43,16 @@ weasel==0.3.4
 wheel==0.41.3
 plotly==5.9.0
 vaderSentiment==3.3.2
+kaleido==0.2.1
+emoji==2.9.0
+contourpy==1.2.0
+cycler==0.12.1
+fonttools==4.25.0
+kiwisolver==1.4.5
+matplotlib==3.8.2
+munkres==1.1.4
+tenacity==8.2.3
+pyparsing==3.1.1
+python-dateutil==2.8.2
+six==1.16.0
+tornado==6.4
