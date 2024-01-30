@@ -2,7 +2,7 @@
 {% block title %}
 
 {% endblock %}
-<title>Content Review</title>
+  <title>Content Review</title>
 {% block body %}
 {% load static %}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
@@ -11,127 +11,95 @@
 <link rel="stylesheet" href="{% static 'css/highlight.css' %}">
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
-<div class="container-fluid mt-2">
+  <div class="container-fluid mt-2">
   <div class="row">
-    <div class="col-6" id="message_output">
-      {% if messages %}
-      <div class="list-group">
-        {% for message in messages %}
-        <div class="conversation-item-content">
-          {% if forloop.counter|divisibleby:2 %}
-            {# Odd messages are outgoing #}
-            <div style="display: flex; justify-content: start;">
-              <span class="sender"><small><b>{{ message.sender }}</b></small></span>
-            </div>            
-            <div class="conversation-item-box incoming">
-              <div class="details">
-                <div class="conversation-item-text">
-                  {{ message.display_content|safe }}
-                  <div class="conversation-item-time">{{ message.timestamp }}</div>
-                </div>
-              </div>
-            </div>
-          {% else %}
-            {# Even messages are incoming #}
-            <div style="display: flex; justify-content: end; ">
-              <span class="sender"><small><b>{{ message.sender }}</b></small></span>
-            </div>            
-            <div class="conversation-item-box outgoing">
-              <div class="details">
-                <div class="conversation-item-text">
-                  {{ message.display_content|safe }}
-                  <div class="conversation-item-time">{{ message.timestamp }}</div>
-                </div>
-              </div>
-            </div>
-          {% endif %}
-        </div>
-        </li>
-        {% endfor %}
-      </div>
-      {% else %}
-      <strong>There are no messages present.</strong>
-      {% endif %}
-    </div>
-
-
-    <div class="col-6">
+    {% include "conversation_analyst/messages.html" %}
+  <div class="col-6">
       <div class="accordion" id="analysis">
-        {% if persons %}
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
-              aria-expanded="true" aria-controls="collapseOne">
-              Person
-            </button>
-          </h2>
-          <div id="collapseOne" class="accordion-collapse collapse show">
-            <div class="accordion-body">
-              {% for person in persons %}
-              <button class="btn btn-outline-primary filter person-button">{{ person }}</button>
-              {% endfor %}
+          {% if persons %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                Person
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                {% for person in persons %}
+                  <button class="btn btn-outline-primary filter person-button">{{ person }}</button>
+                {% endfor %}
+              </div>
             </div>
           </div>
-        </div>
-        {% endif %}
-        {% if locations %}
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo"
-              aria-expanded="true" aria-controls="collapseTwo">
-              Location
-            </button>
-          </h2>
-          <div id="collapseTwo" class="accordion-collapse collapse show">
-            <div class="accordion-body">
-              {% for location in locations %}
-              <button class="btn btn-outline-success filter location-button">{{ location }}</button>
-              {% endfor %}
+          {% endif %}
+          {% if locations %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                Location
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                {% for location in locations %}
+                  <button class="btn btn-outline-success filter location-button">{{ location }}</button>
+                {% endfor %}
+              </div>
             </div>
           </div>
-        </div>
-        {% endif %}
-        {% if risk_words %}
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree"
-              aria-expanded="true" aria-controls="collapseThree">
-              Risk Words
-            </button>
-          </h2>
-          <div id="collapseThree" class="accordion-collapse collapse show">
-            <div class="accordion-body">
-              {% for risk_word in risk_words %}
-              {% if risk_word.risk_factor > 5.0 %}
-              <button class="btn btn-danger filter risk-button">{{ risk_word.keyword }}({{ risk_word.amount }})</button>
-              {% else %}
-              <button class="btn btn-warning filter risk-button">{{ risk_word.keyword }}({{ risk_word.amount
-                }})</button>
-              {% endif %}
-              {% endfor %}
+          {% endif %}
+          {% if risk_words %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+                Risk Words
+              </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                {% for risk_word in risk_words %}
+                    {% if risk_word.riskword.risk_factor > 5.0 %}
+                    <button class="btn btn-danger filter risk-button">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
+                    {% else %}
+                    <button class="btn btn-warning filter risk-button">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
+                    {% endif %}
+                {% endfor %}
+              </div>
             </div>
           </div>
-        </div>
-        {% endif %}
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-              data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
-              Date/Time Filter
-            </button>
-          </h2>
-          <div id="collapseDateFilter" class="accordion-collapse collapse show">
-            <div class="accordion-body">
-              <label for="startDate">Start Date/Time:</label>
-              <input type="datetime-local" id="startDate" class="form-control">
-
-              <label for="endDate">End Date/Time:</label>
-              <input type="datetime-local" id="endDate" class="form-control">
-
-              <button class="btn btn-outline-success date-fil">Filter</button>
+          {% endif %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
+                Date/Time Filter
+              </button>
+            </h2>
+            <div id="collapseDateFilter" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                <label for="startDate">Start Date/Time:</label>
+                <input type="datetime-local" id="startDate" class="form-control">
+                
+                <label for="endDate">End Date/Time:</label>
+                <input type="datetime-local" id="endDate" class="form-control">
+          
+                <button class="btn btn-outline-success date-fil">Filter</button>
+              </div>
             </div>
           </div>
-        </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
+                Risk Levels
+              </button>
+            </h2>
+            <div id="collapseDateFilter" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                <button value="2" class="btn btn-outline-success risk">high risk</button>
+                <button value="1" class="btn btn-outline-success risk">medium risk</button>
+                <button value="0" class="btn btn-outline-success risk">low risk</button>
+              </div>
+            </div>
+          </div>
           {% if file %}
           <button class="btn btn-outline-success"><a href="{%  url 'export_view' file.slug %}">Download XML</a></button>
           {% endif %}
@@ -152,11 +120,10 @@
             <strong>There are no Visulation present.</strong>
           {% endif %}
 
-      </div>
+        </div>
+  </div>
     </div>
   </div>
-</div>
-  
-</div>
+  </div>
 
 {% endblock %}
