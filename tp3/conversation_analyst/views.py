@@ -14,6 +14,7 @@ from datetime import datetime
 from django.template.loader import render_to_string
 from django.db.models import Q
 import json
+from openai import OpenAI
 
 
 import os
@@ -277,7 +278,6 @@ def rename_file(request):
         except Exception as e:
             print(e)
             return JsonResponse({'message': 'error'})  
-        
     
 
 # def demo_keywords():
