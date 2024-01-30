@@ -1,27 +1,16 @@
 image: python
 
 stages:          # List of stages for jobs, and their order of execution
-  - build
   - test
-  - deploy
-
-build-job:       # This job runs in the build stage, which runs first.
-  stage: build
-  script:
-    - echo "Compiling the code..."
-    - echo "Compile complete."
-    - mkdir build/
-    - echo "Project binary file" > build/executable-binary-file-v1
-  artifacts:
-    paths:
-      - build/executable-binary-file-v1
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
   script:
-    - echo "Running unit tests... This will take about 60 seconds."
-    - echo "Code coverage is 90%"
-    - cat $CI_PROJECT_DIR/build/executable-binary-file-v1
+    - pip install -r requirements.txt
+    - pip install coverage
+    - coverage run --source='conversation_analyst' manage.py test conversation_analyst
+    - coverage report
+  coverage: '/^TOTAL.*\s+(\d+\%)$/'
 
 
 lint-test-job:   # This job also runs in the test stage.
@@ -30,10 +19,3 @@ lint-test-job:   # This job also runs in the test stage.
     - echo "Linting code... This will take about 10 seconds."
     - echo "No lint issues found."
 
-deploy-job:      # This job runs in the deploy stage.
-  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
-  environment: production
-  script:
-    - echo "Deploying application..."
-    - python3 --version
-    - echo "Application successfully deployed."
