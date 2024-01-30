@@ -36,18 +36,22 @@ def homepage(request, query=None):
         return render(request, "conversation_analyst/homepage.html", {"files": files})
 
 def upload(request):
-    delims = Delimiter.objects.all()
+    #Q: Change it into populate script???
+    # delims = Delimiter.objects.all()
 
-    if len(delims) == 0:
-        initialise_delim("Timestamp", ",", 1)
-        initialise_delim("Sender", ":", 2)
+    # if len(delims) == 0:
+    #     initialise_delim("Timestamp", ",", 1)
+    #     initialise_delim("Sender", ":", 2)
 
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            sender = form.cleaned_data.get('sender_delim')
-            timestamp = form.cleaned_data.get('timestamp_delim')
-            file_delimiters = [["Timestamp", timestamp], ["Sender", sender]]
+            #Accessing name of setted timestamp - TO CHANGE
+            #timestamp = request.POST.get('selected_timestamp')
+
+            #Accessing sorted delimiters by order, constructing delim pairs
+            # delims = Delimiter.objects.filter(order__gt=0).order_by('order')
+            # delim_pairs = [[delim.name, delim.value] for delim in delims]
 
             uploaded_file = request.FILES["file"]
             file_obj = File.objects.create(file=uploaded_file)
@@ -57,7 +61,8 @@ def upload(request):
             keywords = RiskWord.objects.filter(suite__in=keyword_suites)
 
             try:
-                process_file(file_obj, delimiters=file_delimiters, keywords=keywords)
+                #process_file(file_obj, delimiters=file_delimiters, keywords=keywords)
+                process_file(file_obj,keywords=keywords)
                 return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
             except ValueError as e:
                 file_obj.delete()
@@ -68,7 +73,7 @@ def upload(request):
     else:
         form = UploadFileForm()
 
-    return render(request, "conversation_analyst/upload.html", {"form": form, 'delimiters': Delimiter.objects.all()})
+    return render(request, "conversation_analyst/upload.html", {"form": form, 'delimiters': Delimiter.objects.all(), 'timestamps': DateFormat.objects.all()})
 
 
 def content_review(request, file_slug):

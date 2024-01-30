@@ -136,9 +136,14 @@ class Delimiter(models.Model):
     value = models.CharField(max_length=10)
     order = models.IntegerField(default=0)
     
-    def clean(self):
-        if self.value.strip().isalnum():
-            raise ValidationErr('Alphanumeric character cannot be a delimiter.')
+    def get_name(self):
+        return self.name
+
+    def get_value(self):
+        return self.value
+
+    def get_order(self):
+        return self.order
         
     def save(self, *args, **kwargs):
         self.value = self.value

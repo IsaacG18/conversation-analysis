@@ -1,26 +1,34 @@
 {% extends "conversation_analyst/base.html" %}
 {% block title %}
-    <title>Homepage</title>
+<title>Homepage</title>
 {% endblock %}
 
 <body>
-{% block body %}
+  {% block body %}
   <div class="container mt-5 text-center">
     <span>
-        <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                <p>{{ form.as_p }}</p>
-            </div>  
-            <p><input type="submit" value="Upload" /></p>
-        </form>
+      <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data" id="upload-form">
+        {% csrf_token %}
+        <div class="form-group">
+          <p>{{ form.as_p }}</p>
+        </div>
+        <input type="hidden" name="selected_timestamp" id="selected-timestamp" value="">
+        <p><input type="submit" value="Upload" onclick="onUploadClick()" class="btn btn-secondary btn-lg" /></p>
+      </form>
     </span>
+
     {% if error_message %}
     <p>{{ error_message }}</p>
     {% endif %}
 
+    <script>
+      function onUploadClick() {
+        var selectedTimestamp = $("input:checkbox:checked").val();
+        $("#selected-timestamp").val(selectedTimestamp);
+      }
+    </script>
+
     {% include "conversation_analyst/settings_delim.html" %}
   </div>
-
 </body>
 {% endblock %}
