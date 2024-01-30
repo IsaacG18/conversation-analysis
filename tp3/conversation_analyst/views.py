@@ -304,7 +304,7 @@ def export_view(request, file_slug):
     risk_words_element = SubElement(root, 'risk_words')
     for risk_word in risk_words:
         entry_element = SubElement(risk_words_element, 'risk_word')
-        SubElement(entry_element, 'keyword').text = risk_word.keyword
+        SubElement(entry_element, 'keyword').text = risk_word.riskword.keyword
         SubElement(entry_element, 'risk_factor').text = str(risk_word.risk_factor)
         SubElement(entry_element, 'amount').text = str(risk_word.amount)
 
