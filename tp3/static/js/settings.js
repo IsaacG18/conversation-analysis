@@ -20,8 +20,7 @@ $(document).ready(function(){
                     <div class="list-group-item list-group-item-action suite-item" id="suite-item-${suiteId}">
                     <div class="row d-flex align-items-center justify-content-between">
                     <div class="col-9 form-check" id="suite-check-${suiteId}">
-                            <input class="form-check-input" type="checkbox" value="${suiteId}" id="checkbox-${suiteId}">
-                            <label class="form-check-label" for="checkbox-${suiteId}">${newSuiteName}</label>
+                        <a href="#" class="text-reset text-decoration-none form-check-label ms-0">${newSuiteName}</a>
                     </div>
                     <div class="col-3">
                         <button type="button" class="btn btn-danger btn-sm delete-suite" id = "delete-${suiteId}" value="${suiteId}">Delete</button>
