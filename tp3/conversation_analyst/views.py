@@ -24,8 +24,6 @@ from django.conf import settings
 from .forms import UploadFileForm
 from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat
 
-# default_suite = Keywords()
-
 
 def homepage(request, query=None):
     files = File.objects.order_by('-date')
@@ -48,15 +46,17 @@ def upload(request):
 
             # Create file object
             uploaded_file = request.FILES["file"]
+            uploaded_file.name
 
             # Save the file and process
             file_obj = File.objects.create(file=uploaded_file)
             file_obj.init_save()
-            default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
-            keyword_suites = default_plan.keywordsuite_set.all()
-            keywords = RiskWord.objects.filter(suite__in=keyword_suites)
+            # default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
+            # keyword_suites = default_plan.keywordsuite_set.all()
+            # keywords = RiskWord.objects.filter(suite__in=keyword_suites)
             try:
-                process_file(file_obj, delimiters=file_delimeters, keywords=keywords)
+                check_file(file_obj, delimiters=file_delimeters)
+                return HttpResponseRedirect(reverse('suite_selection', kwargs={'file_slug': file_obj.slug}))
                 return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
             except ValueError as e:
                 file_obj.delete()
@@ -90,15 +90,15 @@ def content_review(request, file_slug):
 
 
 
-def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keywords=Keywords()):
-    directory = os.path.join(settings.MEDIA_ROOT, 'uploads')
-    file_path = os.path.join(directory, file.title)
+def check_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]]):
 
     if not file.title.endswith(('.docx', '.txt', '.csv')):
         raise ValueError("Unsupported file type. Only .txt, .csv and .docx are supported.")
 
-
-    chat_messages = ingestion.parse_chat_file(file_path, delimiters)
+    ingestion.parse_chat_file(file.file.path, delimiters)
+    
+def process_file(file, keywords, delimiters=[["Timestamp", ","], ["Sender", ":"]]):
+    chat_messages = ingestion.parse_chat_file(file.file.path, delimiters)
     message_count = create_arrays(chat_messages)
     nlp_text, person_and_locations = tag_text(chat_messages, keywords, ["PERSON", "GPE"])
     risk_words = get_top_n_risk_keywords(nlp_text, 10)
@@ -322,13 +322,38 @@ def export_view(request, file_slug):
     return response  
 
 
-def suite_selection(request):
-    keyword_suites = KeywordSuite.objects.all()
-    if len(keyword_suites) == 0:
-        context_dict = {}
+def suite_selection(request, file_slug):
+    if request.method == 'GET':
+        keyword_suites = KeywordSuite.objects.all()
+        if len(keyword_suites) == 0:
+            context_dict = {}
+        else:
+            suite = keyword_suites[0]
+            risk_words = RiskWord.objects.filter(suite=suite)
+            context_dict = {'keyword_suites': keyword_suites, 'risk_words':risk_words}
+            
+        context_dict['file_slug'] = file_slug
+        return render(request, "conversation_analyst/suite_selection.html", context=context_dict)
+    
     else:
-        suite = keyword_suites[0]
-        risk_words = RiskWord.objects.filter(suite=suite)
-        context_dict = {'keyword_suites': keyword_suites, 'risk_words':risk_words}
-
-    return render(request, "conversation_analyst/suite_selection.html", context=context_dict)
+        default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
+        keyword_suites = default_plan.keywordsuite_set.all()
+        keywords = RiskWord.objects.filter(suite__in=keyword_suites)
+        file_delimeters = [["Timestamp", ","], ["Sender", ":"]] # temporarily set to default, await integration
+        try:
+            file_obj = File.objects.get(slug=file_slug)
+            process_file(file_obj, keywords, delimiters=file_delimeters)
+            return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
+        except Exception as e:
+            return HttpResponse("Error while processing file")
+        
+def clear_duplicate_submission(request):
+    if request.method == 'GET':
+        try:
+            file_slug = request.GET['file_slug']
+            File.objects.get(slug=file_slug).delete()
+            return HttpResponse('File deleted')  
+        except Exception as e:
+            print(f'exception: {e}')
+            return HttpResponse('An error occured while trying to delete the file')
+    

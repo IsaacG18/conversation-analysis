@@ -16,3 +16,6 @@ def process_file(file_path, delimiters =[["Timestamp", ","], ["Sender", ":"]], k
     risk_words = get_top_n_risk_keywords(nlp_text, 3)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
     return chat_messages, message_count,person_and_locations,risk_words,common_topics
+
+def check_file(file_path, delimiters =[["Timestamp", ","], ["Sender", ":"]], keywords = Keywords()):
+    parse_chat_file(file_path, delimiters)

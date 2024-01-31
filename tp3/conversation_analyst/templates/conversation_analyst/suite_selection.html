@@ -11,11 +11,9 @@
 <script type="text/javascript" src="{% static 'js/suiteSelection.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 
-<div class="container-fluid px-5">
-  <div id="div" class="row">
-  </div>
+<div class="container-fluid px-5 w-75" id="suite-selectoin-containter">
     <div id="div" class="row justify-content-center">
-        <div id="div" class="col-3">
+        <div id="div" class="col-4">
             <div class="list-group" id="suite-list">
                 <div class="list-group-item disabled list-header">
                             <span>Suites</span>
@@ -41,7 +39,7 @@
                 {% endif %}
             </div>
         </div>
-        <div class="col-6">
+        <div class="col-8">
             <div class="list-group" id="keyword-list">
                 <div class="list-group-item disabled list-header">
                     <div class="row d-flex align-items-center justify-content-between">
@@ -67,6 +65,13 @@
                 {% endif %}
             </div>
         </div>
+    </div>
+    <div class="row my-5">
+        <form method="POST" action="{% url 'suite_selection' file_slug %}" class="d-flex justify-content-end">
+            {% csrf_token %}
+            <div class="col-auto mx-2"><button type="button" class="btn btn-secondary" name="back" id="back-btn">Back</button></div>
+            <div class="col-auto mx-2"><button type="submit" class="btn btn-primary" name="analyse" id="proceed-btn">Proceed</button></div>
+        </form>
     </div>
 </div>
 

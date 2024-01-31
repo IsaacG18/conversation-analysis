@@ -1,7 +1,6 @@
 $(document).ready(function(){
     $('#suite-list .suite-item:first').addClass('active-suite'); // set the first suite active by default
 
-
     $('.suite-item').click(function(e) {
         suiteClick(targetGrabber(e));
     });
@@ -10,6 +9,13 @@ $(document).ready(function(){
         suiteCheck(e);
     })
 
+    $('#back-btn').click(function() {
+        file_slug = window.location.pathname.split('/').pop(); 
+        $.get("/clear_duplicate_submission", {'file_slug': file_slug}, function(response) {
+            // console.log(response);  // causes brocken pipe because of the immediate call of history.back()
+          });
+        history.back();
+    })
 
     function displayKeywords(data){
         array = JSON.parse(data.objects);
