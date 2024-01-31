@@ -17,6 +17,9 @@
     <div id="div" class="row">
         <div id="div" class="col-3">
             <div class="list-group" id="suite-list">
+              <div class="list-group-item disabled list-header">
+                <span>Suites</span>
+              </div>
                 {% if keyword_suites %}
                 {% for suite in keyword_suites %}
                 <div class="list-group-item list-group-item-action suite-item" id="suite-item-{{ suite.id }}">
@@ -55,6 +58,12 @@
         </div>
         <div class="col-9">
             <div class="list-group" id="keyword-list">
+              <div class="list-group-item disabled list-header">
+                <div class="row d-flex align-items-center justify-content-between">
+                    <span class="col-3">Keywords</span>
+                    <span class="col-4">Risk Factor</span>
+                </div>
+            </div>
                 {% if risk_words %}
                 {% for risk_word in risk_words %}
                 <div class="list-group-item list-group-item-action keyword-item" id="keyword-item-{{ risk_word.id }}">

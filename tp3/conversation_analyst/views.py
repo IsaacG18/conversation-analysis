@@ -321,25 +321,14 @@ def export_view(request, file_slug):
     response['Content-Disposition'] = f'attachment; filename="{file_slug}_exported_data.xml"'
     return response  
 
-# def demo_keywords():
-#     if default_suite.has_keywords() == False:
-#         default_suite.add_keyword("perfect", ["Good", "Really Good"], 8)
-#         default_suite.add_keyword("old", ["Time"], 2)
-#         default_suite.add_keyword("nice", ["Good"], 3)
-#         default_suite.add_keyword("galaxy", ["Space", "Time"], 5)
-#         default_suite.add_keyword("amazing", ["Awesome", "Fantastic"], 7)
-#         default_suite.add_keyword("young", ["Youthful"], 4)
-#         default_suite.add_keyword("awesome", ["Great", "Fantastic"], 6)
-#         default_suite.add_keyword("technology", ["Innovation", "Science"], 9)
-#         default_suite.add_keyword("beautiful", ["Attractive", "Stunning"], 5)
-#         default_suite.add_keyword("community", ["Society", "Neighbors"], 5)
-#         default_suite.add_keyword("innovation", ["Creativity", "Invention"], 6)
-#         default_suite.add_keyword("cozy", ["Comfortable", "Warm"], 4)
-#         default_suite.add_keyword("delicious", ["Tasty", "Yummy"], 7)
-#         default_suite.add_keyword("friendship", ["Companionship", "Buddy"], 6)
-#         default_suite.add_keyword("relaxing", ["Calming", "Unwinding"], 5)
-#         default_suite.add_keyword("celebration", ["Party", "Festivity"], 8)
-#         default_suite.add_keyword("curious", ["Inquisitive", "Interested"], 5)
-#         default_suite.add_keyword("efficient", ["Productive", "Streamlined"], 7)
-#         default_suite.add_keyword("refreshing", ["Invigorating", "Revitalizing"], 6)
-#     return default_suite
+
+def suite_selection(request):
+    keyword_suites = KeywordSuite.objects.all()
+    if len(keyword_suites) == 0:
+        context_dict = {}
+    else:
+        suite = keyword_suites[0]
+        risk_words = RiskWord.objects.filter(suite=suite)
+        context_dict = {'keyword_suites': keyword_suites, 'risk_words':risk_words}
+
+    return render(request, "conversation_analyst/suite_selection.html", context=context_dict)

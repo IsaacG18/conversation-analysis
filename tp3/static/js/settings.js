@@ -214,7 +214,7 @@ $(document).ready(function(){
         $('.active-suite').removeClass('active-suite');
         $(suite).addClass('active-suite');
         console.log(suite);
-        $('.keyword-item').empty();
+        $('.keyword-item').remove();
     }
 
     function refreshSuiteFocusOnDeletion(suite){
