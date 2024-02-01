@@ -19,4 +19,5 @@ urlpatterns = [
     path('check_suite', views.check_suite, name='check_suite'),
     path('risk_update', views.risk_update, name='risk_update'),
     path('rename_file', views.rename_file, name='rename_file'),
+    path("chatgpt_new_message", views.chatgpt_new_message, name="chatgpt_new_message"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

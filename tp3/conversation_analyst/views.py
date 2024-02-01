@@ -21,7 +21,7 @@ import os
 from django.conf import settings
 
 from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat, ChatGPTConvo
 
 # default_suite = Keywords()
 
@@ -277,8 +277,32 @@ def rename_file(request):
         
         except Exception as e:
             print(e)
-            return JsonResponse({'message': 'error'})  
-    
+            return JsonResponse({'message': 'error'})
+
+def chatgpt_new_message(request):
+    file_slug = request.GET['file_slug']
+    start_date = request.GET.get('startDate')
+    end_date = request.GET.get('endDate')
+    try:
+        file = File.objects.get(slug=file_slug)
+        filter_params = {'file': file}
+        if start_date: 
+            filter_params['timestamp__gte'] = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
+        if end_date:
+            filter_params['timestamp__lte'] = datetime.strptime(end_date, '%Y-%m-%dT%H:%M')
+        messages = Message.objects.filter(**filter_params)
+        convo = ChatGPTConvo.objects.create(file=uploaded_file, start = start_date, end = end_date)
+        convo.init_save()
+
+        system_message = "You are answering questions about a some text messages with lots of detail, the formated of the messages will be'<Timestamp>: <Name>: <Message> \n"
+        for message in messages
+            system_message += f"{message.timestamp}: {message.sender}:  {message.content} \n"
+
+        add_chat_message("system", system_message, convo)
+
+
+
+
 
 # def demo_keywords():
 #     if default_suite.has_keywords() == False:
