@@ -324,20 +324,25 @@ def chatgpt_new_message(request):
     end_date = request.GET.get('endDate')
     try:
         file = File.objects.get(slug=file_slug)
+
+        convo = ChatGPTConvo.objects.create(file=file)
+        convo.save()
         filter_params = {'file': file}
         if start_date: 
+            convo.start = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
             filter_params['timestamp__gte'] = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
         if end_date:
+            convo.end = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
             filter_params['timestamp__lte'] = datetime.strptime(end_date, '%Y-%m-%dT%H:%M')
         messages = Message.objects.filter(**filter_params)
-        convo = ChatGPTConvo.objects.create(file=uploaded_file, start = start_date, end = end_date)
-        convo.init_save()
+        
 
         system_message = "You are answering questions about a some text messages with lots of detail, the formated of the messages will be'<Timestamp>: <Name>: <Message> \n"
         for message in messages:
             system_message += f"{message.timestamp}: {message.sender}:  {message.content} \n"
 
         add_chat_message("system", system_message, convo)
+        
 
     except Exception as e:
         print(e)

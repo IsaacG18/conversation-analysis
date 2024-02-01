@@ -3,6 +3,7 @@ from django.template.defaultfilters import slugify
 from pathlib import Path
 
 
+
 # Create your models here.
 
 class File(models.Model):
@@ -133,17 +134,15 @@ class DateFormat(models.Model):
 
 class ChatGPTConvo(models.Model):
     title = models.CharField(max_length=128, unique=False)
-    slug = models.SlugField(unique=True)
-    title = models.CharField(max_length=128, unique=False)
     file = models.ForeignKey(File, on_delete=models.CASCADE)
-    start = models.DateTimeField()
-    end = models.DateTimeField()
+    start = models.DateTimeField(null=True)
+    end = models.DateTimeField(null=True)
     date = models.DateTimeField(auto_now_add=True)
-    def init_save(self, *args, **kwargs):
-        self.title = Path(self.file.name).stem
-        self.slug = slugify(self.title+str(self.date))
+    slug = models.SlugField(unique=True)
+    def save(self, *args, **kwargs):
+        self.title = self.file.slug
+        self.slug = slugify(self.title+" "+ str(self.date))
         super(ChatGPTConvo, self).save(*args, **kwargs)
-
 
 
 class ChatGPTMessage(models.Model):
