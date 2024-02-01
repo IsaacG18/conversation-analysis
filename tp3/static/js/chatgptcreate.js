@@ -6,7 +6,8 @@ $(document).ready(function () {
         $.get('/chatgpt_new_message/',
                 {'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug},
                 function(data) {
-                    $('.results').replaceWith(data.results);
+                    console.log(window.location.pathname)
+                    window.location.href = "chatgpt_page/" + data.url
                 });
     })
 

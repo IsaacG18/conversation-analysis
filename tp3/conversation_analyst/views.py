@@ -322,6 +322,7 @@ def chatgpt_new_message(request):
     file_slug = request.GET['file_slug']
     start_date = request.GET.get('startDate')
     end_date = request.GET.get('endDate')
+    full_url =  request.GET.get('full_url')
     try:
         file = File.objects.get(slug=file_slug)
 
@@ -342,11 +343,13 @@ def chatgpt_new_message(request):
             system_message += f"{message.timestamp}: {message.sender}:  {message.content} \n"
 
         add_chat_message("system", system_message, convo)
-        
+        return JsonResponse({"url":convo.slug})
 
     except Exception as e:
         print(e)
         return JsonResponse({'result': 'error', 'message': 'Internal Server Error'})
+def chatgpt_page(request, chatgpt_slug):
+    return render(request, "conversation_analyst/chatgpt.html")
 
 
 # def demo_keywords():
