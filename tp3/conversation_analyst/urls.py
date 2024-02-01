@@ -1,4 +1,7 @@
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 from . import views
 urlpatterns = [
@@ -8,6 +11,7 @@ urlpatterns = [
     path('filter/', views.filter_view, name='filter_view'),
     path('/<str:query>/', views.homepage, name='homepage'),
     path('settings', views.settings_page, name='settings'),
+    path("export_view/<slug:file_slug>", views.export_view, name='export_view'),
     path('create_suite', views.create_suite, name='create_suite'),
     path('select_suite', views.select_suite, name='select_suite'),
     path('create_keyword', views.create_keyword, name='create_keyword'),
