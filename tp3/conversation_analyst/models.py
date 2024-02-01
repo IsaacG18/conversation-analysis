@@ -132,11 +132,18 @@ class DateFormat(models.Model):
         return self.name.__str__()
 
 class ChatGPTConvo(models.Model):
+    title = models.CharField(max_length=128, unique=False)
     slug = models.SlugField(unique=True)
     title = models.CharField(max_length=128, unique=False)
-    analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
+    file = models.ForeignKey(File, on_delete=models.CASCADE)
     start = models.DateTimeField()
     end = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True)
+    def init_save(self, *args, **kwargs):
+        self.title = Path(self.file.name).stem
+        self.slug = slugify(self.title+str(self.date))
+        super(ChatGPTConvo, self).save(*args, **kwargs)
+
 
 
 class ChatGPTMessage(models.Model):

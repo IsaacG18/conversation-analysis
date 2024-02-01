@@ -48,8 +48,11 @@ def add_date(name, example,format):
     return d
 
 def add_chat_message(type_of_message, content, convo):
-    return ChatGPTMessage.objects.create(typeOfMessage=type_of_message, content=content, convo=convo)
+    m = ChatGPTMessage.objects.create(typeOfMessage=type_of_message, content=content, convo=convo)
+    m.save()
+    return m
 
-def add_chat_convo(slug, title, analysis, start=None, end=None):
-    return ChatGPTConvo.objects.create(slug=slug, title=title, analysis=analysis, start=start, end=end)
-
+def add_chat_convo(slug, title, file, start=None, end=None):
+    c = ChatGPTConvo.objects.create(slug=slug, title=title, file=file, start=start, end=end)
+    c.save()
+    return c
