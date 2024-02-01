@@ -102,6 +102,9 @@
             </div>
           </div>
           <button class="btn btn-outline-success chatgpt_new_message">New ChatGPT</button>
+          {% if file %}
+          <button class="btn btn-outline-success"><a href="{%  url 'export_view' file.slug %}">Download XML</a></button>
+          {% endif %}
           {% if vis_path %}
           <div class="accordion-item">
             <h2 class="accordion-header">
