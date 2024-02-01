@@ -134,7 +134,9 @@ class DateFormat(models.Model):
 class ChatGPTConvo(models.Model):
     slug = models.SlugField(unique=True)
     title = models.CharField(max_length=128, unique=False)
-    file = models.ForeignKey(File, on_delete=models.CASCADE)
+    analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
+    start = models.DateTimeField()
+    end = models.DateTimeField()
 
 
 class ChatGPTMessage(models.Model):
@@ -142,21 +144,4 @@ class ChatGPTMessage(models.Model):
     content = models.CharField(max_length=1000)
     convo = models.ForeignKey(ChatGPTConvo, on_delete=models.CASCADE)
 
-
-
-class ChatGPTTextFilters(models.Model):
-    text = models.CharField(max_length=128)
-
-class ChatGPTDateFilters(models.Model):
-    timestamp = models.DateTimeField()
-
-
-class ChatGPTConvoAndTextFilters(models.Model):
-    convo = models.ForeignKey(ChatGPTConvo, on_delete=models.CASCADE)
-    textFilter = models.ForeignKey(ChatGPTTextFilters, on_delete=models.CASCADE)
-
-
-class ChatGPTConvoAndDateFilters(models.Model):
-    convo = models.ForeignKey(ChatGPTConvo, on_delete=models.CASCADE)
-    dateFilter = models.ForeignKey(ChatGPTDateFilters, on_delete=models.CASCADE)
     
