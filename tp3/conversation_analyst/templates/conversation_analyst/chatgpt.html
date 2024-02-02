@@ -17,7 +17,11 @@
             {% if chats %}
             <ul class="list-group">
                 {% for chat in chats %}
-                    <li class="list-group-item">{{chat.slug}}</li>
+                    {% if chat.slug == convo.slug %}
+                        <li class="list-group-item" style="background-color: grey;">{{chat.slug}}</li>
+                    {% else %}
+                        <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" >{{chat.slug}}</a></li>
+                    {% endif %}
                 {% endfor %}
             </ul>
             {% else %}
