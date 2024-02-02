@@ -27,24 +27,21 @@
         <div class="col-md-9">
             <div class="chat-container mt-3">
                 <div class="chat-messages">
-                    <div class="media">
-                        <img src="https://via.placeholder.com/50" class="mr-3 rounded-circle" alt="User Image">
-                        <div class="media-body">
-                            <h5 class="mt-0">User 1</h5>
-                            Hey, how's it going?
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="media">
+                            <img src="https://via.placeholder.com/50" class="mr-3 rounded-circle" alt="User Image">
+                            <div class="media-body">
+                                <h5 class="mt-0">{{message.typeOfMessage}}</h5>
+                                {{message.content}}
+                            </div>
                         </div>
-                    </div>
-                    <div class="media mt-3">
-                        <img src="https://via.placeholder.com/50" class="mr-3 rounded-circle" alt="User Image">
-                        <div class="media-body">
-                            <h5 class="mt-0">User 2</h5>
-                            Not much, just chilling. What about you?
-                        </div>
-                    </div>
-                    <!-- Add more chat messages as needed -->
+                        {% endfor %}
+                    {% else %}
+                    <strong>There are no convo present.</strong>
+                    {% endif %}
                 </div>
 
-                <!-- Chat input area -->
                 <div class="input-group mt-3">
                     <input type="text" class="form-control" placeholder="Type your message">
                     <div class="input-group-append">
@@ -56,7 +53,6 @@
     </div>
 </div>
 
-<!-- Bootstrap JS and Popper.js -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

@@ -1,14 +1,21 @@
+from django.forms import ValidationError
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .scripts.data_ingestion import ingestion
 from .scripts.nlp.nlp import *
+from .scripts.data_ingestion.plotter import plots
 from .scripts.object_creators import *
 from django.core.serializers import serialize
 from itertools import chain
 from django.utils import timezone
+from django.db import IntegrityError
 from datetime import datetime
+from django.template.loader import render_to_string
+from django.db.models import Q
 import json
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom import minidom
 from openai import OpenAI
 
 
@@ -350,7 +357,9 @@ def chatgpt_new_message(request):
         return JsonResponse({'result': 'error', 'message': 'Internal Server Error'})
 def chatgpt_page(request, chatgpt_slug):
     chats = ChatGPTConvo.objects.order_by('-date')
-    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats}) 
+    convo = ChatGPTConvo.objects.get(slug = chatgpt_slug)
+    messages = ChatGPTMessage.objects.filter(convo = convo)
+    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats, "convo":convo, "messages": messages}) 
 
 
 # def demo_keywords():
