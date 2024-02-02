@@ -5,6 +5,8 @@
   <title>ChatGPT Analysis</title>
 {% block body %}
 {% load static %}
+<script type="text/javascript" src="{% static 'js/chatgptmessage.js' %}"></script>
+
     
 <div class="container-fluid">
     <div class="row">
@@ -29,7 +31,7 @@
                 {% include "conversation_analyst/chatgpt_messages.html" %}
 
                 <div class="input-group mt-3">
-                    <input type="text" class="form-control message_content" placeholder="Type your message">
+                    <input type="text" class="form-control" id = "message_content" placeholder="Type your message">
                     <div class="input-group-append">
                         <button class="btn btn-primary chatgpt_new_message" type="button">Send</button>
                     </div>
@@ -39,7 +41,6 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
 {% endblock %}

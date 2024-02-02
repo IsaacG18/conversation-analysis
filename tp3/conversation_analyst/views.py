@@ -361,6 +361,36 @@ def chatgpt_page(request, chatgpt_slug):
     messages = ChatGPTMessage.objects.filter(convo = convo)
     return render(request, "conversation_analyst/chatgpt.html", {"chats": chats, "convo":convo, "messages": messages}) 
 
+def message(request):
+    chatgpt_slug = request.GET['chatgpt_slug']
+    message_content = request.GET['message_content']
+    convo = ChatGPTConvo.objects.get(slug = chatgpt_slug)
+    messages = ChatGPTMessage.objects.filter(convo = convo)
+    conversation_history = []
+    for message in messages:
+        conversation_history.append( {"role": message.typeOfMessage, "content": message.content})
+
+    client = OpenAI(
+    api_key="",
+    )
+    
+
+    conversation_history.append({"role": "user", "content": message_content})
+    add_chat_message("user", message_content, convo)
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            *conversation_history
+        ]
+    )
+
+    reply = response.choices[0].message.content
+    conversation_history.append({"role": "assistant", "content": reply})
+    add_chat_message("assistant", reply, convo)
+
+    messages = ChatGPTMessage.objects.filter(convo = convo)
+    return JsonResponse({"results": render_to_string('conversation_analyst/chatgpt_messages.html',{"convo":convo, "messages": messages})})
 
 # def demo_keywords():
 #     if default_suite.has_keywords() == False:
