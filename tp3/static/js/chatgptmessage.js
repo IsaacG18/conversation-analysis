@@ -2,6 +2,7 @@ $(document).ready(function () {
     $(".chatgpt_new_message").click(function () {
         var message_content = document.getElementById('message_content').value;
         document.getElementById('message_content').value = ""
+        document.getElementById('loading_message').innerHTML = "Loading Response"
         if (message_content.trim() == ""){return;}
         var pageSlug = window.location.pathname.split('/').pop(); 
         var formattedResult = formatMediaString(message_content);
@@ -10,7 +11,7 @@ $(document).ready(function () {
                 {'message_content':message_content,'chatgpt_slug': pageSlug},
                 function(data) {
                     $('.results').replaceWith(data.results);
-                    document.getElementById('message_content').value = ""
+                    document.getElementById('loading_message').innerHTML = ""
                 });
     })
 
