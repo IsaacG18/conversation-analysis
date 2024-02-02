@@ -141,7 +141,7 @@ class ChatGPTConvo(models.Model):
     slug = models.SlugField(unique=True)
     def save(self, *args, **kwargs):
         self.title = self.file.slug
-        self.slug = slugify(self.title+" "+ str(self.date))
+        self.slug = slugify(self.title+" "+ str(self.id))
         super(ChatGPTConvo, self).save(*args, **kwargs)
 
 
