@@ -102,6 +102,7 @@
             </div>
           </div>
           <button class="btn btn-outline-success chatgpt_new_message">New ChatGPT</button>
+          <button class="btn btn-outline-success"><a href="{%  url 'chatgpt_page_without_slug' %}">Existing ChatGPT</a></button>
           {% if file %}
           <button class="btn btn-outline-success"><a href="{%  url 'export_view' file.slug %}">Download XML</a></button>
           {% endif %}

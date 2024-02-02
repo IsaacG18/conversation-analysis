@@ -361,6 +361,10 @@ def chatgpt_page(request, chatgpt_slug):
     messages = ChatGPTMessage.objects.filter(convo = convo)
     return render(request, "conversation_analyst/chatgpt.html", {"chats": chats, "convo":convo, "messages": messages}) 
 
+def chatgpt_page_without_slug(request):
+    chats = ChatGPTConvo.objects.order_by('-date')
+    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats}) 
+
 def message(request):
     chatgpt_slug = request.GET['chatgpt_slug']
     message_content = request.GET['message_content']

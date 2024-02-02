@@ -34,12 +34,14 @@
             <div class="chat-container mt-3">
                 {% include "conversation_analyst/chatgpt_messages.html" %}
                 <h3 id ="loading_message"></h3>
+                {% if messages %}
                 <div class="input-group mt-3">
                     <input type="text" class="form-control" id = "message_content" placeholder="Type your message">
                     <div class="input-group-append">
                         <button class="btn btn-primary chatgpt_new_message" type="button">Send</button>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
