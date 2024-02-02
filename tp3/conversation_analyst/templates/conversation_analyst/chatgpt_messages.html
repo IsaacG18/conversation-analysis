@@ -1,0 +1,15 @@
+<div class="chat-messages results">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="media">
+            <img src="https://via.placeholder.com/50" class="mr-3 rounded-circle" alt="User Image">
+            <div class="media-body">
+                <h5 class="mt-0">{{message.typeOfMessage}}</h5>
+                {{message.content}}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <strong>There are no convo present.</strong>
+    {% endif %}
+</div>

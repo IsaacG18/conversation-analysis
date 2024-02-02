@@ -26,26 +26,12 @@
 
         <div class="col-md-9">
             <div class="chat-container mt-3">
-                <div class="chat-messages">
-                    {% if messages %}
-                        {% for message in messages %}
-                        <div class="media">
-                            <img src="https://via.placeholder.com/50" class="mr-3 rounded-circle" alt="User Image">
-                            <div class="media-body">
-                                <h5 class="mt-0">{{message.typeOfMessage}}</h5>
-                                {{message.content}}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                    <strong>There are no convo present.</strong>
-                    {% endif %}
-                </div>
+                {% include "conversation_analyst/chatgpt_messages.html" %}
 
                 <div class="input-group mt-3">
-                    <input type="text" class="form-control" placeholder="Type your message">
+                    <input type="text" class="form-control message_content" placeholder="Type your message">
                     <div class="input-group-append">
-                        <button class="btn btn-primary" type="button">Send</button>
+                        <button class="btn btn-primary chatgpt_new_message" type="button">Send</button>
                     </div>
                 </div>
             </div>
