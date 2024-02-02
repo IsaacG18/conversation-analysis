@@ -349,7 +349,8 @@ def chatgpt_new_message(request):
         print(e)
         return JsonResponse({'result': 'error', 'message': 'Internal Server Error'})
 def chatgpt_page(request, chatgpt_slug):
-    return render(request, "conversation_analyst/chatgpt.html")
+    chats = ChatGPTConvo.objects.order_by('-date')
+    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats}) 
 
 
 # def demo_keywords():
