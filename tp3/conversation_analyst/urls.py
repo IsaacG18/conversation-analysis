@@ -20,4 +20,6 @@ urlpatterns = [
     path('check_suite', views.check_suite, name='check_suite'),
     path('risk_update', views.risk_update, name='risk_update'),
     path('rename_file', views.rename_file, name='rename_file'),
+    path('suite_selection/<slug:file_slug>', views.suite_selection, name='suite_selection'),
+    path('clear_duplicate_submission', views.clear_duplicate_submission, name='clear_duplicate_submission'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

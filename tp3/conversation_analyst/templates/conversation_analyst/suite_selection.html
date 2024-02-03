@@ -1,0 +1,79 @@
+{% extends "conversation_analyst/base.html" %}
+
+{% block title %}
+    <title>Settings</title>
+{% endblock %}
+
+{% block body %}
+{% load static %}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+<script type="text/javascript" src="{% static 'js/suiteSelection.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+
+<div class="container-fluid px-5 w-75" id="suite-selectoin-containter">
+    <div id="div" class="row justify-content-center">
+        <div id="div" class="col-4">
+            <div class="list-group" id="suite-list">
+                <div class="list-group-item disabled list-header">
+                            <span>Suites</span>
+                </div>
+                {% if keyword_suites %}
+                {% for suite in keyword_suites %}
+                <div class="list-group-item list-group-item-action suite-item" id="suite-item-{{ suite.id }}">
+                    <div class="row d-flex align-items-center justify-content-between">
+                        <div class="col-9 form-check" id="suite-check-{{ suite.id }}">
+                            {% csrf_token %}
+                            {% if suite.default %}
+                            <input class="form-check-input" type="checkbox" value="{{ suite.id }}" id="checkbox-{{ suite.id }}" checked>
+                            {% else %}
+                            <input class="form-check-input" type="checkbox" value="{{ suite.id }}" id="checkbox-{{ suite.id }}">
+                            {% endif %}
+                            <label class="form-check-label" for="checkbox-{{ suite.id }}">
+                            {{ suite.name }}
+                            </label>
+                      </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-8">
+            <div class="list-group" id="keyword-list">
+                <div class="list-group-item disabled list-header">
+                    <div class="row d-flex align-items-center justify-content-between">
+                        <span class="col-3">Keywords</span>
+                        <span class="col-2">Risk Factor</span>
+                    </div>
+                </div>
+                {% if risk_words %}
+                {% for risk_word in risk_words %}
+                <div class="list-group-item list-group-item-action keyword-item" id="keyword-item-{{ risk_word.id }}">
+                    <div class="row d-flex align-items-center justify-content-between">
+                      <div class="col-8">
+                            <a href="#" class="text-reset text-decoration-none">{{ risk_word.keyword }}</a>
+                      </div>
+                      <div class="col-1">
+                        <span class="keyword-risk" id="risk-{{ risk_word.id }}">{{ risk_word.risk_factor }}</span>
+                      </div>
+                    </div>
+                    <div class="row align-items-center error-row" id="error-row-{{risk_word.id}}">
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="row my-5">
+        <form method="POST" action="{% url 'suite_selection' file_slug %}" class="d-flex justify-content-end">
+            {% csrf_token %}
+            <div class="col-auto mx-2"><button type="button" class="btn btn-secondary" name="back" id="back-btn">Back</button></div>
+            <div class="col-auto mx-2"><button type="submit" class="btn btn-primary" name="analyse" id="proceed-btn">Proceed</button></div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}

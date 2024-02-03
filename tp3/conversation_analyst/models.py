@@ -13,10 +13,8 @@ class File(models.Model):
     slug = models.SlugField(unique=True)
 
     def init_save(self, *args, **kwargs):
-        self.title = Path(self.file.name).stem
-        partition = self.file.name.partition(".")
-        self.format = partition[-1]
-        self.title = self.title + "." + self.format
+        self.title = self.file.name.split("/")[-1]
+        self.format = self.title.split(".")[-1]
         self.slug = slugify(self.title+" "+str(self.date))
         super(File, self).save(*args, **kwargs)
 

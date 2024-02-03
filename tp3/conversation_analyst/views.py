@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .scripts.data_ingestion import ingestion
+from .scripts.data_ingestion.file_process import check_file, process_file
 from .scripts.nlp.nlp import *
 from .scripts.data_ingestion.plotter import plots
 from .scripts.object_creators import *
@@ -23,8 +24,6 @@ from django.conf import settings
 
 from .forms import UploadFileForm
 from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat
-
-# default_suite = Keywords()
 
 
 def homepage(request, query=None):
@@ -48,16 +47,16 @@ def upload(request):
 
             # Create file object
             uploaded_file = request.FILES["file"]
+            uploaded_file.name
 
             # Save the file and process
             file_obj = File.objects.create(file=uploaded_file)
             file_obj.init_save()
-            default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
-            keyword_suites = default_plan.keywordsuite_set.all()
-            keywords = RiskWord.objects.filter(suite__in=keyword_suites)
+
             try:
-                process_file(file_obj, delimiters=file_delimeters, keywords=keywords)
-                return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
+                check_file(file_obj, delimiters=file_delimeters)
+                # proceed to keyword suite selection
+                return HttpResponseRedirect(reverse('suite_selection', kwargs={'file_slug': file_obj.slug}))
             except ValueError as e:
                 file_obj.delete()
                 return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e)})
@@ -87,39 +86,6 @@ def content_review(request, file_slug):
 
     except File.DoesNotExist:
         return HttpResponse("File not exist")
-
-
-
-def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keywords=Keywords()):
-    directory = os.path.join(settings.MEDIA_ROOT, 'uploads')
-    file_path = os.path.join(directory, file.title)
-
-    if not file.title.endswith(('.docx', '.txt', '.csv')):
-        raise ValueError("Unsupported file type. Only .txt, .csv and .docx are supported.")
-
-
-    chat_messages = ingestion.parse_chat_file(file_path, delimiters)
-    message_count = create_arrays(chat_messages)
-    nlp_text, person_and_locations = tag_text(chat_messages, keywords, ["PERSON", "GPE"])
-    risk_words = get_top_n_risk_keywords(nlp_text, 10)
-    common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
-    generate_analysis_objects(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
-
-
-def generate_analysis_objects(file, chat_messages, message_count, person_and_locations, risk_words, common_topics):
-    persons = person_and_locations['PERSON']
-    locations = person_and_locations['GPE']
-
-    for message in chat_messages:
-        m = add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"],  message["risk"])
-    a = add_analysis(file)
-    add_vis(a, plots(chat_messages, file.slug))
-    for person in persons:
-        p = add_person(a, person)
-    for location in locations:
-        p = add_location(a, location)
-    for risk_word in risk_words:
-        r = add_risk_word_result(a, risk_word[0], risk_word[2], risk_word[1])
 
 
 def filter_view(request):
@@ -321,25 +287,39 @@ def export_view(request, file_slug):
     response['Content-Disposition'] = f'attachment; filename="{file_slug}_exported_data.xml"'
     return response  
 
-# def demo_keywords():
-#     if default_suite.has_keywords() == False:
-#         default_suite.add_keyword("perfect", ["Good", "Really Good"], 8)
-#         default_suite.add_keyword("old", ["Time"], 2)
-#         default_suite.add_keyword("nice", ["Good"], 3)
-#         default_suite.add_keyword("galaxy", ["Space", "Time"], 5)
-#         default_suite.add_keyword("amazing", ["Awesome", "Fantastic"], 7)
-#         default_suite.add_keyword("young", ["Youthful"], 4)
-#         default_suite.add_keyword("awesome", ["Great", "Fantastic"], 6)
-#         default_suite.add_keyword("technology", ["Innovation", "Science"], 9)
-#         default_suite.add_keyword("beautiful", ["Attractive", "Stunning"], 5)
-#         default_suite.add_keyword("community", ["Society", "Neighbors"], 5)
-#         default_suite.add_keyword("innovation", ["Creativity", "Invention"], 6)
-#         default_suite.add_keyword("cozy", ["Comfortable", "Warm"], 4)
-#         default_suite.add_keyword("delicious", ["Tasty", "Yummy"], 7)
-#         default_suite.add_keyword("friendship", ["Companionship", "Buddy"], 6)
-#         default_suite.add_keyword("relaxing", ["Calming", "Unwinding"], 5)
-#         default_suite.add_keyword("celebration", ["Party", "Festivity"], 8)
-#         default_suite.add_keyword("curious", ["Inquisitive", "Interested"], 5)
-#         default_suite.add_keyword("efficient", ["Productive", "Streamlined"], 7)
-#         default_suite.add_keyword("refreshing", ["Invigorating", "Revitalizing"], 6)
-#     return default_suite
+
+def suite_selection(request, file_slug):
+    if request.method == 'GET':
+        keyword_suites = KeywordSuite.objects.all()
+        if len(keyword_suites) == 0:
+            context_dict = {}
+        else:
+            suite = keyword_suites[0]
+            risk_words = RiskWord.objects.filter(suite=suite)
+            context_dict = {'keyword_suites': keyword_suites, 'risk_words':risk_words}
+            
+        context_dict['file_slug'] = file_slug
+        return render(request, "conversation_analyst/suite_selection.html", context=context_dict)
+    
+    else:
+        default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
+        keyword_suites = default_plan.keywordsuite_set.all()
+        keywords = RiskWord.objects.filter(suite__in=keyword_suites)
+        file_delimeters = [["Timestamp", ","], ["Sender", ":"]] # temporarily set to default, await integration
+        try:
+            file_obj = File.objects.get(slug=file_slug)
+            process_file(file_obj, keywords, delimiters=file_delimeters)
+            return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
+        except Exception as e:
+            return HttpResponse("Error while processing file")
+        
+def clear_duplicate_submission(request):
+    if request.method == 'GET':
+        try:
+            file_slug = request.GET['file_slug']
+            File.objects.get(slug=file_slug).delete()
+            return HttpResponse('File deleted')  
+        except Exception as e:
+            print(f'exception: {e}')
+            return HttpResponse('An error occured while trying to delete the file')
+    
