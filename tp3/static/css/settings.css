@@ -9,3 +9,7 @@
     border: #F0F8FF;
     color: #000000;
 }
+
+#suite-selection-container {
+    max-width: 540px;
+}

@@ -59,7 +59,17 @@
     line-height: 1;
 }
 
+body {
+    height: 100%;
+    overflow-y: hidden;
+ }
+
 #message_output{
-    height: 90vh;
+    height: 92vh;
+    overflow-y: scroll;
+}
+
+#analysis{
+    height: 92vh;
     overflow-y: scroll;
 }

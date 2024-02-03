@@ -2,9 +2,9 @@ import numpy as np
 import plotly.graph_objects as go
 import os
 
-def plots(chat_messages, name):
-    name = name.split('.')[0]+'_plot.png'
-    file_location = "/media/vis_uploads/"
+def plots(chat_messages, name, analysis_id):
+
+    name = name.split('.')[0]+'_plot' + analysis_id + '.png'
     senders = set(message['Sender'] for message in chat_messages)
     data = {sender: {'timestamps': [], 'message_lengths': [], 'message_risk':[], 'message_name_count':[], 'message_location_count':[] } for sender in senders}
     for message in chat_messages:
@@ -67,8 +67,14 @@ def plots(chat_messages, name):
         title='Message Length Over Time',
         legend=dict(orientation="h"),
     )
-    plots_folder = os.getcwd() + file_location
-    plot_path = os.path.join(plots_folder, name)
-    fig.write_image(plot_path)
-    print("test")
-    return file_location + name
+    
+    try:
+        plots_folder = os.getcwd() + '/media/vis_uploads'
+        if not os.path.exists(plots_folder):
+            os.makedirs(plots_folder)
+        
+        plot_path = os.path.join(plots_folder, name)
+        fig.write_image(plot_path)
+        return 'vis_uploads/' + name
+    except Exception as e:
+        print(f"an error occurs in plotting. message: {e}")

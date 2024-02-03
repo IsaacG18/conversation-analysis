@@ -13,7 +13,10 @@ def add_file(file):
 
 
 def add_analysis(file):
-    a = Analysis.objects.get_or_create(file=file)[0]
+    a, created = Analysis.objects.get_or_create(file=file)
+    if not created:
+        a.delete()
+        a = Analysis.objects.create(file=file)
     a.save()
     return a
 
