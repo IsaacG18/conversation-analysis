@@ -77,15 +77,17 @@ def content_review(request, file_slug):
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
         risk_words = RiskWordResult.objects.filter(analysis=analysis)
-        vis_path = VisFile.objects.filter(analysis=analysis)
+        vis_path = VisFile.objects.filter(analysis=analysis)[0]
 
         context_dict = {'messages': messages, 'persons': persons,
-                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path[0].file_path, "file":file}
+                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path.file_path, "file":file}
 
         return render(request, "conversation_analyst/content_review.html", context=context_dict)
 
     except File.DoesNotExist:
         return HttpResponse("File not exist")
+    except Analysis.DoesNotExist:
+        return HttpResponse("Analysis not exist")
 
 
 def filter_view(request):
@@ -203,7 +205,6 @@ def check_suite(request):
         keyword_plan = KeywordPlan.objects.get_or_create(name='global')[0]
         is_keyword_in_plan = keyword_plan in suite.plans.all()
         if (is_keyword_in_plan != isChecked):
-            print(isChecked)
             if (isChecked):
                 suite.plans.add(keyword_plan)
                 suite.default = True
@@ -213,7 +214,7 @@ def check_suite(request):
                 suite.default = False
                 response+="unchecked"
         suite.save()
-        print(suite.plans.all())
+
         return HttpResponse(suite.name + " is " + response + " in " + keyword_plan.name + " plan")
     
     
@@ -317,8 +318,11 @@ def clear_duplicate_submission(request):
     if request.method == 'GET':
         try:
             file_slug = request.GET['file_slug']
-            File.objects.get(slug=file_slug).delete()
-            return HttpResponse('File deleted')  
+            file_obj = File.objects.get(slug=file_slug)
+            if not Analysis.objects.filter(file=file_obj).exists():
+                file_obj.delete()
+                return HttpResponse('File deleted')
+            else: return HttpResponse('File kept')
         except Exception as e:
             print(f'exception: {e}')
             return HttpResponse('An error occured while trying to delete the file')

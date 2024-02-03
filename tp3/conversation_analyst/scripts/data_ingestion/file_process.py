@@ -22,6 +22,7 @@ def process_file(file, keywords, delimiters=[["Timestamp", ","], ["Sender", ":"]
     nlp_text, person_and_locations = tag_text(chat_messages, keywords, ["PERSON", "GPE"])
     risk_words = get_top_n_risk_keywords(nlp_text, 10)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
+    print("start generate analysis objects...")
     generate_analysis_objects(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
     
     
@@ -32,7 +33,7 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
     for message in chat_messages:
         m = object_creators.add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"],  message["risk"])
     a = object_creators.add_analysis(file)
-    object_creators.add_vis(a, plotter.plots(chat_messages, file.slug))
+    object_creators.add_vis(a, plotter.plots(chat_messages, file.slug, str(a.id)))
     for person in persons:
         p = object_creators.add_person(a, person)
     for location in locations:
