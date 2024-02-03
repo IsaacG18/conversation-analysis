@@ -17,13 +17,14 @@ from django.db.models import Q
 import json
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
+from openai import OpenAI
 
 
 import os
 from django.conf import settings
 
 from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat, ChatGPTConvo
 
 
 def homepage(request, query=None):
@@ -288,6 +289,79 @@ def export_view(request, file_slug):
     response['Content-Disposition'] = f'attachment; filename="{file_slug}_exported_data.xml"'
     return response  
 
+        
+
+def chatgpt_new_message(request):
+    file_slug = request.GET['file_slug']
+    start_date = request.GET.get('startDate')
+    end_date = request.GET.get('endDate')
+    full_url =  request.GET.get('full_url')
+    try:
+        file = File.objects.get(slug=file_slug)
+
+        convo = ChatGPTConvo.objects.create(file=file)
+        convo.save()
+        filter_params = {'file': file}
+        if start_date: 
+            convo.start = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
+            filter_params['timestamp__gte'] = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
+        if end_date:
+            convo.end = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
+            filter_params['timestamp__lte'] = datetime.strptime(end_date, '%Y-%m-%dT%H:%M')
+        messages = Message.objects.filter(**filter_params)
+        
+
+        system_message = "You are answering questions about a some text messages with lots of detail, the formated of the messages will be'<Timestamp>: <Name>: <Message> \n"
+        for message in messages:
+            system_message += f"{message.timestamp}: {message.sender}:  {message.content} \n"
+
+        add_chat_message("system", system_message, convo)
+        return JsonResponse({"url":convo.slug})
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({'result': 'error', 'message': 'Internal Server Error'})
+def chatgpt_page(request, chatgpt_slug):
+    chats = ChatGPTConvo.objects.order_by('-date')
+    convo = ChatGPTConvo.objects.get(slug = chatgpt_slug)
+    messages = ChatGPTMessage.objects.filter(convo = convo)
+    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats, "convo":convo, "messages": messages}) 
+
+def chatgpt_page_without_slug(request):
+    chats = ChatGPTConvo.objects.order_by('-date')
+    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats}) 
+
+def message(request):
+    chatgpt_slug = request.GET['chatgpt_slug']
+    message_content = request.GET['message_content']
+    convo = ChatGPTConvo.objects.get(slug = chatgpt_slug)
+    messages = ChatGPTMessage.objects.filter(convo = convo)
+    conversation_history = []
+    for message in messages:
+        conversation_history.append( {"role": message.typeOfMessage, "content": message.content})
+
+    client = OpenAI(
+    api_key="",
+    )
+    
+
+    conversation_history.append({"role": "user", "content": message_content})
+    add_chat_message("user", message_content, convo)
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            *conversation_history
+        ]
+    )
+
+    reply = response.choices[0].message.content
+    conversation_history.append({"role": "assistant", "content": reply})
+    add_chat_message("assistant", reply, convo)
+
+    messages = ChatGPTMessage.objects.filter(convo = convo)
+    return JsonResponse({"results": render_to_string('conversation_analyst/chatgpt_messages.html',{"convo":convo, "messages": messages})})
+
 
 def suite_selection(request, file_slug):
     if request.method == 'GET':
@@ -326,4 +400,4 @@ def clear_duplicate_submission(request):
         except Exception as e:
             print(f'exception: {e}')
             return HttpResponse('An error occured while trying to delete the file')
-    
+
