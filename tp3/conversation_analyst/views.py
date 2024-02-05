@@ -37,7 +37,7 @@ def homepage(request, query=None):
 
 def upload(request):
     delims = Delimiter.objects.all()
-    
+
     if len(delims) == 0:
         initialise_delim("Timestamp", ",", 1, True)
         initialise_delim("Sender", ":", 2, True)
@@ -45,9 +45,8 @@ def upload(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            #Accessing sorted delimiters by order, constructing delim pairs
-            # delims = Delimiter.objects.filter(order__gt=0).order_by('order')
-            # delim_pairs = [[delim.name, delim.value] for delim in delims]
+            delims = Delimiter.objects.filter(order__gt=0).order_by('order')
+            delim_pairs = [[delim.name, delim.value] for delim in delims]
 
             uploaded_file = request.FILES["file"]
             file_obj = File.objects.create(file=uploaded_file)
@@ -59,9 +58,9 @@ def upload(request):
             try:
                 try:
                     timestamp = DateFormat.objects.get(name=request.POST["selected_timestamp"])
-                    process_file(file_obj,keywords=keywords, date_format=timestamp.format)
+                    process_file(file_obj, delimiters=delim_pairs, keywords=keywords, date_format=timestamp.format)
                 except DateFormat.DoesNotExist:
-                    process_file(file_obj, keywords=keywords)
+                    process_file(file_obj,delimiters=delim_pairs,keywords=keywords)
                 return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
             except ValueError as e:
                 file_obj.delete()
@@ -103,7 +102,6 @@ def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], date_fo
 
     if not file.title.endswith(('.docx', '.txt', '.csv')):
         raise ValueError("Unsupported file type. Only .txt, .csv and .docx are supported.")
-
 
     chat_messages = ingestion.parse_chat_file(file_path, delimiters, date_format)
     message_count = create_arrays(chat_messages)

@@ -24,7 +24,7 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
     messages = []
     lines = []
 
-
+    print(delimiters)
 
     try:
         if file_path.endswith('.docx'):
