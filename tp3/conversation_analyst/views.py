@@ -36,13 +36,18 @@ def homepage(request, query=None):
         return render(request, "conversation_analyst/homepage.html", {"files": files})
 
 def upload(request):
+    delims = Delimiter.objects.all()
+    
+    if len(delims) == 0:
+        initialise_delim("Timestamp", ",", 1, True)
+        initialise_delim("Sender", ":", 2, True)
+
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             #Accessing sorted delimiters by order, constructing delim pairs
             # delims = Delimiter.objects.filter(order__gt=0).order_by('order')
             # delim_pairs = [[delim.name, delim.value] for delim in delims]
-            selected_timestamp_id = request.POST["selected_timestamp"]
 
             uploaded_file = request.FILES["file"]
             file_obj = File.objects.create(file=uploaded_file)
@@ -299,10 +304,6 @@ def rename_file(request):
 #     return default_suite
 
 def settings_delim(request):
-    delims = Delimiter.objects.all()
-    if len(delims) == 0:
-        initialise_delim("Timestamp", ",", 1, True)
-        initialise_delim("Sender", ":", 2, True)
     delims = Delimiter.objects.all()
 
     context_dict = {'delimiters': delims}

@@ -38,10 +38,20 @@ $(document).ready(function () {
 
     $('#new-delim-form').submit(function (e) {
         e.preventDefault();
-        if ($(this).valid() == true) {
+
+        if ($(this).valid()) {
             var newDelimName = $('#new-delim-name').val();
             var newDelimValue = $('#new-delim-value').val();
             var newDelimOrder = $('#new-delim-order').val();
+
+            if (getOrders().includes(newDelimOrder)) {
+                handleCreateDelimError('Order already exists. Please choose a different order.');
+                return;
+            }
+            if (/^[a-zA-Z0-9]+$/.test(newDelimValue)) {
+                handleCreateDelimError('Delimiter must be a symbol. Please choose a different delimiter.');
+                return;
+            }
 
             $.ajax({
                 type: 'POST',
@@ -49,35 +59,35 @@ $(document).ready(function () {
                 headers: {
                     'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
                 },
-                data: { 'name': newDelimName, 'value': newDelimValue, 'order': newDelimOrder},
+                data: { 'name': newDelimName, 'value': newDelimValue, 'order': newDelimOrder },
                 success: function (response) {
                     delimId = response.delimId;
                     $('#new-delim').val('');
                     $('tbody.delims').append(`
-                        <tr class="delim-item" id="delim-item-${delimId}">
-                            <td>
-                                <div class="row align-items-center">
-                                    <div class="col-4">
-                                        <input type="number" class="form-control delim-order" value="${newDelimOrder}"
-                                            id="delim-${delimId}" name="order">
-                                    </div>
-                                    <div class="col-8">
-                                        <a href="#" class="text-reset text-decoration-none">${newDelimName}</a>
-                                    </div>
-                                    <div class="row align-items-center error-row" id="error-row-${delimId}">
-                            </div>
+                    <tr class="delim-item" id="delim-item-${delimId}">
+                        <td>
+                            <div class="row align-items-center">
+                                <div class="col-4">
+                                    <input type="number" class="form-control delim-order" value="${newDelimOrder}"
+                                        id="delim-${delimId}" name="order">
                                 </div>
-                            </td>
-                            <td class="col-6 text-center">
-                                <input type="text" href="#" class="form-control delim-value" value="${newDelimValue}">
-                            </td>
-                            <td>
-                            <div class="col-3">
-                                <button type="button" class="btn btn-danger btn-sm delete-delim" value="{{ delim.id }}" id="delete-delim-{{ delim.id }}">Delete</button>
+                                <div class="col-8">
+                                    <a href="#" class="text-reset text-decoration-none">${newDelimName}</a>
+                                </div>
+                                <div class="row align-items-center error-row" id="error-row-${delimId}">
+                        </div>
                             </div>
                         </td>
-                        </tr>
-                    `);
+                        <td class="col-6 text-center">
+                            <input type="text" href="#" class="form-control delim-value" value="${newDelimValue}">
+                        </td>
+                        <td>
+                        <div class="col-3">
+                            <button type="button" class="btn btn-danger btn-sm delete-delim" value="{{ delim.id }}" id="delete-delim-{{ delim.id }}">Delete</button>
+                        </div>
+                    </td>
+                    </tr>
+                `);
 
                     $(`#delete-delim-${delimId}`).click(function (e) {
                         deleteDelimClick(e);
@@ -85,19 +95,20 @@ $(document).ready(function () {
 
                     $(`#order-${delimId}`).blur(function (e) {
                         OrderBlur(e);
-                    })
+                    });
+
                     alert(response.message);
                 },
                 error: function (jqXHR) {
-                    var errorMessage = 'An error occurred';
-                    if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
-                        errorMessage = jqXHR.responseJSON.detail;
-                    }
-                    alert(errorMessage);
+                    handleCreateDelimError(jqXHR.responseJSON && jqXHR.responseJSON.detail || 'An error occurred');
                 }
             });
         }
     });
+
+    function handleCreateDelimError(errorMessage) {
+        alert(errorMessage);
+    }
 
     function deleteDelimClick(e) {
         delimId = $(e.target).val();
@@ -110,47 +121,66 @@ $(document).ready(function () {
                 alert(data);
                 id = '#delim-item-' + delimId;
                 $(id).remove()
-            
+
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 console.error('AJAX Error:', textStatus, errorThrown);
             }
         })
     }
-    
+
     function validateOrderInput(input) {
         if (input < 0 || input > 5) { return false; }
         else return true;
     }
-    
+
+    var oldOrders = [];
+
+    function getOrders() {
+        var existingOrders = [];
+        $('.delim-order').each(function () {
+            existingOrders.push(($(this).val()));
+        });
+        return existingOrders;
+    }
+
+    $('.delim-order').focus(function (e) {
+        oldOrders = getOrders();
+    });
+
     function OrderBlur(e) {
         var order = $(e.target).val();
         var delimId = $(e.target).attr('id').split("-")[1];
-    
-        if (validateOrderInput(order) == true) {
-            $(`#error-row-${delimId}`).empty();
-            $.ajax({
-                type: 'POST',
-                url: "/order_update",
-                headers: {
-                    'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
-                },
-                data: { 'delim': delimId, 'order': order },
-                success: function (response) {
-                    console.log(response);
-                },
-                error: function (jqXHR) {
-                    var errorMessage = 'An error occurre';
-                    if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
-                        errorMessage = jqXHR.responseJSON.detail;
-                    }
-                    alert(errorMessage);
-                }
-            })
-        }
-        else {
+
+        if (oldOrders.includes(order)) {
             error_row = $(`#error-row-${delimId}`);
-            error_row.append('<span>Please input a number between 0 and 5</span>');
+            error_row.append('<span>Order must be unique.</span>');
+        } else {
+            if (validateOrderInput(order)) {
+                $(`#error-row-${delimId}`).empty();
+                $.ajax({
+                    type: 'POST',
+                    url: "/order_update",
+                    headers: {
+                        'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    data: { 'delim': delimId, 'order': order },
+                    success: function (response) {
+                        console.log(response);
+                    },
+                    error: function (jqXHR) {
+                        var errorMessage = 'An error occurred';
+                        if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
+                            errorMessage = jqXHR.responseJSON.detail;
+                        }
+                        alert(errorMessage);
+                    }
+                });
+            } else {
+                error_row = $(`#error-row-${delimId}`);
+                error_row.append('<span>Please input a number between 0 and 5</span>');
+            }
         }
     }
+
 });
