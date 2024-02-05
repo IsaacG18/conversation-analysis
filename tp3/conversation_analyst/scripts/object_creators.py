@@ -1,4 +1,4 @@
-from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, ChatGPTConvo, ChatGPTMessage
+from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, ChatGPTConvo, ChatGPTMessage, ChatGPTFilter, ChatGPTConvoFilter
 
 def add_message(file, timestamp, sender, message, display_message, risk_rating=0):
     m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message, risk_rating=risk_rating)[0]
@@ -59,3 +59,10 @@ def add_chat_convo(slug, title, file, start=None, end=None):
     c = ChatGPTConvo.objects.create(slug=slug, title=title, file=file, start=start, end=end)
     c.save()
     return c
+
+def add_chat_filter(content, typeOfFilter, convo):
+    f = ChatGPTFilter.objects.create(typeOfFilter=typeOfFilter,content=content)
+    f.save()
+    fc = ChatGPTConvoFilter.objects.create(convo=convo, filter=fc)
+    fc.save()
+    return f, fc

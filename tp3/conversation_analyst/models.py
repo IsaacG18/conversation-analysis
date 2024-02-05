@@ -148,4 +148,12 @@ class ChatGPTMessage(models.Model):
     content = models.CharField(max_length=1000)
     convo = models.ForeignKey(ChatGPTConvo, on_delete=models.CASCADE)
 
-    
+class ChatGPTFilter(models.Model):
+    typeOfFilter = models.CharField(max_length=64)
+    content = models.CharField(max_length=128)
+
+
+class ChatGPTConvoFilter(models.Model):
+    convo = models.ForeignKey(ChatGPTConvo, on_delete=models.CASCADE)
+    filter = models.ForeignKey(ChatGPTFilter, on_delete=models.CASCADE)
+
