@@ -62,12 +62,9 @@ def upload(request):
                 except DateFormat.DoesNotExist:
                     process_file(file_obj,delimiters=delim_pairs,keywords=keywords)
                 return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
-            except ValueError as e:
+            except (ValueError, ValidationError) as e:
                 file_obj.delete()
-                return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e)})
-            except ValidationError as e:
-                file_obj.delete()
-                return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e)})
+                return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e), 'delimiters': Delimiter.objects.all(), 'timestamps': DateFormat.objects.all()})
     else:
         form = UploadFileForm()
 
