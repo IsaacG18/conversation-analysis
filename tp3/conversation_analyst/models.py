@@ -135,7 +135,8 @@ class Delimiter(models.Model):
     name = models.CharField(max_length=100)
     value = models.CharField(max_length=10)
     order = models.IntegerField(default=0)
-    
+    is_default = models.BooleanField(default=False)
+
     def get_name(self):
         return self.name
 

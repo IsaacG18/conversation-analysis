@@ -43,9 +43,15 @@
                             <input type="text" href="#" class="form-control delim-value" value="{{ delim.value }}">
                         </td>
                         <td>
+                            {% if delim.is_default %}
+                            <div class="col-3">
+                                <button type="button" hidden class="btn btn-danger btn-sm delete-delim" value="{{ delim.id }}" id="delete-delim-{{ delim.id }}">Delete</button>
+                            </div>
+                            {% elif not delim.is_default %}
                             <div class="col-3">
                                 <button type="button" class="btn btn-danger btn-sm delete-delim" value="{{ delim.id }}" id="delete-delim-{{ delim.id }}">Delete</button>
                             </div>
+                            {% endif %}                        
                         </td>
                     </tr>
                     {% endfor %}
@@ -98,7 +104,9 @@
                     {% for stamp in timestamps %}
                     <tr>
                         <td>
-                            <input type="checkbox" name="selected_timestamps" value="{{ stamp.name }}">
+                            <div class="form-check">
+                                <input class="form-check-input timestamp-input" type="radio" name="timestamp" value="{{ stamp.name }}">
+                            </div>                        
                         </td>
                         <td>{{stamp.name}}</td>
                         <td>{{stamp.example}}</td>

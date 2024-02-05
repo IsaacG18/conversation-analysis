@@ -49,12 +49,12 @@ $(document).ready(function () {
                 headers: {
                     'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
                 },
-                data: { 'name': newDelimName, 'value': newDelimValue, 'order': newDelimOrder },
+                data: { 'name': newDelimName, 'value': newDelimValue, 'order': newDelimOrder},
                 success: function (response) {
                     delimId = response.delimId;
                     $('#new-delim').val('');
                     $('tbody.delims').append(`
-                        <tr class="delim-item" id="delim-item-{{ delim.id }}">
+                        <tr class="delim-item" id="delim-item-${delimId}">
                             <td>
                                 <div class="row align-items-center">
                                     <div class="col-4">
@@ -72,10 +72,10 @@ $(document).ready(function () {
                                 <input type="text" href="#" class="form-control delim-value" value="${newDelimValue}">
                             </td>
                             <td>
-                                <div class="col-3">
-                                    <button type="button" class="btn btn-danger btn-sm delete-delim" value="${delimId}" id="delete-delim-${delimId}">Delete</button>
-                                </div>
-                            </td>
+                            <div class="col-3">
+                                <button type="button" class="btn btn-danger btn-sm delete-delim" value="{{ delim.id }}" id="delete-delim-{{ delim.id }}">Delete</button>
+                            </div>
+                        </td>
                         </tr>
                     `);
 
@@ -109,7 +109,8 @@ $(document).ready(function () {
             success: function (data) {
                 alert(data);
                 id = '#delim-item-' + delimId;
-                $(id).remove();
+                $(id).remove()
+            
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 console.error('AJAX Error:', textStatus, errorThrown);
@@ -153,4 +154,3 @@ $(document).ready(function () {
         }
     }
 });
-

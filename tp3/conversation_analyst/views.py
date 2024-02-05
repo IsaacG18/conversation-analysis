@@ -36,22 +36,13 @@ def homepage(request, query=None):
         return render(request, "conversation_analyst/homepage.html", {"files": files})
 
 def upload(request):
-    #Q: Change it into populate script???
-    # delims = Delimiter.objects.all()
-
-    # if len(delims) == 0:
-    #     initialise_delim("Timestamp", ",", 1)
-    #     initialise_delim("Sender", ":", 2)
-
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            #Accessing name of setted timestamp - TO CHANGE
-            #timestamp = request.POST.get('selected_timestamp')
-
             #Accessing sorted delimiters by order, constructing delim pairs
             # delims = Delimiter.objects.filter(order__gt=0).order_by('order')
             # delim_pairs = [[delim.name, delim.value] for delim in delims]
+            selected_timestamp_id = request.POST["selected_timestamp"]
 
             uploaded_file = request.FILES["file"]
             file_obj = File.objects.create(file=uploaded_file)
@@ -61,8 +52,11 @@ def upload(request):
             keywords = RiskWord.objects.filter(suite__in=keyword_suites)
 
             try:
-                #process_file(file_obj, delimiters=file_delimiters, keywords=keywords)
-                process_file(file_obj,keywords=keywords)
+                try:
+                    timestamp = DateFormat.objects.get(name=request.POST["selected_timestamp"])
+                    process_file(file_obj,keywords=keywords, date_format=timestamp.format)
+                except DateFormat.DoesNotExist:
+                    process_file(file_obj, keywords=keywords)
                 return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
             except ValueError as e:
                 file_obj.delete()
@@ -98,7 +92,7 @@ def content_review(request, file_slug):
 
 
 
-def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keywords=Keywords()):
+def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], date_format="%Y-%m-%dT%H:%M:%S", keywords=Keywords()):
     directory = os.path.join(settings.MEDIA_ROOT, 'uploads')
     file_path = os.path.join(directory, file.title)
 
@@ -106,7 +100,7 @@ def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], keyword
         raise ValueError("Unsupported file type. Only .txt, .csv and .docx are supported.")
 
 
-    chat_messages = ingestion.parse_chat_file(file_path, delimiters)
+    chat_messages = ingestion.parse_chat_file(file_path, delimiters, date_format)
     message_count = create_arrays(chat_messages)
     nlp_text, person_and_locations = tag_text(chat_messages, keywords, ["PERSON", "GPE"])
     risk_words = get_top_n_risk_keywords(nlp_text, 3)
@@ -307,14 +301,15 @@ def rename_file(request):
 def settings_delim(request):
     delims = Delimiter.objects.all()
     if len(delims) == 0:
-        initialise_delim("Timestamp", ",", 1)
-        initialise_delim("Sender", ":", 2)
+        initialise_delim("Timestamp", ",", 1, True)
+        initialise_delim("Sender", ":", 2, True)
     delims = Delimiter.objects.all()
+
     context_dict = {'delimiters': delims}
     return render(request, "conversation_analyst/settings_delim.html", context=context_dict)
 
-def initialise_delim(delim_name, delim_value, order_value):
-    new_obj = Delimiter.objects.create(name=delim_name, value=delim_value, order=order_value)
+def initialise_delim(delim_name, delim_value, order_value, default = False):
+    new_obj = Delimiter.objects.create(name=delim_name, value=delim_value, order=order_value, is_default=default)
     new_obj.save()
     return new_obj
 
