@@ -63,6 +63,6 @@ def add_chat_convo(slug, title, file, start=None, end=None):
 def add_chat_filter(content, typeOfFilter, convo):
     f = ChatGPTFilter.objects.create(typeOfFilter=typeOfFilter,content=content)
     f.save()
-    fc = ChatGPTConvoFilter.objects.create(convo=convo, filter=fc)
+    fc = ChatGPTConvoFilter.objects.create(convo=convo, filter=f)
     fc.save()
     return f, fc

@@ -324,8 +324,23 @@ def chatgpt_new_message(request):
 def chatgpt_page(request, chatgpt_slug):
     chats = ChatGPTConvo.objects.order_by('-date')
     convo = ChatGPTConvo.objects.get(slug = chatgpt_slug)
+    analysis = Analysis.objects.get(file=convo.file)
+    persons = Person.objects.filter(analysis=analysis)
+    locations = Location.objects.filter(analysis=analysis)
+    risk_words = RiskWordResult.objects.filter(analysis=analysis)
     messages = ChatGPTMessage.objects.filter(convo = convo)
-    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats, "convo":convo, "messages": messages}) 
+    persons, locations, risks = [], [], []
+    for person in persons:
+        p,fd = add_chat_filter(person.name,"person", convo)
+        persons.append(p)
+    for location in locations:
+        l,fd = add_chat_filter(location.name,"location", convo)
+        locations.append(l)
+    for risk_word in risk_words:
+        r,fd = add_chat_filter(risk_word.riskword.keyword,"risk", convo)
+        risks.append(r)
+
+    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats, "convo":convo, "messages": messages, "persons":persons, "locations":locations, "risks":risks}) 
 
 def chatgpt_page_without_slug(request):
     chats = ChatGPTConvo.objects.order_by('-date')
@@ -341,7 +356,7 @@ def message(request):
         conversation_history.append( {"role": message.typeOfMessage, "content": message.content})
 
     client = OpenAI(
-    api_key="",
+    api_key="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",
     )
     
 
