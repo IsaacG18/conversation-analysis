@@ -15,7 +15,7 @@ from conversation_analyst.views import generate_analysis_objects
 
 def populate_dates():
     date_formats = [
-        {"name": "ISO 8601", "example": "2022-01-24T12:34:56", "format": "%Y-%m-%d %H:%M:%S"},
+        {"name": "ISO 8601", "example": "2022-01-24T12:34:56", "format": "%Y-%m-%dT%H:%M:%S"},
         {"name": "Unix Timestamp", "example": "1643057699", "format": ""},
         {"name": "Common Log Format", "example": '127.0.0.1 - - [24/Jan/2022:12:34:56 +0300] "GET /example" 200 123', "format": "%d/%b/%Y:%H:%M:%S %z"},
         {"name": "ISO 8601 Without Seconds", "example": "2022-03-05 17:30", "format":"%Y-%m-%d %H:%M"}
