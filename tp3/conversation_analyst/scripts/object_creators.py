@@ -1,4 +1,4 @@
-from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat
+from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, Delimiter
 
 def add_message(file, timestamp, sender, message, display_message):
     m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message)[0]
@@ -46,3 +46,8 @@ def add_date(name, example,format):
     d = DateFormat.objects.get_or_create(name=name, example=example,format=format)[0]
     d.save()
     return d
+
+def add_delim(name, order, value, is_default):
+    delim = Delimiter.objects.get_or_create(name=name, order=order, value = value, is_default=is_default)[0]
+    delim.save()
+    return delim

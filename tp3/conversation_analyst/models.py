@@ -145,10 +145,10 @@ class Delimiter(models.Model):
 
     def get_order(self):
         return self.order
-        
+    
     def save(self, *args, **kwargs):
         self.value = self.value
         super(Delimiter, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.keyword.__str__()
+        return self.name.__str__()

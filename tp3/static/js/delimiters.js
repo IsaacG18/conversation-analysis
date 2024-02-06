@@ -7,20 +7,24 @@ $(document).ready(function () {
         OrderBlur(e);
     })
 
+    $('.delim-value').blur(function (e) {
+        ValueBlur(e);
+    })
+
     $('#new-delim-form').validate({
         rules: {
             name: "required",
             value: "required",
             order: {
                 required: true,
-                min: 0,
+                min: 1,
                 max: 5,
             },
         },
         messages: {
             name: "Please input a delimiter name",
             value: "Please input a delimiter value",
-            order: "Please input an order between 0 and 5"
+            order: "Please input an order between 1 and 5"
         },
         errorClass: "invalid",
         errorElement: "span",
@@ -79,7 +83,8 @@ $(document).ready(function () {
                             </div>
                         </td>
                         <td class="col-6 text-center">
-                            <input type="text" href="#" class="form-control delim-value" value="${newDelimValue}">
+                                <input type="text" href="#" class="form-control delim-value" value="${newDelimValue}" id="delim-${delimId}" name="value">
+                                <div class="row align-items-center value-error-row" id="value-error-row-${delimId}" style="color: red;font-size: 12px;">
                         </td>
                         <td>
                         <div class="col-3">
@@ -96,7 +101,9 @@ $(document).ready(function () {
                     $(`#order-${delimId}`).blur(function (e) {
                         OrderBlur(e);
                     });
-
+                    $(`#value-${delimId}`).blur(function (e) {
+                        ValueBlur(e);
+                    });
                     alert(response.message);
                 },
                 error: function (jqXHR) {
@@ -130,7 +137,7 @@ $(document).ready(function () {
     }
 
     function validateOrderInput(input) {
-        if (input < 0 || input > 5) { return false; }
+        if (input < 1 || input > 5) { return false; }
         else return true;
     }
 
@@ -178,9 +185,42 @@ $(document).ready(function () {
                 });
             } else {
                 error_row = $(`#error-row-${delimId}`);
-                error_row.append('<span>Please input a number between 0 and 5</span>');
+                error_row.append('<span>Please input a number between 1 and 5</span>');
             }
         }
     }
+
+
+    function ValueBlur(e) {
+        var value = $(e.target).val();
+        var delimId = $(e.target).attr('id').split("-")[1];
+
+        if (/^[a-zA-Z0-9]+$/.test(value)) {
+            error_row = $(`#value-error-row-${delimId}`);
+            error_row.append('<span>Please choose an non-alphanumerical symbol</span>');
+        }
+        else{
+        $(`#value-error-row-${delimId}`).empty();
+        $.ajax({
+            type: 'POST',
+            url: "/value_update",
+            headers: {
+                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            data: { 'delim': delimId, 'value': value },
+            success: function (response) {
+                console.log(response);
+            },
+            error: function (jqXHR) {
+                var errorMessage = 'An error occurred';
+                if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
+                    errorMessage = jqXHR.responseJSON.detail;
+                }
+                alert(errorMessage);
+            }
+        });
+    }
+}
+
 
 });

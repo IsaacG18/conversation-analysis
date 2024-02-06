@@ -22,5 +22,6 @@ urlpatterns = [
     path('create_delim', views.create_delimiter, name='create_delim'),
     path('delete_delim', views.delete_delimiter, name='delete_delim'),
     path('order_update', views.order_update, name='order_update'),
+    path('value_update', views.value_update, name='value_update'),
     path('settings_delim', views.settings_delim, name='settings_delim'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

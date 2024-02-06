@@ -24,7 +24,18 @@ def populate_dates():
     for date_format_data in date_formats:
         add_date(date_format_data["name"], date_format_data["example"], date_format_data["format"])
 
+def populate_delims():
+    delimiters = [
+        {"name": "Timestamp", "order": "1", "value": ",", "is_default": "True"},
+        {"name": "Sender", "order": "2", "value": ":", "is_default": "True"},
+    ]
+
+    for delim in delimiters:
+        add_delim(delim["name"], delim["order"], delim["value"], delim["is_default"])
+
+
 if __name__ == '__main__':
     print('Starting population script...')
     populate_dates()
+    populate_delims()
     print('Finished')

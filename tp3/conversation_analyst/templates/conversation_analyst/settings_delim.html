@@ -40,7 +40,8 @@
                             </div>
                         </td>
                         <td class="col-6 text-center">
-                            <input type="text" href="#" class="form-control delim-value" value="{{ delim.value }}">
+                            <input type="text" href="#" class="form-control delim-value" value="{{ delim.value }}" id="delim-{{ delim.id }}" name="value">
+                            <div class="row align-items-center value-error-row" id="value-error-row-{{ delim.id }}" style="color: red;font-size: 12px;"></div>
                         </td>
                         <td>
                             {% if delim.is_default %}

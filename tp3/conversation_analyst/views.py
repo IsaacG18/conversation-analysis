@@ -36,12 +36,6 @@ def homepage(request, query=None):
         return render(request, "conversation_analyst/homepage.html", {"files": files})
 
 def upload(request):
-    delims = Delimiter.objects.all()
-
-    if len(delims) == 0:
-        initialise_delim("Timestamp", ",", 1, True)
-        initialise_delim("Sender", ":", 2, True)
-
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -104,8 +98,6 @@ def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], date_fo
     message_count = create_arrays(chat_messages)
     nlp_text, person_and_locations = tag_text(chat_messages, keywords, ["PERSON", "GPE"])
     risk_words = get_top_n_risk_keywords(nlp_text, 3)
-    print("risk words: ")
-    print(risk_words)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
     generate_analysis_objects(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
 
@@ -336,3 +328,13 @@ def order_update(request):
         delim_obj.save()
         
         return HttpResponse("Order of " + delim_obj.name + " is updated to " + str(order))
+    
+def value_update(request):
+    if request.method == 'POST':
+        delimId = request.POST['delim']
+        value = request.POST['value']
+        delim_obj = Delimiter.objects.filter(id=delimId).first()
+        delim_obj.value = value
+        delim_obj.save()
+        
+        return HttpResponse("Value of " + delim_obj.name + " is updated to " + str(value))
