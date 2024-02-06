@@ -1,6 +1,6 @@
 from django.db import models
 from django.template.defaultfilters import slugify
-from pathlib import Path
+from .scripts.nlp.nlp import get_keyword_lamma
 
 
 
@@ -95,12 +95,13 @@ class Topic(models.Model):
 class RiskWord(models.Model):
     suite = models.ForeignKey(KeywordSuite, on_delete= models.CASCADE)
     topics = models.ManyToManyField(Topic, blank=True)
-    keyword = models.CharField(max_length=50)
+    keyword = models.CharField(max_length=128)
     risk_factor = models.IntegerField(default=0)
     amount = models.IntegerField(default=0)
+    lemma = models.CharField(max_length=128)
     
     def save(self, *args, **kwargs):
-        self.keyword = self.keyword.lower()
+        self.lemma = get_keyword_lamma(self.keyword)
         super(RiskWord, self).save(*args, **kwargs)
 
     def __str__(self):

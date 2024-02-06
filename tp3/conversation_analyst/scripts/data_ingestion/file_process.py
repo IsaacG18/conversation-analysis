@@ -1,7 +1,6 @@
 import sys
 
 from ..nlp.nlp import *
-from ..nlp.Keywords import *
 from .. import object_creators
 from . import ingestion, plotter
 
