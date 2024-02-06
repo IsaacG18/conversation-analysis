@@ -32,6 +32,7 @@ def tag_text(messages, keywords, labels):
         distance = 0
         message["Display_Message"] = message["Message"]
         message["risk"] = 0
+        message['entities'] = []
         risk_total = 0
         message["doc"] = nlp(message["Message"])
         sentiment = analyzer.polarity_scores(message["Message"])['compound']
@@ -45,13 +46,13 @@ def tag_text(messages, keywords, labels):
                 message["Display_Message"] = message["Display_Message"][:entity.start_char + distance] + labeled + message["Display_Message"][entity.end_char+ distance:]
                 distance += offset
                 message[entity.label_] += 1
+                message['entities'].append(entity.text)
         ptr = 0
         for token in message["doc"]:
             token_text = token.text
             word_regex = re.compile(r'(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])'.format(re.escape(token_text)))
             
             if (keyword := keywords.filter(lemma=token.lemma_).first()) is not None:
-                print(f"word in text: {token_text}, keyword: {keyword.keyword}")
                 risk = keyword.risk_factor * (1 + abs(sentiment)/SENTIMENT_DIVIDER)
                 topics = keyword.topics.all()
                 risk_total += risk
@@ -62,11 +63,11 @@ def tag_text(messages, keywords, labels):
                 
                 match = word_regex.search(message["Display_Message"], ptr)
                 if match:
-                    print("match found")
                     start = match.start()
                     ptr = match.end()+offset
                     message["Display_Message"] = message["Display_Message"][:start] + labeled + message["Display_Message"][start + len(token_text):]
                     tag_list.append((keyword.keyword, risk, topics))
+                    message['entities'].append(keyword.keyword)
     
         if risk_total > 40:
             message["risk"] += 1
@@ -76,8 +77,6 @@ def tag_text(messages, keywords, labels):
             message["risk"]=RISK_LEVELS
             
         message["tags"] = tag_list
-    print(f"tag list: {tag_list}")
-    print("tagging complete...")
     return messages, found_entities
 
 def get_top_n_risk_keywords(messages, n):
@@ -94,8 +93,6 @@ def get_top_n_risk_keywords(messages, n):
                     token_count[keyword] = 1
     
     sorted_tokens = sorted(token_risk, key=lambda x: token_risk[x], reverse=True)[:n]
-    print(f"sorted tokens: {sorted_tokens}")
-    print(f"token count: {token_count}")
     result = [(token, token_risk[token], token_count[token]) for token in sorted_tokens]
     return result
 

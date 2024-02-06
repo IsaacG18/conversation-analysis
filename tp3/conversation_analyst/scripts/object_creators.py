@@ -1,7 +1,8 @@
 from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, ChatGPTConvo, ChatGPTMessage
 
-def add_message(file, timestamp, sender, message, display_message, risk_rating=0):
+def add_message(file, timestamp, sender, message, display_message, entities, risk_rating=0):
     m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message, risk_rating=risk_rating)[0]
+    m.tags = ",".join(entities)
     m.save()
     return m
 
