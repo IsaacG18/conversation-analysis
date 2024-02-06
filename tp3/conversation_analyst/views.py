@@ -325,15 +325,15 @@ def chatgpt_page(request, chatgpt_slug):
     chats = ChatGPTConvo.objects.order_by('-date')
     convo = ChatGPTConvo.objects.get(slug = chatgpt_slug)
     analysis = Analysis.objects.get(file=convo.file)
-    persons = Person.objects.filter(analysis=analysis)
-    locations = Location.objects.filter(analysis=analysis)
+    person_words= Person.objects.filter(analysis=analysis)
+    location_words = Location.objects.filter(analysis=analysis)
     risk_words = RiskWordResult.objects.filter(analysis=analysis)
     messages = ChatGPTMessage.objects.filter(convo = convo)
     persons, locations, risks = [], [], []
-    for person in persons:
+    for person in person_words:
         p,fd = add_chat_filter(person.name,"person", convo)
         persons.append(p)
-    for location in locations:
+    for location in location_words:
         l,fd = add_chat_filter(location.name,"location", convo)
         locations.append(l)
     for risk_word in risk_words:
