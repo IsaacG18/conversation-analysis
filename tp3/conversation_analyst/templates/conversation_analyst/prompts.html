@@ -1,0 +1,23 @@
+{% load static %}
+<div class="col-md-3 bg-light prompts">
+    <h3 class="mt-3">Prompts</h3>
+    <div class="scroll-container">
+        {% if convo %}
+            <ul class="list-group">
+                <li class="list-group-item gpt_prompt">What is this conversation about</li>
+                <li class="list-group-item gpt_prompt">What is this sentiment of the conversation</li>
+                {% for person in persons %}
+                    <li class="list-group-item gpt_prompt">What infomation do you have about {{person.content}}</li>
+                {% endfor %}
+                {% for location in locations %}
+                    <li class="list-group-item gpt_prompt">What infomation do you have about {{location.content}}</li>
+                {% endfor %}
+                {% for risk in risks %}
+                    <li class="list-group-item gpt_prompt">What infomation do you have about the uses of the word "{{risk.content}}"</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <strong>There are no prompts present.</strong>
+        {% endif %}
+    </div>
+</div>
