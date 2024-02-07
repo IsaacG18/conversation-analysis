@@ -43,7 +43,7 @@ weasel==0.3.4
 wheel==0.41.3
 plotly==5.9.0
 vaderSentiment==3.3.2
-openai==3.5.0
+openai==1.10.0
 kaleido==0.2.1
 emoji==2.9.0
 contourpy==1.2.0
