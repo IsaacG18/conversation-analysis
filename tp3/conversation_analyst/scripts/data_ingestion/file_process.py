@@ -22,13 +22,11 @@ def process_file(file, keywords, messages):
     nlp_text, person_and_locations = tag_text(chat_messages, keywords, ["PERSON", "GPE"])
     risk_words = get_top_n_risk_keywords(nlp_text, 10)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
-    print("nlp complete, start generating analysis objects...")
     generate_analysis_objects(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
     
 def generate_message_objects(file, chat_messages):
     for message in chat_messages:
         m = object_creators.add_message(file, message['Timestamp'], message['Sender'], message['Message'])
-    print("message objects successfully created")
     
 def generate_analysis_objects(file, chat_messages, message_count, person_and_locations, risk_words, common_topics):
     persons = person_and_locations['PERSON']
@@ -36,7 +34,7 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
 
     a = object_creators.add_analysis(file)
     for message in chat_messages:
-        m = object_creators.add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"], message["entities"],  message["risk"])
+        m = object_creators.update_message(message["ObjectId"],  message["Display_Message"], message["entities"],  message["risk"])
     object_creators.add_vis(a, plotter.plots(chat_messages, file.slug, str(a.id)))
     for person in persons:
         p = object_creators.add_person(a, person)
