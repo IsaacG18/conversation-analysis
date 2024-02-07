@@ -1,4 +1,3 @@
-from .Keywords import *
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import spacy
 import numpy as np
@@ -12,8 +11,19 @@ RISK_LEVELS = 2
 
 
 def classify(text):
-
     return text.replace(' ', '_')
+
+def label_entity(entity):
+    start_tag = f'<span class="{classify(entity.label_)} {classify(entity.text)}">'
+    end_tag = '</span>'
+    offset = len(start_tag) + len(end_tag)
+    return start_tag + entity.text + end_tag, offset
+
+def label_keyword(keyword, root):
+    start_tag = f'<span class="{classify(root)} risk">'
+    end_tag = '</span>'
+    offset = len(start_tag) + len(end_tag)
+    return start_tag + keyword + end_tag, offset
 
 def tag_text(messages, keywords, labels):
     analyzer = SentimentIntensityAnalyzer()
@@ -22,6 +32,7 @@ def tag_text(messages, keywords, labels):
         distance = 0
         message["Display_Message"] = message["Message"]
         message["risk"] = 0
+        message['entities'] = []
         risk_total = 0
         message["doc"] = nlp(message["Message"])
         sentiment = analyzer.polarity_scores(message["Message"])['compound']
@@ -30,38 +41,34 @@ def tag_text(messages, keywords, labels):
             message[label] = 0
         for entity in message["doc"].ents:
             if entity.label_ in labels:
-                start_tag = f'<span class="{classify(entity.label_)}"><span class="{classify(entity.text)}">'
-                end_tag = '</span></span>'
-                
+                labeled, offset = label_entity(entity)
                 found_entities[entity.label_].append((entity.text))
-                message["Display_Message"] = message["Display_Message"][:entity.start_char + distance] + start_tag + entity.text + end_tag + message["Display_Message"][entity.end_char+ distance:]
-                distance += len(start_tag) + len(end_tag)
+                message["Display_Message"] = message["Display_Message"][:entity.start_char + distance] + labeled + message["Display_Message"][entity.end_char+ distance:]
+                distance += offset
                 message[entity.label_] += 1
+                message['entities'].append(entity.text)
         ptr = 0
         for token in message["doc"]:
             token_text = token.text
-            input_text = token_text
-            word_regex = re.compile(r'(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])'.format(re.escape(token_text.lower())))
+            word_regex = re.compile(r'(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])'.format(re.escape(token_text)))
             
-            if (keyword := keywords.filter(keyword=token_text.lower()).first()) is not None:
+            if (keyword := keywords.filter(lemma=token.lemma_).first()) is not None:
                 risk = keyword.risk_factor * (1 + abs(sentiment)/SENTIMENT_DIVIDER)
                 topics = keyword.topics.all()
                 risk_total += risk
                 if risk >7:
                     message["risk"] += 1
-                start_tag = f'<span class="{classify(token_text)} risk">'
-                end_tag = '</span>'
-
+                    
+                labeled, offset = label_keyword(token_text, keyword.keyword)
+                
                 match = word_regex.search(message["Display_Message"], ptr)
                 if match:
                     start = match.start()
-                    input_text = start_tag + input_text + end_tag
-                    ptr = match.end()
-                    message["Display_Message"] = message["Display_Message"][:start] + input_text + message["Display_Message"][start + len(token_text):]
-            else:
-                risk = 0
-                topics = None
-            tag_list.append((token_text, risk, topics))
+                    ptr = match.end()+offset
+                    message["Display_Message"] = message["Display_Message"][:start] + labeled + message["Display_Message"][start + len(token_text):]
+                    tag_list.append((keyword.keyword, risk, topics))
+                    message['entities'].append(keyword.keyword)
+    
         if risk_total > 40:
             message["risk"] += 1
         if risk_total/len(message["Message"].split()) >AVERAGE_RISK:
@@ -76,15 +83,14 @@ def get_top_n_risk_keywords(messages, n):
     token_risk = {}
     token_count = {}
     for message in messages:
-        for token, risk, topics in message["tags"]:
-            token_lower = token.lower()
+        for keyword, risk, topics in message["tags"]:
             if risk != 0:
-                if token_lower not in token_risk:
-                    token_risk[token_lower] = risk
-                if token_lower in token_count:
-                    token_count[token_lower] += 1
+                if keyword not in token_risk:
+                    token_risk[keyword] = risk
+                if keyword in token_count:
+                    token_count[keyword] += 1
                 else:
-                    token_count[token_lower] = 1
+                    token_count[keyword] = 1
     
     sorted_tokens = sorted(token_risk, key=lambda x: token_risk[x], reverse=True)[:n]
     result = [(token, token_risk[token], token_count[token]) for token in sorted_tokens]
@@ -162,4 +168,9 @@ def create_arrays(parsed_data):
         data['message_lengths'] = np.array(data['message_lengths'])
 
     return person_arrays
+
+def get_keyword_lamma(keyword):
+    doc = nlp(keyword)
+    lemmas = [token.lemma_ for token in doc]
+    return " ".join(lemmas)
 
