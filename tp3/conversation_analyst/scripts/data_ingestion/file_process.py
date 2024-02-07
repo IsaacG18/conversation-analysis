@@ -9,22 +9,27 @@ from . import ingestion, plotter
 #
 
 
-def check_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":"]]):
+def parse_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":"]]):
 
     if not file.title.endswith(('.docx', '.txt', '.csv')):
         raise ValueError("Unsupported file type. Only .txt, .csv and .docx are supported.")
 
-    ingestion.parse_chat_file(file.file.path, delimiters, date_formats)
+    messages = ingestion.parse_chat_file(file.file.path, delimiters, date_formats)
+    generate_message_objects(file, messages)
     
-def process_file(file, keywords, delimiters=[["Timestamp", ","], ["Sender", ":"]]):
-    chat_messages = ingestion.parse_chat_file(file.file.path, delimiters)
+def process_file(file, keywords, messages):
+    chat_messages = [{'Timestamp': message.timestamp, 'Sender': message.sender, 'Message': message.content, 'ObjectId': message.id} for message in messages]
     message_count = create_arrays(chat_messages)
     nlp_text, person_and_locations = tag_text(chat_messages, keywords, ["PERSON", "GPE"])
     risk_words = get_top_n_risk_keywords(nlp_text, 10)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
-    print("start generate analysis objects...")
+    print("nlp complete, start generating analysis objects...")
     generate_analysis_objects(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
     
+def generate_message_objects(file, chat_messages):
+    for message in chat_messages:
+        m = object_creators.add_message(file, message['Timestamp'], message['Sender'], message['Message'])
+    print("message objects successfully created")
     
 def generate_analysis_objects(file, chat_messages, message_count, person_and_locations, risk_words, common_topics):
     persons = person_and_locations['PERSON']

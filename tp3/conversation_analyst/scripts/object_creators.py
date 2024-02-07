@@ -1,9 +1,18 @@
 from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, Delimiter, ChatGPTConvo, ChatGPTMessage, ChatGPTFilter, ChatGPTConvoFilter
 
-def add_message(file, timestamp, sender, message, display_message, risk_rating=0):
+def add_message(file, timestamp, sender, message, display_message=None, risk_rating=0):
     m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message, risk_rating=risk_rating)[0]
     m.save()
     return m
+
+def update_message(id, display_message, risk_rating=0):
+    try: 
+        m = Message.objects.get(id=id)
+        m.display_content, m.risk_rating = display_message, risk_rating
+        m.save()
+        return m
+    except Message.DoesNotExist:
+        print(f"message object with id {id}, display_content: {display_message} does not exist")
 
 
 def add_file(file):

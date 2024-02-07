@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .scripts.data_ingestion import ingestion
-from .scripts.data_ingestion.file_process import check_file, process_file
+from .scripts.data_ingestion.file_process import parse_file, process_file
 from .scripts.nlp.nlp import *
 from .scripts.data_ingestion.plotter import plots
 from .scripts.object_creators import *
@@ -51,7 +51,7 @@ def upload(request):
 
             try:
                 timestamp = DateFormat.objects.get(name=request.POST["selected_timestamp"])
-                check_file(file_obj, date_format=timestamp.format, delimiters=delim_pairs)
+                parse_file(file_obj, timestamp.format, delimiters=delim_pairs)
                 return HttpResponseRedirect(reverse('suite_selection', kwargs={'file_slug': file_obj.slug}))
             except (ValueError, ValidationError) as e:
                 file_obj.delete()
@@ -432,13 +432,16 @@ def suite_selection(request, file_slug):
         default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
         keyword_suites = default_plan.keywordsuite_set.all()
         keywords = RiskWord.objects.filter(suite__in=keyword_suites)
-        file_delimeters = [["Timestamp", ","], ["Sender", ":"]] # temporarily set to default, await integration
+
         try:
             file_obj = File.objects.get(slug=file_slug)
-            process_file(file_obj, keywords, delimiters=file_delimeters)
+            messages = Message.objects.filter(file=file_obj) 
+            process_file(file_obj, keywords, messages)
             return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
+        except File.DoesNotExist:
+            return HttpResponse("File object doesn't exist")
         except Exception as e:
-            return HttpResponse("Error while processing file")
+            return HttpResponse(f"Error while processing file, {e}")
         
 def clear_duplicate_submission(request):
     if request.method == 'GET':

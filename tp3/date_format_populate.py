@@ -10,7 +10,6 @@ django.setup()
 from conversation_analyst.scripts.data_ingestion import ingestion
 from conversation_analyst.scripts.nlp.nlp import *
 from conversation_analyst.scripts.object_creators import *
-from conversation_analyst.views import generate_analysis_objects
 
 
 def populate_dates():
