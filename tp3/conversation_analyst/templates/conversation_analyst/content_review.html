@@ -43,7 +43,25 @@
             <div id="collapseTwo" class="accordion-collapse collapse show">
               <div class="accordion-body">
                 {% for location in locations %}
-                  <button class="btn btn-outline-success filter location-button">{{ location }}</button>
+                  <button class="btn btn-outline-success filter location-button" data-url="{{ location.url }}">{{ location.name }}</button>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% if URL %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMapUrls" aria-expanded="true" aria-controls="collapseMapUrls">
+                Google Maps Links
+              </button>
+            </h2>
+            <div id="collapseMapUrls" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                {% for location in URL %}
+                  <a href="{{ location.url }}" target="_blank" class="btn btn-outline-success location-button">
+                    {{ location.name }}
+                  </a>
                 {% endfor %}
               </div>
             </div>
