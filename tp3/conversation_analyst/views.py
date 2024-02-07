@@ -356,7 +356,7 @@ def message(request):
         conversation_history.append( {"role": message.typeOfMessage, "content": message.content})
 
     client = OpenAI(
-    api_key="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",
+    api_key="",
     )
     
 
