@@ -112,7 +112,7 @@ $(document).ready(function(){
         e.preventDefault();
         if ($(this).valid() == true){
             if (checkIfSuiteExist()==true){
-                var newKeyword = $('#new-keyword').val()
+                var newKeyword = $('#new-keyword').val().toLowerCase()
                 var newKeywordRisk = $('#new-keyword-risk').val()
                 var activeSuiteName = getSuiteName($('.active-suite'));
                 $.ajax({

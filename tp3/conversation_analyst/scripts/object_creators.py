@@ -1,8 +1,7 @@
 from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, ChatGPTConvo, ChatGPTMessage, ChatGPTFilter, ChatGPTConvoFilter
 
-def add_message(file, timestamp, sender, message, display_message, entities, risk_rating=0):
+def add_message(file, timestamp, sender, message, display_message, risk_rating=0):
     m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message, risk_rating=risk_rating)[0]
-    m.tags = ",".join(entities)
     m.save()
     return m
 
@@ -35,6 +34,7 @@ def add_location(analysis, name):
 
 
 def add_risk_word_result(analysis, keyword, amount, risk_factor=0):
+    keyword = keyword.lower()
     k = RiskWord.objects.filter(keyword=keyword).first()
     r = RiskWordResult.objects.get_or_create(analysis=analysis, riskword=k, amount=amount)[0]
     r.save()
