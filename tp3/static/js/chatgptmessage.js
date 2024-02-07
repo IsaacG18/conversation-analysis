@@ -12,6 +12,20 @@ $(document).ready(function () {
                 function(data) {
                     $('.results').replaceWith(data.results);
                     document.getElementById('loading_message').innerHTML = ""
+                    
+                });
+    })
+    $(".gpt_prompt").click(function () {
+        document.getElementById('loading_message').innerHTML = "Loading Response"
+        var message_content =  $(this).text();
+        var pageSlug = window.location.pathname.split('/').pop(); 
+        var formattedResult = formatMediaString(message_content);
+        $(".chat-messages.results").append(formattedResult);
+        $.get('/message/',
+                {'message_content':message_content,'chatgpt_slug': pageSlug},
+                function(data) {
+                    $('.results').replaceWith(data.results);
+                    document.getElementById('loading_message').innerHTML = ""
                 });
     })
 

@@ -1,6 +1,6 @@
 from django.db import models
 from django.template.defaultfilters import slugify
-from .scripts.nlp.nlp import get_keyword_lamma
+from pathlib import Path
 
 
 
@@ -21,7 +21,23 @@ class File(models.Model):
 
     def __str__(self):
         return self.title
-    
+
+
+class Message(models.Model):
+    file = models.ForeignKey(File, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField()
+    sender = models.CharField(max_length=50)
+    main_sender = models.CharField(max_length=50)
+    content = models.CharField(max_length=1000)
+    display_content = models.CharField(max_length=1100)
+    risk_rating = models.IntegerField(default=0)
+
+    def set_main_sender(self, new_sender):
+        self.main_sender = new_sender
+        self.save()
+    def __str__(self):
+        return self.sender + self.timestamp.__str__()
+
 class KeywordPlan(models.Model):
     name = models.CharField(max_length=128, null=True)
     def __str__(self):
@@ -34,22 +50,6 @@ class Analysis(models.Model):
         verbose_name_plural = "Analyses"
     def __str__(self):
         return self.file.__str__()
-
-class Message(models.Model):
-    file = models.ForeignKey(File, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField()
-    sender = models.CharField(max_length=50)
-    main_sender = models.CharField(max_length=50)
-    content = models.CharField(max_length=1000)
-    display_content = models.CharField(max_length=1100)
-    risk_rating = models.IntegerField(default=0)
-    tags = models.CharField(max_length=1024)
-
-    def set_main_sender(self, new_sender):
-        self.main_sender = new_sender
-        self.save()
-    def __str__(self):
-        return self.sender + self.timestamp.__str__()
 
 
 class Person(models.Model):
@@ -95,13 +95,12 @@ class Topic(models.Model):
 class RiskWord(models.Model):
     suite = models.ForeignKey(KeywordSuite, on_delete= models.CASCADE)
     topics = models.ManyToManyField(Topic, blank=True)
-    keyword = models.CharField(max_length=128)
+    keyword = models.CharField(max_length=50)
     risk_factor = models.IntegerField(default=0)
     amount = models.IntegerField(default=0)
-    lemma = models.CharField(max_length=128)
     
     def save(self, *args, **kwargs):
-        self.lemma = get_keyword_lamma(self.keyword)
+        self.keyword = self.keyword.lower()
         super(RiskWord, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -149,6 +148,12 @@ class ChatGPTMessage(models.Model):
     content = models.CharField(max_length=1000)
     convo = models.ForeignKey(ChatGPTConvo, on_delete=models.CASCADE)
 
+class ChatGPTFilter(models.Model):
+    typeOfFilter = models.CharField(max_length=64)
+    content = models.CharField(max_length=128)
 
 
-    
+class ChatGPTConvoFilter(models.Model):
+    convo = models.ForeignKey(ChatGPTConvo, on_delete=models.CASCADE)
+    filter = models.ForeignKey(ChatGPTFilter, on_delete=models.CASCADE)
+

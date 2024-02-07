@@ -29,7 +29,7 @@
               </div>
           </div>
   
-          <div class="col-md-9">
+          <div class="col-md-6">
               <div class="scroll-container chat-container mt-3">
                   {% include "conversation_analyst/chatgpt_messages.html" %}
                   <br>
@@ -44,6 +44,7 @@
                 {% endif %}
               </div>
           </div>
+          {% include "conversation_analyst/prompts.html" %}
       </div>
   </div>
   
