@@ -1,7 +1,6 @@
 import sys
 
 from ..nlp.nlp import *
-from ..nlp.Keywords import *
 from .. import object_creators
 from . import ingestion, plotter
 
@@ -35,9 +34,9 @@ def generate_analysis_objects(file, chat_messages, message_count, person_and_loc
     persons = person_and_locations['PERSON']
     locations = person_and_locations['GPE']
 
-    for message in chat_messages:
-        m = object_creators.add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"],  message["risk"])
     a = object_creators.add_analysis(file)
+    for message in chat_messages:
+        m = object_creators.add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"], message["entities"],  message["risk"])
     object_creators.add_vis(a, plotter.plots(chat_messages, file.slug, str(a.id)))
     for person in persons:
         p = object_creators.add_person(a, person)
