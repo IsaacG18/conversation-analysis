@@ -117,7 +117,7 @@ def filter_view(request):
             filter_condition = Q()
             for word in filters:
                 search_term = r'(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])'.format(word)
-                filter_condition |= Q(content__iregex=search_term)
+                filter_condition |= Q(tags__iregex=search_term)
             messages = messages.filter(filter_condition)
         
         if len(risk)> 0:
@@ -356,7 +356,7 @@ def message(request):
         conversation_history.append( {"role": message.typeOfMessage, "content": message.content})
 
     client = OpenAI(
-    api_key="",
+    api_key="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",
     )
     
 
