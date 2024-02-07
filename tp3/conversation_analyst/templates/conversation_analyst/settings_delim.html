@@ -106,7 +106,11 @@
                     <tr>
                         <td>
                             <div class="form-check">
+                                {% if stamp.is_default %}
+                                <input class="form-check-input timestamp-input" type="radio" name="timestamp" value="{{ stamp.name }}" checked>
+                                {% else %}
                                 <input class="form-check-input timestamp-input" type="radio" name="timestamp" value="{{ stamp.name }}">
+                                {% endif %}
                             </div>                        
                         </td>
                         <td>{{stamp.name}}</td>

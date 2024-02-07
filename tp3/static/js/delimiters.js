@@ -88,7 +88,7 @@ $(document).ready(function () {
                         </td>
                         <td>
                         <div class="col-3">
-                            <button type="button" class="btn btn-danger btn-sm delete-delim" value="{{ delim.id }}" id="delete-delim-{{ delim.id }}">Delete</button>
+                            <button type="button" class="btn btn-danger btn-sm delete-delim" value="${delimId}" id="delete-delim-${delimId}">Delete</button>
                         </div>
                     </td>
                     </tr>
