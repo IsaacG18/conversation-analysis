@@ -20,9 +20,9 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
-      <form class="d-flex mx-3" role="search">
+      <form class="d-flex mx-3" role="search" id="search-bar">
         <input class="form-control me-2" type="text" placeholder="Search" id="search-input">
-        <button class="btn btn-outline-success btn-sm" id="search-button">Search</button>
+        <button class="btn btn-outline-success btn-sm" id="search-button" type="submit">Search</button>
       </form>
       <ul class="navbar-nav">
         <li class="nav-item">
@@ -30,6 +30,9 @@
         </li>
         <li class="nav-item">
           <a href="{% url 'settings' %}" class="btn btn-outline-secondary me-2 btn-sm align-items-center"><span><i class="bi bi-gear-fill"></i></span></a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'chatgpt_page_without_slug' %}" class="btn btn-outline-secondary me-2 btn-sm align-items-center"><span><i class="bi bi-chat-left-dots-fill"></i></span></a>
         </li>
       </ul>
     </div>

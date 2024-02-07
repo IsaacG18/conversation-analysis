@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .scripts.data_ingestion import ingestion
+from .scripts.data_ingestion.file_process import check_file, process_file
 from .scripts.nlp.nlp import *
 from .scripts.data_ingestion.plotter import plots
 from .scripts.object_creators import *
@@ -14,15 +15,17 @@ from datetime import datetime
 from django.template.loader import render_to_string
 from django.db.models import Q
 import json
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom import minidom
+from openai import OpenAI
 
 
 import os
 from django.conf import settings
 
 from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat, Delimiter
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat, Delimiter, ChatGPTConvo
 
-# default_suite = Keywords()
 
 
 def homepage(request, query=None):
@@ -45,24 +48,17 @@ def upload(request):
             uploaded_file = request.FILES["file"]
             file_obj = File.objects.create(file=uploaded_file)
             file_obj.init_save()
-            default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
-            keyword_suites = default_plan.keywordsuite_set.all()
-            keywords = RiskWord.objects.filter(suite__in=keyword_suites)
 
             try:
-                try:
-                    timestamp = DateFormat.objects.get(name=request.POST["selected_timestamp"])
-                    process_file(file_obj, delimiters=delim_pairs, keywords=keywords, date_format=timestamp.format)
-                except DateFormat.DoesNotExist:
-                    process_file(file_obj,delimiters=delim_pairs,keywords=keywords)
-                return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
+                timestamp = DateFormat.objects.get(name=request.POST["selected_timestamp"])
+                check_file(file_obj, date_format=timestamp.format, delimiters=delim_pairs)
+                return HttpResponseRedirect(reverse('suite_selection', kwargs={'file_slug': file_obj.slug}))
             except (ValueError, ValidationError) as e:
                 file_obj.delete()
                 return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e), 'delimiters': Delimiter.objects.all(), 'timestamps': DateFormat.objects.all()})
     else:
         form = UploadFileForm()
-
-    return render(request, "conversation_analyst/upload.html", {"form": form, 'delimiters': Delimiter.objects.all(), 'timestamps': DateFormat.objects.all()})
+        return render(request, "conversation_analyst/upload.html", {"form": form, 'delimiters': Delimiter.objects.all(), 'timestamps': DateFormat.objects.all()})
 
 
 def content_review(request, file_slug):
@@ -75,47 +71,17 @@ def content_review(request, file_slug):
         persons = Person.objects.filter(analysis=analysis)
         locations = Location.objects.filter(analysis=analysis)
         risk_words = RiskWordResult.objects.filter(analysis=analysis)
-        vis_path = VisFile.objects.filter(analysis=analysis)
+        vis_path = VisFile.objects.filter(analysis=analysis)[0]
 
         context_dict = {'messages': messages, 'persons': persons,
-                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path[0].file_path}
+                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path.file_path, "file":file}
 
         return render(request, "conversation_analyst/content_review.html", context=context_dict)
 
     except File.DoesNotExist:
         return HttpResponse("File not exist")
-
-
-
-def process_file(file, delimiters=[["Timestamp", ","], ["Sender", ":"]], date_format="%Y-%m-%dT%H:%M:%S", keywords=Keywords()):
-    directory = os.path.join(settings.MEDIA_ROOT, 'uploads')
-    file_path = os.path.join(directory, file.title)
-
-    if not file.title.endswith(('.docx', '.txt', '.csv')):
-        raise ValueError("Unsupported file type. Only .txt, .csv and .docx are supported.")
-
-    chat_messages = ingestion.parse_chat_file(file_path, delimiters, date_format)
-    message_count = create_arrays(chat_messages)
-    nlp_text, person_and_locations = tag_text(chat_messages, keywords, ["PERSON", "GPE"])
-    risk_words = get_top_n_risk_keywords(nlp_text, 3)
-    common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
-    generate_analysis_objects(file,chat_messages, message_count,person_and_locations,risk_words,common_topics)
-
-
-def generate_analysis_objects(file, chat_messages, message_count, person_and_locations, risk_words, common_topics):
-    persons = person_and_locations['PERSON']
-    locations = person_and_locations['GPE']
-
-    for message in chat_messages:
-        m = add_message(file, message['Timestamp'], message['Sender'], message['Message'], message["Display_Message"])
-    a = add_analysis(file)
-    add_vis(a, plots(chat_messages, file.slug))
-    for person in persons:
-        p = add_person(a, person)
-    for location in locations:
-        p = add_location(a, location)
-    for risk_word in risk_words:
-        r = add_risk_word_result(a, risk_word[0], risk_word[2], risk_word[1])
+    except Analysis.DoesNotExist:
+        return HttpResponse("Analysis not exist")
 
 
 def filter_view(request):
@@ -124,7 +90,9 @@ def filter_view(request):
     file_slug = request.GET['file_slug']
     start_date = request.GET.get('startDate')
     end_date = request.GET.get('endDate')
-
+    risk = request.GET.get('risk','[]')
+    risk = json.loads(risk)
+    
     try:
         file = File.objects.get(slug=file_slug)
         filter_params = {'file': file}
@@ -144,7 +112,12 @@ def filter_view(request):
                 search_term = r'(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])'.format(word)
                 filter_condition |= Q(content__iregex=search_term)
             messages = messages.filter(filter_condition)
-
+        
+        if len(risk)> 0:
+            filter_condition = Q()
+            for risk_number in risk:
+                filter_condition |= Q(risk_rating=risk_number)
+            messages = messages.filter(filter_condition)
     except Exception as e:
         print(e)
         return JsonResponse({'result': 'error', 'message': 'Internal Server Error'})
@@ -222,7 +195,6 @@ def check_suite(request):
         keyword_plan = KeywordPlan.objects.get_or_create(name='global')[0]
         is_keyword_in_plan = keyword_plan in suite.plans.all()
         if (is_keyword_in_plan != isChecked):
-            print(isChecked)
             if (isChecked):
                 suite.plans.add(keyword_plan)
                 suite.default = True
@@ -232,7 +204,7 @@ def check_suite(request):
                 suite.default = False
                 response+="unchecked"
         suite.save()
-        print(suite.plans.all())
+
         return HttpResponse(suite.name + " is " + response + " in " + keyword_plan.name + " plan")
     
     
@@ -263,32 +235,135 @@ def rename_file(request):
         
         except Exception as e:
             print(e)
-            return JsonResponse({'message': 'error'})  
-        
-    
+        return JsonResponse({'message': 'error'})
 
-# def demo_keywords():
-#     if default_suite.has_keywords() == False:
-#         default_suite.add_keyword("perfect", ["Good", "Really Good"], 8)
-#         default_suite.add_keyword("old", ["Time"], 2)
-#         default_suite.add_keyword("nice", ["Good"], 3)
-#         default_suite.add_keyword("galaxy", ["Space", "Time"], 5)
-#         default_suite.add_keyword("amazing", ["Awesome", "Fantastic"], 7)
-#         default_suite.add_keyword("young", ["Youthful"], 4)
-#         default_suite.add_keyword("awesome", ["Great", "Fantastic"], 6)
-#         default_suite.add_keyword("technology", ["Innovation", "Science"], 9)
-#         default_suite.add_keyword("beautiful", ["Attractive", "Stunning"], 5)
-#         default_suite.add_keyword("community", ["Society", "Neighbors"], 5)
-#         default_suite.add_keyword("innovation", ["Creativity", "Invention"], 6)
-#         default_suite.add_keyword("cozy", ["Comfortable", "Warm"], 4)
-#         default_suite.add_keyword("delicious", ["Tasty", "Yummy"], 7)
-#         default_suite.add_keyword("friendship", ["Companionship", "Buddy"], 6)
-#         default_suite.add_keyword("relaxing", ["Calming", "Unwinding"], 5)
-#         default_suite.add_keyword("celebration", ["Party", "Festivity"], 8)
-#         default_suite.add_keyword("curious", ["Inquisitive", "Interested"], 5)
-#         default_suite.add_keyword("efficient", ["Productive", "Streamlined"], 7)
-#         default_suite.add_keyword("refreshing", ["Invigorating", "Revitalizing"], 6)
-#     return default_suite
+        
+def export_view(request, file_slug):
+    file = File.objects.get(slug=file_slug)
+    messages = Message.objects.filter(file=file)
+    analysis = Analysis.objects.get(file=file)
+    persons = Person.objects.filter(analysis=analysis)
+    locations = Location.objects.filter(analysis=analysis)
+    risk_words = RiskWordResult.objects.filter(analysis=analysis)
+
+    root = Element('exported_data')
+
+    persons_element = SubElement(root, 'persons')
+    for person in persons:
+        entry_element = SubElement(persons_element, 'person')
+        SubElement(entry_element, 'name').text = person.name
+
+    locations_element = SubElement(root, 'locations')
+    for location in locations:
+        entry_element = SubElement(locations_element, 'location')
+        SubElement(entry_element, 'name').text = location.name
+
+    risk_words_element = SubElement(root, 'risk_words')
+    for risk_word in risk_words:
+        entry_element = SubElement(risk_words_element, 'risk_word')
+        SubElement(entry_element, 'keyword').text = risk_word.riskword.keyword
+        SubElement(entry_element, 'risk_factor').text = str(risk_word.risk_factor)
+        SubElement(entry_element, 'amount').text = str(risk_word.amount)
+
+    messages_element = SubElement(root, 'messages')
+    for message in messages:
+        entry_element = SubElement(messages_element, 'message')
+        SubElement(entry_element, 'timestamp').text = str(message.timestamp)
+        SubElement(entry_element, 'sender').text = message.sender
+        SubElement(entry_element, 'content').text = message.content
+        SubElement(entry_element, 'display_content').text = message.display_content
+    xml_data = minidom.parseString(tostring(root)).toprettyxml(indent="  ")
+
+    response = HttpResponse(xml_data, content_type='application/xml')
+    response['Content-Disposition'] = f'attachment; filename="{file_slug}_exported_data.xml"'
+    return response  
+
+        
+
+def chatgpt_new_message(request):
+    file_slug = request.GET['file_slug']
+    start_date = request.GET.get('startDate')
+    end_date = request.GET.get('endDate')
+    full_url =  request.GET.get('full_url')
+    try:
+        file = File.objects.get(slug=file_slug)
+
+        convo = ChatGPTConvo.objects.create(file=file)
+        convo.save()
+        filter_params = {'file': file}
+        if start_date: 
+            convo.start = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
+            filter_params['timestamp__gte'] = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
+        if end_date:
+            convo.end = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
+            filter_params['timestamp__lte'] = datetime.strptime(end_date, '%Y-%m-%dT%H:%M')
+        messages = Message.objects.filter(**filter_params)
+        
+
+        system_message = "You are answering questions about a some text messages with lots of detail, the formated of the messages will be'<Timestamp>: <Name>: <Message> \n"
+        for message in messages:
+            system_message += f"{message.timestamp}: {message.sender}:  {message.content} \n"
+
+        add_chat_message("system", system_message, convo)
+        return JsonResponse({"url":convo.slug})
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({'result': 'error', 'message': 'Internal Server Error'})
+def chatgpt_page(request, chatgpt_slug):
+    chats = ChatGPTConvo.objects.order_by('-date')
+    convo = ChatGPTConvo.objects.get(slug = chatgpt_slug)
+    analysis = Analysis.objects.get(file=convo.file)
+    person_words= Person.objects.filter(analysis=analysis)
+    location_words = Location.objects.filter(analysis=analysis)
+    risk_words = RiskWordResult.objects.filter(analysis=analysis)
+    messages = ChatGPTMessage.objects.filter(convo = convo)
+    persons, locations, risks = [], [], []
+    for person in person_words:
+        p,fd = add_chat_filter(person.name,"person", convo)
+        persons.append(p)
+    for location in location_words:
+        l,fd = add_chat_filter(location.name,"location", convo)
+        locations.append(l)
+    for risk_word in risk_words:
+        r,fd = add_chat_filter(risk_word.riskword.keyword,"risk", convo)
+        risks.append(r)
+
+    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats, "convo":convo, "messages": messages, "persons":persons, "locations":locations, "risks":risks}) 
+
+def chatgpt_page_without_slug(request):
+    chats = ChatGPTConvo.objects.order_by('-date')
+    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats}) 
+
+def message(request):
+    chatgpt_slug = request.GET['chatgpt_slug']
+    message_content = request.GET['message_content']
+    convo = ChatGPTConvo.objects.get(slug = chatgpt_slug)
+    messages = ChatGPTMessage.objects.filter(convo = convo)
+    conversation_history = []
+    for message in messages:
+        conversation_history.append( {"role": message.typeOfMessage, "content": message.content})
+
+    client = OpenAI(
+    api_key="",
+    )
+    conversation_history.append({"role": "user", "content": message_content})
+    add_chat_message("user", message_content, convo)
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            *conversation_history
+        ]
+    )
+
+    reply = response.choices[0].message.content
+    conversation_history.append({"role": "assistant", "content": reply})
+    add_chat_message("assistant", reply, convo)
+
+    messages = ChatGPTMessage.objects.filter(convo = convo)
+    return JsonResponse({"results": render_to_string('conversation_analyst/chatgpt_messages.html',{"convo":convo, "messages": messages})})
+
 
 def settings_delim(request):
     delims = Delimiter.objects.all()
@@ -338,3 +413,42 @@ def value_update(request):
         delim_obj.save()
         
         return HttpResponse("Value of " + delim_obj.name + " is updated to " + str(value))
+
+
+def suite_selection(request, file_slug):
+    if request.method == 'GET':
+        keyword_suites = KeywordSuite.objects.all()
+        if len(keyword_suites) == 0:
+            context_dict = {}
+        else:
+            suite = keyword_suites[0]
+            risk_words = RiskWord.objects.filter(suite=suite)
+            context_dict = {'keyword_suites': keyword_suites, 'risk_words':risk_words}
+            
+        context_dict['file_slug'] = file_slug
+        return render(request, "conversation_analyst/suite_selection.html", context=context_dict)
+    
+    else:
+        default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
+        keyword_suites = default_plan.keywordsuite_set.all()
+        keywords = RiskWord.objects.filter(suite__in=keyword_suites)
+        file_delimeters = [["Timestamp", ","], ["Sender", ":"]] # temporarily set to default, await integration
+        try:
+            file_obj = File.objects.get(slug=file_slug)
+            process_file(file_obj, keywords, delimiters=file_delimeters)
+            return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
+        except Exception as e:
+            return HttpResponse("Error while processing file")
+        
+def clear_duplicate_submission(request):
+    if request.method == 'GET':
+        try:
+            file_slug = request.GET['file_slug']
+            file_obj = File.objects.get(slug=file_slug)
+            if not Analysis.objects.filter(file=file_obj).exists():
+                file_obj.delete()
+                return HttpResponse('File deleted')
+            else: return HttpResponse('File kept')
+        except Exception as e:
+            print(f'exception: {e}')
+            return HttpResponse('An error occured while trying to delete the file')

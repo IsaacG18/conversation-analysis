@@ -1,6 +1,16 @@
 $(document).ready(function(){
     $('#suite-list .suite-item:first').addClass('active-suite'); // set the first suite active by default
 
+    $('#back-btn').click(function() {
+        file_slug = window.location.pathname.split('/').pop(); 
+        $.get("/clear_duplicate_submission", {'file_slug': file_slug}, function(response) {
+            // console.log(response);  // causes brocken pipe because of the immediate call of history.back()
+          });
+        history.back();
+    })
+
+    
+
     $('#new-suite-form').submit(function(e){
         e.preventDefault();
         if ($(this).valid() == true){
@@ -20,7 +30,8 @@ $(document).ready(function(){
                     <div class="list-group-item list-group-item-action suite-item" id="suite-item-${suiteId}">
                     <div class="row d-flex align-items-center justify-content-between">
                     <div class="col-9 form-check" id="suite-check-${suiteId}">
-                        <a href="#" class="text-reset text-decoration-none form-check-label ms-0">${newSuiteName}</a>
+                            <input class="form-check-input" type="checkbox" value="${suiteId}" id="checkbox-${suiteId}">
+                            <label class="form-check-label" for="checkbox-${suiteId}">${newSuiteName}</label>
                     </div>
                     <div class="col-3">
                         <button type="button" class="btn btn-danger btn-sm delete-suite" id = "delete-${suiteId}" value="${suiteId}">Delete</button>
@@ -213,7 +224,7 @@ $(document).ready(function(){
         $('.active-suite').removeClass('active-suite');
         $(suite).addClass('active-suite');
         console.log(suite);
-        $('.keyword-item').remove();
+        $('.keyword-item').empty();
     }
 
     function refreshSuiteFocusOnDeletion(suite){

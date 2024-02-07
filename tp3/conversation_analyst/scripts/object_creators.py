@@ -1,7 +1,7 @@
-from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, Delimiter
+from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, Delimiter, ChatGPTConvo, ChatGPTMessage, ChatGPTFilter, ChatGPTConvoFilter
 
-def add_message(file, timestamp, sender, message, display_message):
-    m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message)[0]
+def add_message(file, timestamp, sender, message, display_message, risk_rating=0):
+    m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message, risk_rating=risk_rating)[0]
     m.save()
     return m
 
@@ -13,7 +13,10 @@ def add_file(file):
 
 
 def add_analysis(file):
-    a = Analysis.objects.get_or_create(file=file)[0]
+    a, created = Analysis.objects.get_or_create(file=file)
+    if not created:
+        a.delete()
+        a = Analysis.objects.create(file=file)
     a.save()
     return a
 
@@ -51,3 +54,20 @@ def add_delim(name, order, value, is_default):
     delim = Delimiter.objects.get_or_create(name=name, order=order, value = value, is_default=is_default)[0]
     delim.save()
     return delim
+
+def add_chat_message(type_of_message, content, convo):
+    m = ChatGPTMessage.objects.create(typeOfMessage=type_of_message, content=content, convo=convo)
+    m.save()
+    return m
+
+def add_chat_convo(slug, title, file, start=None, end=None):
+    c = ChatGPTConvo.objects.create(slug=slug, title=title, file=file, start=start, end=end)
+    c.save()
+    return c
+
+def add_chat_filter(content, typeOfFilter, convo):
+    f = ChatGPTFilter.objects.create(typeOfFilter=typeOfFilter,content=content)
+    f.save()
+    fc = ChatGPTConvoFilter.objects.create(convo=convo, filter=f)
+    fc.save()
+    return f, fc

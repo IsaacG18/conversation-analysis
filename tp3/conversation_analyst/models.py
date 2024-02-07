@@ -4,6 +4,7 @@ from django.template.defaultfilters import slugify
 from pathlib import Path
 
 
+
 # Create your models here.
 
 class File(models.Model):
@@ -14,10 +15,8 @@ class File(models.Model):
     slug = models.SlugField(unique=True)
 
     def init_save(self, *args, **kwargs):
-        self.title = Path(self.file.name).stem
-        partition = self.file.name.partition(".")
-        self.format = partition[-1]
-        self.title = self.title + "." + self.format
+        self.title = self.file.name.split("/")[-1]
+        self.format = self.title.split(".")[-1]
         self.slug = slugify(self.title+" "+str(self.date))
         super(File, self).save(*args, **kwargs)
 
@@ -32,6 +31,7 @@ class Message(models.Model):
     main_sender = models.CharField(max_length=50)
     content = models.CharField(max_length=1000)
     display_content = models.CharField(max_length=1100)
+    risk_rating = models.IntegerField(default=0)
 
     def set_main_sender(self, new_sender):
         self.main_sender = new_sender
@@ -152,3 +152,31 @@ class Delimiter(models.Model):
 
     def __str__(self):
         return self.name.__str__()
+
+class ChatGPTConvo(models.Model):
+    title = models.CharField(max_length=128, unique=False)
+    file = models.ForeignKey(File, on_delete=models.CASCADE)
+    start = models.DateTimeField(null=True)
+    end = models.DateTimeField(null=True)
+    date = models.DateTimeField(auto_now_add=True)
+    slug = models.SlugField(unique=True)
+    def save(self, *args, **kwargs):
+        self.title = self.file.slug
+        self.slug = slugify(self.title+" "+ str(self.id))
+        super(ChatGPTConvo, self).save(*args, **kwargs)
+
+
+class ChatGPTMessage(models.Model):
+    typeOfMessage = models.CharField(max_length=64)
+    content = models.CharField(max_length=1000)
+    convo = models.ForeignKey(ChatGPTConvo, on_delete=models.CASCADE)
+
+class ChatGPTFilter(models.Model):
+    typeOfFilter = models.CharField(max_length=64)
+    content = models.CharField(max_length=128)
+
+
+class ChatGPTConvoFilter(models.Model):
+    convo = models.ForeignKey(ChatGPTConvo, on_delete=models.CASCADE)
+    filter = models.ForeignKey(ChatGPTFilter, on_delete=models.CASCADE)
+

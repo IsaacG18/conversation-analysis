@@ -8,14 +8,15 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script type="text/javascript" src="{% static 'js/filterButton.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/highlight.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/chatgptcreate.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/highlight.css' %}">
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
-  <div class="container-fluid mt-2">
+  <div class="container-fluid">
   <div class="row">
     {% include "conversation_analyst/messages.html" %}
-  <div class="col-6">
-      <div class="accordion" id="analysis">
+  <div class="col-6"  id="analysis" >
+    <div class="accordion">
           {% if persons %}
           <div class="accordion-item">
             <h2 class="accordion-header">
@@ -86,6 +87,22 @@
               </div>
             </div>
           </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
+                Risk Levels
+              </button>
+            </h2>
+            <div id="collapseDateFilter" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                <button value="2" class="btn btn-outline-success risk">high risk</button>
+                <button value="1" class="btn btn-outline-success risk">medium risk</button>
+                <button value="0" class="btn btn-outline-success risk">low risk</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-outline-success chatgpt_new_message">New ChatGPT</button>
+          <button class="btn btn-outline-success"><a href="{%  url 'chatgpt_page_without_slug' %}">Existing ChatGPT</a></button>
           {% if vis_path %}
           <div class="accordion-item">
             <h2 class="accordion-header">
@@ -95,14 +112,17 @@
             </h2>
             <div id="collapseDateFilter" class="accordion-collapse collapse show">
               <div class="accordion-body">
-                <img src="{{vis_path}}" alt="No image found">
+                <img src="{% get_media_prefix %}{{vis_path}}" alt="No image found">
               </div>
             </div>
           </div>
           {% else %}
             <strong>There are no Visulation present.</strong>
           {% endif %}
-
+        </div>
+        <div class="row justify-content-end mt-3 pe-2">
+          <div class="col-2"><a href="{%  url 'suite_selection' file.slug %}" class="btn btn-outline-secondary" role="button">Regenerate</a></div>
+          <div class="col-auto"><a href="{%  url 'export_view' file.slug %}" class="btn btn-outline-success" role="button">Download XML</a></div>
         </div>
   </div>
     </div>
