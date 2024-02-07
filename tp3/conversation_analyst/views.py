@@ -18,7 +18,7 @@ import json
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
 from openai import OpenAI
-
+from django.utils.http import urlencode
 
 import os
 from django.conf import settings
@@ -80,8 +80,16 @@ def content_review(request, file_slug):
         risk_words = RiskWordResult.objects.filter(analysis=analysis)
         vis_path = VisFile.objects.filter(analysis=analysis)[0]
 
+        # Create Google Maps URLs for each location
+        base_url = "https://www.google.com/maps/search/?api=1&"
+        locations_with_urls = []
+        for location in locations:
+            parameters = urlencode({'query': location.name})
+            full_url = f"{base_url}{parameters}"
+            locations_with_urls.append({'name': location.name, 'url': full_url})
+            
         context_dict = {'messages': messages, 'persons': persons,
-                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path.file_path, "file":file}
+                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path.file_path, 'URL': locations_with_urls, "file":file}
 
         return render(request, "conversation_analyst/content_review.html", context=context_dict)
 
@@ -359,6 +367,12 @@ def message(request):
     api_key="",
     )
     
+def search_map(request):
+    base_url = "https://www.google.com/maps/search/?api=1&query="
+    location = request.GET.get('location', '') 
+    parameters= location.replace(' ', '+')
+    full_url = f"{base_url}{parameters}"
+    return HttpResponseRedirect(full_url)
 
     conversation_history.append({"role": "user", "content": message_content})
     add_chat_message("user", message_content, convo)
