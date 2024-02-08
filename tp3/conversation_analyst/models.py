@@ -1,3 +1,4 @@
+from xml.dom import ValidationErr
 from django.db import models
 from django.template.defaultfilters import slugify
 from .scripts.nlp.nlp import get_keyword_lamma
@@ -128,6 +129,29 @@ class DateFormat(models.Model):
     name = models.CharField(max_length=255)
     example = models.CharField(max_length=255)
     format = models.CharField(max_length=255)
+    is_default = models.BooleanField(default=False)
+    def __str__(self):
+        return self.name.__str__()
+    
+class Delimiter(models.Model):
+    name = models.CharField(max_length=100)
+    value = models.CharField(max_length=10)
+    order = models.IntegerField(default=0)
+    is_default = models.BooleanField(default=False)
+
+    def get_name(self):
+        return self.name
+
+    def get_value(self):
+        return self.value
+
+    def get_order(self):
+        return self.order
+    
+    def save(self, *args, **kwargs):
+        self.value = self.value
+        super(Delimiter, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.name.__str__()
 

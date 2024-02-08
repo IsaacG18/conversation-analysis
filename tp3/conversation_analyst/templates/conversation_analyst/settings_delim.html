@@ -1,0 +1,128 @@
+{% extends "conversation_analyst/base.html" %}
+
+{% block body %}
+
+{% load static %}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+<script type="text/javascript" src="{% static 'js/delimiters.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+
+<div class="container-fluid px-5">
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-6">
+            <table class="table table-bordered table-hover caption-top">
+                <caption class="text-center">
+                    <h4>Delimiter Settings</h4>
+                </caption>
+                <thead class="table-light text-center">
+                    <tr>
+                        <th scope="col">Component</th>
+                        <th scope="col">Delimiter</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody class="delims">
+                    {% if delimiters %}
+                    {% for delim in delimiters %}
+                    <tr class="delim-item" id="delim-item-{{ delim.id }}">
+                        <td>
+                            <div class="row align-items-center">
+                                <div class="col-4">
+                                    <input type="number" class="form-control delim-order" value="{{ delim.order }}"
+                                        id="delim-{{ delim.id }}" name="order">
+                                </div>
+                                <div class="col-8">
+                                    <a href="#" class="text-reset text-decoration-none">{{ delim.name }}</a>
+                                </div>
+                                <div class="row align-items-center error-row" id="error-row-{{delim.id}}">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="col-6 text-center">
+                            <input type="text" href="#" class="form-control delim-value" value="{{ delim.value }}" id="delim-{{ delim.id }}" name="value">
+                            <div class="row align-items-center value-error-row" id="value-error-row-{{ delim.id }}" style="color: red;font-size: 12px;"></div>
+                        </td>
+                        <td>
+                            {% if delim.is_default %}
+                            <div class="col-3">
+                                <button type="button" hidden class="btn btn-danger btn-sm delete-delim" value="{{ delim.id }}" id="delete-delim-{{ delim.id }}">Delete</button>
+                            </div>
+                            {% elif not delim.is_default %}
+                            <div class="col-3">
+                                <button type="button" class="btn btn-danger btn-sm delete-delim" value="{{ delim.id }}" id="delete-delim-{{ delim.id }}">Delete</button>
+                            </div>
+                            {% endif %}                        
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+               </tbody>
+        </table>
+
+        <form action="js/delimiters.js"  method="post" class="list-group-item list-group-item-action" id="new-delim-form">
+            {% csrf_token %}
+            <div class="row align-items-center d-flex justify-content-between">
+                <div class="col-2">
+                    <input id="new-delim-order" type="number" class="form-control" value="0"
+                        name="order">
+                </div>
+                <div class="col-4">
+                    <input id="new-delim-name" type="text" class="form-control"
+                        placeholder="Add name" aria-label="Name Input" name="name">
+                </div>
+                <div class="col-4">
+                    <input id="new-delim-value" type="text" class="form-control"
+                        placeholder="Add delimiter" aria-label="Name Delimiter" name="value">
+                </div>
+                <div class="col-2">
+                    <button type="submit" value="Submit" class="btn btn-primary btn-sm">Add</button>
+                </div>
+            </div>
+            <div class="row align-items-center error-row" id="delim-error-row">
+            </div>
+               </div>
+           </form>
+    </div>
+</div>
+
+<div class="row text-center md-3">
+    <div class="col-9 mx-auto">
+        <div class="list-group" id="timestamp-list">
+            <table class="table table-bordered table-hover caption-top">
+                <caption class="text-center">
+                    <h4>Timestamp Formats</h4>
+                </caption>
+                <thead class="table-light text-center">
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if timestamps %}
+                    {% for stamp in timestamps %}
+                    <tr>
+                        <td>
+                            <div class="form-check">
+                                {% if stamp.is_default %}
+                                <input class="form-check-input timestamp-input" type="radio" name="timestamp" value="{{ stamp.name }}" checked>
+                                {% else %}
+                                <input class="form-check-input timestamp-input" type="radio" name="timestamp" value="{{ stamp.name }}">
+                                {% endif %}
+                            </div>                        
+                        </td>
+                        <td>{{stamp.name}}</td>
+                        <td>{{stamp.example}}</td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+
+{% endblock %}

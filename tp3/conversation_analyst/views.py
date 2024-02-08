@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .scripts.data_ingestion import ingestion
-from .scripts.data_ingestion.file_process import check_file, process_file
+from .scripts.data_ingestion.file_process import parse_file, process_file
 from .scripts.nlp.nlp import *
 from .scripts.data_ingestion.plotter import plots
 from .scripts.object_creators import *
@@ -24,7 +24,8 @@ import os
 from django.conf import settings
 
 from .forms import UploadFileForm
-from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat, ChatGPTConvo
+from .models import File, Message, Analysis, Person, Location, KeywordSuite, RiskWord, KeywordPlan, Topic, RiskWordResult, VisFile, DateFormat, Delimiter, ChatGPTConvo
+
 
 
 def homepage(request, query=None):
@@ -40,33 +41,25 @@ def homepage(request, query=None):
 def upload(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():       
-            # get file delimeters
-            sender = form.cleaned_data.get('sender_delim')
-            timestamp = form.cleaned_data.get('timestamp_delim')
-            file_delimeters = [["Timestamp", timestamp], ["Sender", sender]]
+        if form.is_valid():
+            delims = Delimiter.objects.filter(order__gt=0).order_by('order')
+            delim_pairs = [[delim.name, delim.value] for delim in delims]
 
-            # Create file object
             uploaded_file = request.FILES["file"]
-            uploaded_file.name
-
-            # Save the file and process
             file_obj = File.objects.create(file=uploaded_file)
             file_obj.init_save()
 
             try:
-                check_file(file_obj, delimiters=file_delimeters)
-                # proceed to keyword suite selection
+                timestamp = DateFormat.objects.get(name=request.POST["selected_timestamp"])
+                parse_file(file_obj, timestamp.format, delimiters=delim_pairs)
                 return HttpResponseRedirect(reverse('suite_selection', kwargs={'file_slug': file_obj.slug}))
-            except ValueError as e:
+            except (ValueError, ValidationError) as e:
                 file_obj.delete()
-                return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e)})
-            except ValidationError as e:
-                file_obj.delete()
-                return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e)})
+                return render(request, "conversation_analyst/upload.html", {"form": form, "error_message": str(e), 'delimiters': Delimiter.objects.all(), 'timestamps': DateFormat.objects.all()})
     else:
         form = UploadFileForm()
-    return render(request, "conversation_analyst/upload.html", {"form": form})
+        return render(request, "conversation_analyst/upload.html", {"form": form, 'delimiters': Delimiter.objects.all(), 'timestamps': DateFormat.objects.all()})
+
 
 def content_review(request, file_slug):
     try:
@@ -139,10 +132,6 @@ def filter_view(request):
     return JsonResponse({"results": render_to_string('conversation_analyst/messages.html', {'messages': messages, 'persons': persons,
                         'locations': locations, 'risk_words': risk_words})})
 
-
-    
-    
-    
 def settings_page(request):
     keyword_suites = KeywordSuite.objects.all()
     if len(keyword_suites) == 0:
@@ -364,15 +353,8 @@ def message(request):
         conversation_history.append( {"role": message.typeOfMessage, "content": message.content})
 
     client = OpenAI(
-    api_key="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",
+    api_key="",
     )
-    
-def search_map(request):
-    base_url = "https://www.google.com/maps/search/?api=1&query="
-    location = request.GET.get('location', '') 
-    parameters= location.replace(' ', '+')
-    full_url = f"{base_url}{parameters}"
-    return HttpResponseRedirect(full_url)
 
     conversation_history.append({"role": "user", "content": message_content})
     add_chat_message("user", message_content, convo)
@@ -390,6 +372,63 @@ def search_map(request):
 
     messages = ChatGPTMessage.objects.filter(convo = convo)
     return JsonResponse({"results": render_to_string('conversation_analyst/chatgpt_messages.html',{"convo":convo, "messages": messages})})
+
+def search_map(request):
+    base_url = "https://www.google.com/maps/search/?api=1&query="
+    location = request.GET.get('location', '') 
+    parameters= location.replace(' ', '+')
+    full_url = f"{base_url}{parameters}"
+    return HttpResponseRedirect(full_url)
+
+
+def settings_delim(request):
+    delims = Delimiter.objects.all()
+
+    context_dict = {'delimiters': delims}
+    return render(request, "conversation_analyst/settings_delim.html", context=context_dict)
+
+def initialise_delim(delim_name, delim_value, order_value, default = False):
+    new_obj = Delimiter.objects.create(name=delim_name, value=delim_value, order=order_value, is_default=default)
+    new_obj.save()
+    return new_obj
+
+def create_delimiter(request):
+    if request.method == 'POST':
+        try:
+            delim_name = request.POST['name']
+            delim_value = request.POST['value']
+            delim_order = request.POST['order']
+            delim_obj =  initialise_delim(delim_name, delim_value, delim_order)
+            context_dict = {'message': 'New delimiter added', 'delimId': delim_obj.id}
+            return JsonResponse(context_dict, status=201)
+        except IntegrityError as e:
+            return JsonResponse({'message': 'Delimiter has to be unique'},status=500)  
+
+def delete_delimiter(request):
+    if request.method == 'GET':
+        delim_id = request.GET['delimId']
+        Delimiter.objects.get(id=delim_id).delete()
+        return HttpResponse('Delimiter deleted')
+    
+def order_update(request):
+    if request.method == 'POST':
+        delimId = request.POST['delim']
+        order = int(request.POST['order'])
+        delim_obj = Delimiter.objects.filter(id=delimId).first()
+        delim_obj.order = order
+        delim_obj.save()
+        
+        return HttpResponse("Order of " + delim_obj.name + " is updated to " + str(order))
+    
+def value_update(request):
+    if request.method == 'POST':
+        delimId = request.POST['delim']
+        value = request.POST['value']
+        delim_obj = Delimiter.objects.filter(id=delimId).first()
+        delim_obj.value = value
+        delim_obj.save()
+        
+        return HttpResponse("Value of " + delim_obj.name + " is updated to " + str(value))
 
 
 def suite_selection(request, file_slug):
@@ -409,13 +448,16 @@ def suite_selection(request, file_slug):
         default_plan = KeywordPlan.objects.get_or_create(name='global')[0]
         keyword_suites = default_plan.keywordsuite_set.all()
         keywords = RiskWord.objects.filter(suite__in=keyword_suites)
-        file_delimeters = [["Timestamp", ","], ["Sender", ":"]] # temporarily set to default, await integration
+
         try:
             file_obj = File.objects.get(slug=file_slug)
-            process_file(file_obj, keywords, delimiters=file_delimeters)
+            messages = Message.objects.filter(file=file_obj) 
+            process_file(file_obj, keywords, messages)
             return HttpResponseRedirect(reverse('content_review', kwargs={'file_slug': file_obj.slug}))
+        except File.DoesNotExist:
+            return HttpResponse("File object doesn't exist")
         except Exception as e:
-            return HttpResponse("Error while processing file")
+            return HttpResponse(f"Error while processing file, {e}")
         
 def clear_duplicate_submission(request):
     if request.method == 'GET':
@@ -429,4 +471,3 @@ def clear_duplicate_submission(request):
         except Exception as e:
             print(f'exception: {e}')
             return HttpResponse('An error occured while trying to delete the file')
-

@@ -1,10 +1,19 @@
-from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, ChatGPTConvo, ChatGPTMessage, ChatGPTFilter, ChatGPTConvoFilter
+from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, Delimiter, ChatGPTConvo, ChatGPTMessage, ChatGPTFilter, ChatGPTConvoFilter
 
-def add_message(file, timestamp, sender, message, display_message, entities, risk_rating=0):
-    m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message, risk_rating=risk_rating)[0]
-    m.tags = ",".join(entities)
+def add_message(file, timestamp, sender, message, display_message=None, risk_rating=0):
+    m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message)[0]
     m.save()
     return m
+
+def update_message(id, display_message, entities, risk_rating=0):
+    try: 
+        m = Message.objects.get(id=id)
+        m.tags = ",".join(entities)
+        m.display_content, m.risk_rating = display_message, risk_rating
+        m.save()
+        return m
+    except Message.DoesNotExist:
+        print(f"message object with id {id}, display_content: {display_message} does not exist")
 
 
 def add_file(file):
@@ -46,10 +55,15 @@ def add_vis(analysis, file_path):
     v.save()
     return v
 
-def add_date(name, example,format):
-    d = DateFormat.objects.get_or_create(name=name, example=example,format=format)[0]
+def add_date(name, example, format, default):
+    d = DateFormat.objects.get_or_create(name=name, example=example,format=format, is_default=default)[0]
     d.save()
     return d
+
+def add_delim(name, order, value, is_default):
+    delim = Delimiter.objects.get_or_create(name=name, order=order, value = value, is_default=is_default)[0]
+    delim.save()
+    return delim
 
 def add_chat_message(type_of_message, content, convo):
     m = ChatGPTMessage.objects.create(typeOfMessage=type_of_message, content=content, convo=convo)
