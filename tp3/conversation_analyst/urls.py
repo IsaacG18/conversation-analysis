@@ -31,4 +31,5 @@ urlpatterns = [
     path('settings_delim', views.settings_delim, name='settings_delim'),
     path('suite_selection/<slug:file_slug>', views.suite_selection, name='suite_selection'),
     path('clear_duplicate_submission', views.clear_duplicate_submission, name='clear_duplicate_submission'),
+    path('search_map/', views.search_map, name='search_map'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
