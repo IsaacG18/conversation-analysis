@@ -3,6 +3,18 @@ import plotly.graph_objects as go
 import os
 
 def plots(chat_messages, name, analysis_id):
+    """
+    Arguments:
+    chat_messages (list): A list of chat messages.
+    name (str): The name of the plot.
+    analysis_id (str): The ID associated with the analysis.
+
+    Returns:
+    str: The path to the saved plot image.
+
+    Description:
+    This function generates and saves a plot visualizing message lengths over time for each sender, highlighting message risks, names, and locations.
+    """
 
     name = name.split('.')[0]+'_plot' + analysis_id + '.png'
     senders = set(message['Sender'] for message in chat_messages)
