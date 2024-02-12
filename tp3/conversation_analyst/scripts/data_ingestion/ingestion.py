@@ -56,7 +56,7 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
 
         elif file_path.endswith('.csv'):
             try:
-                with open(file_path, 'r') as file:
+                with open(file_path, 'r', encoding="utf8") as file:
                     csv_reader = csv.reader(file)
                     next(csv_reader, None)
                     headers = [columns[0] for columns in d]
@@ -69,7 +69,7 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
 
         elif file_path.endswith('.txt'):
             try:
-                with open(file_path, 'r') as file:
+                with open(file_path, 'r', encoding="utf8") as file:
                     lines = file.readlines()
             except Exception as e:
                 raise ValueError(f"Error reading TXT file: {e}")
