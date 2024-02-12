@@ -16,6 +16,12 @@ unit-test-job:   # This job runs in the test stage.
 lint-test-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   script:
-    - echo "Linting code... This will take about 10 seconds."
-    - echo "No lint issues found."
+    - echo "Linting code"
+    - pip install flake8
+    - flake8 . 
 
+deploy:
+  stage: deploy
+  script:
+    - export CHATGPT_API_KEY=$CHATGPT_API_KEY
+    - python manage.py migrate 

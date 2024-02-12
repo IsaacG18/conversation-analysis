@@ -353,7 +353,7 @@ def message(request):
         conversation_history.append( {"role": message.typeOfMessage, "content": message.content})
 
     client = OpenAI(
-    api_key="",
+    api_key=os.environ.get('CHATGPT_API_KEY'),
     )
 
     conversation_history.append({"role": "user", "content": message_content})
