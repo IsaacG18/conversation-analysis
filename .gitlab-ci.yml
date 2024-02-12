@@ -9,7 +9,11 @@ unit-test-job:   # This job runs in the test stage.
     - pip install -r requirements.txt
     - pip install coverage
     - cd tp3
-    - coverage run --source='conversation_analyst' manage.py test conversation_analyst
+    - python manage.py makemigrations
+    - python manage.py migrate
+    - python manage.py migrate --run-syncdb
+    - python date_format_populate.py
+    - coverage run --source='conversation_analyst' manage.py test conversation_analyst.tests
     - coverage report
   coverage: '/^TOTAL.*\s+(\d+\%)$/'
 
@@ -19,4 +23,3 @@ lint-test-job:   # This job also runs in the test stage.
   script:
     - echo "Linting code... This will take about 10 seconds."
     - echo "No lint issues found."
-
