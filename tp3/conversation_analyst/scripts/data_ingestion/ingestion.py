@@ -83,10 +83,10 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
                     message_dict["Timestamp"] = parse_timestamp(message_dict["Timestamp"], date_formats)
                     messages.append(message_dict)
                 else:
-                    raise ValueError(f"Line did not match the pattern: {line} on line number {i+1}")
+                    raise ValueError(f"Pattern mismatch detected on line {i+1} with delimiter '{delimiters[-1][-1]}' :\n \"{line.strip()}\" ")
 
     except FileNotFoundError:
         raise ValueError(f"File not found: {file_path}")
     except Exception as e:
-        raise ValueError(f"An error occurred: {e}")
+        raise ValueError(f"An error occurred:\n\n {e}")
     return messages
