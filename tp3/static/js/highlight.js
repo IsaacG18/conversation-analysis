@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    convertLocationsToLinks();
     $(".filter").mouseenter(function () {
         var buttonValue = "." + classify($(this).text());
         if ($(this).hasClass("person-button")) {
@@ -11,8 +12,9 @@ $(document).ready(function () {
             });
         } else if ($(this).hasClass("location-button")) {
             var locationElements = document.querySelectorAll('.GPE');
-            locationElements.forEach(function (locationElement) {
+            locationElements.forEach(function (locationElement) {             
                 var nestedDiv = locationElement.querySelector(buttonValue);
+                convertLocationsToLinks();
                 if (nestedDiv) {
                     nestedDiv.classList.add("yellow-background");
                 }
@@ -38,6 +40,7 @@ $(document).ready(function () {
             var locationElements = document.querySelectorAll('.GPE');
             locationElements.forEach(function (locationElement) {
                 var nestedDiv = locationElement.querySelector(buttonValue);
+                convertLocationsToLinks();
                 if (nestedDiv) {
                     nestedDiv.classList.remove("yellow-background");
                 }
@@ -51,7 +54,21 @@ $(document).ready(function () {
         }
     )
 })
+function convertLocationsToLinks() {
+    var locationElements = document.querySelectorAll('.GPE');
+    locationElements.forEach(function (locationElement) {
+        var locationName = locationElement.textContent;
+        if (!locationElement.querySelector('a')) {
+            var encodedLocation = encodeURIComponent(locationName);
+            var googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+            locationElement.innerHTML = convertToLink(locationName, googleMapsUrl);
+        }
+    });
+}
 
+function convertToLink(text, url) {
+    return `<a href="${url}" target="_blank" class="location-link">${text}</a>`;
+}
 
 style = ""
 

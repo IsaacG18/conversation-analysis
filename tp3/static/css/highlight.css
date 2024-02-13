@@ -8,4 +8,6 @@
 
 .GPE {
     background-color: red;
+    text-decoration: underline; 
+    cursor: pointer;
 }

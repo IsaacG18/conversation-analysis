@@ -23,4 +23,3 @@ lint-test-job:   # This job also runs in the test stage.
   script:
     - echo "Linting code... This will take about 10 seconds."
     - echo "No lint issues found."
-
