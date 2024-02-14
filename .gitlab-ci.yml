@@ -8,12 +8,7 @@ unit-test-job:   # This job runs in the test stage.
   script:
     - pip install -r requirements.txt
     - pip install coverage
-    - cd tp3
-    - python manage.py makemigrations
-    - python manage.py migrate
-    - python manage.py migrate --run-syncdb
-    - python date_format_populate.py
-    - coverage run --source='conversation_analyst' manage.py test conversation_analyst.tests
+    - coverage run --source='conversation_analyst' manage.py test conversation_analyst
     - coverage report
   coverage: '/^TOTAL.*\s+(\d+\%)$/'
 
@@ -21,12 +16,7 @@ unit-test-job:   # This job runs in the test stage.
 lint-test-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   script:
-<<<<<<< HEAD
     - echo "Linting code"
     - pip install flake8 --exclude=date_format_populate.py.py --max-line-length=150 .
     - flake8 .
 
-=======
-    - echo "Linting code... This will take about 10 seconds."
-    - echo "No lint issues found."
->>>>>>> ccbe2f3df3f8d4d18e658f78b12e5d900ef71d8a
