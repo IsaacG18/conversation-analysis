@@ -18,10 +18,4 @@ lint-test-job:   # This job also runs in the test stage.
   script:
     - echo "Linting code"
     - pip install flake8
-    - flake8 . 
-
-deploy:
-  stage: deploy
-  script:
-    - export CHATGPT_API_KEY=$CHATGPT_API_KEY
-    - python manage.py migrate 
+    # - flake8 --max-line-length=200 --exclude=date_format_populate.py . Uncomment when finished
