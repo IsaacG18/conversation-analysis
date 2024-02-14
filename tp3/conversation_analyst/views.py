@@ -74,7 +74,7 @@ def content_review(request, file_slug):
         vis_path = VisFile.objects.filter(analysis=analysis)[0]
 
         # Create Google Maps URLs for each location
-        base_url = "https://www.google.com/maps/search/?api=1&"
+        base_url = ""
         locations_with_urls = []
         for location in locations:
             parameters = urlencode({'query': location.name})

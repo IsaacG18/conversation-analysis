@@ -1,20 +1,20 @@
-from ..models import File, Message, Analysis, Person, Location, RiskWord, RiskWordResult, VisFile, DateFormat, Delimiter, ChatGPTConvo, ChatGPTMessage, ChatGPTFilter, ChatGPTConvoFilter
+from ..models import File, Message, Analysis, Person, Location, RiskWord
 
-def add_message(file, timestamp, sender, message, display_message=None, risk_rating=0):
-    m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message)[0]
+def add_message(file, timestamp, sender, message, display_message):
+    m = Message.objects.get_or_create(file=file, timestamp=timestamp, sender=sender, content=message, display_content=display_message)[0]
     m.save()
     return m
 
-def update_message(id, display_message, entities, risk_rating=0):
-    try: 
-        m = Message.objects.get(id=id)
-        m.tags = ",".join(entities)
-        m.display_content, m.risk_rating = display_message, risk_rating
-        m.save()
-        return m
-    except Message.DoesNotExist:
-        print(f"message object with id {id}, display_content: {display_message} does not exist")
 
+def add_file(file):
+    f = File.objects.get_or_create(file=file)[0]
+    f.save()
+    return f
+
+def add_file(file):
+    f = File.objects.get_or_create(file=file)[0]
+    f.save()
+    return f
 
 def add_file(file):
     f = File.objects.get_or_create(file=file)[0]
@@ -23,10 +23,7 @@ def add_file(file):
 
 
 def add_analysis(file):
-    a, created = Analysis.objects.get_or_create(file=file)
-    if not created:
-        a.delete()
-        a = Analysis.objects.create(file=file)
+    a = Analysis.objects.get_or_create(file=file)[0]
     a.save()
     return a
 
@@ -43,10 +40,8 @@ def add_location(analysis, name):
     return l
 
 
-def add_risk_word_result(analysis, keyword, amount, risk_factor=0):
-    keyword = keyword.lower()
-    k = RiskWord.objects.filter(keyword=keyword).first()
-    r = RiskWordResult.objects.get_or_create(analysis=analysis, riskword=k, amount=amount)[0]
+def add_risk_word(analysis, keyword, risk_factor, amount):
+    r = RiskWord.objects.get_or_create(analysis=analysis, keyword=keyword, risk_factor=risk_factor, amount=amount)[0]
     r.save()
     return r
 
