@@ -59,6 +59,17 @@ def populate_delims():
 
 if __name__ == "__main__":
     print("Starting population script...")
+    media_dir = "media"
+    vis_uploads_dir = "vis_uploads"
+
+    if not os.path.exists(media_dir):
+        os.mkdir(media_dir)
+
+    vis_uploads_path = os.path.join(media_dir, vis_uploads_dir)
+    if not os.path.exists(vis_uploads_path):
+        os.mkdir(vis_uploads_path)
+
+
     populate_dates()
     populate_delims()
     print("Finished")
