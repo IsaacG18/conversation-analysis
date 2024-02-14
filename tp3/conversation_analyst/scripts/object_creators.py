@@ -38,7 +38,6 @@ def add_location(analysis, name):
     return l
 
 def add_risk_word(analysis, keyword, amount, risk_factor=0):
-    keyword = keyword.lower()
     k = RiskWord.objects.filter(keyword=keyword).first()
     r = RiskWordResult.objects.get_or_create(analysis=analysis, riskword=k, amount=amount, risk_factor=risk_factor)[0]
     r.save()
@@ -46,9 +45,8 @@ def add_risk_word(analysis, keyword, amount, risk_factor=0):
 
 
 def add_risk_word_result(analysis, keyword, amount, risk_factor=0):
-    keyword = keyword.lower()
     k = RiskWord.objects.filter(keyword=keyword).first()
-    r = RiskWordResult.objects.get_or_create(analysis=analysis, riskword=k, amount=amount, risk_factor=risk_factor)[0]
+    r = RiskWordResult.objects.get_or_create(analysis=analysis, riskword=k, amount=amount)[0]
     r.save()
     return r
 
