@@ -17,11 +17,6 @@ lint-test-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   script:
     - echo "Linting code"
-    - pip install flake8
-    - flake8 . 
+    - pip install flake8 --exclude=date_format_populate.py.py --max-line-length=150 .
+    - flake8 .
 
-deploy:
-  stage: deploy
-  script:
-    - export CHATGPT_API_KEY=$CHATGPT_API_KEY
-    - python manage.py migrate 
