@@ -56,7 +56,7 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
 
         elif file_path.endswith('.csv'):
             try:
-                with open(file_path, 'r', encoding="utf8") as file:
+                with open(file_path, 'r') as file:
                     csv_reader = csv.reader(file)
                     next(csv_reader, None)
                     headers = [columns[0] for columns in d]
@@ -69,7 +69,7 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
 
         elif file_path.endswith('.txt'):
             try:
-                with open(file_path, 'r', encoding="utf8") as file:
+                with open(file_path, 'r') as file:
                     lines = file.readlines()
             except Exception as e:
                 raise ValueError(f"Error reading TXT file: {e}")
@@ -83,6 +83,7 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
                     message_dict["Timestamp"] = parse_timestamp(message_dict["Timestamp"], date_formats)
                     messages.append(message_dict)
                 else:
+
                     raise ValueError(f"Pattern mismatch detected on line {i+1} with delimiter '{delimiters[-1][-1]}' :\n \"{line.strip()}\" ")
 
     except FileNotFoundError:

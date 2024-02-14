@@ -17,7 +17,7 @@ def populate():
     sample_dir = os.path.abspath(os.path.join(os.getcwd(), 'static/sample'))
     sample_files = [f for f in os.listdir(sample_dir) if isfile(join(sample_dir, f))]
     for file in sample_files:
-        f = File.objects.create(file="test_file.txt", title="Test File", format="txt")
+        f = add_file(file)
         process_file(f)
         print(f.title + "added to database")
 
