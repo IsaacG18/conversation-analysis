@@ -16,11 +16,6 @@ def update_message(id, display_message, entities, risk_rating=0):
         print(f"message object with id {id}, display_content: {display_message} does not exist")
 
 
-def add_file(file):
-    f = File.objects.get_or_create(file=file)[0]
-    f.save()
-    return f
-
 
 def add_analysis(file):
     a, created = Analysis.objects.get_or_create(file=file)
@@ -42,11 +37,18 @@ def add_location(analysis, name):
     l.save()
     return l
 
+def add_risk_word(analysis, keyword, amount, risk_factor=0):
+    keyword = keyword.lower()
+    k = RiskWord.objects.filter(keyword=keyword).first()
+    r = RiskWordResult.objects.get_or_create(analysis=analysis, riskword=k, amount=amount, risk_factor=risk_factor)[0]
+    r.save()
+    return r
+
 
 def add_risk_word_result(analysis, keyword, amount, risk_factor=0):
     keyword = keyword.lower()
     k = RiskWord.objects.filter(keyword=keyword).first()
-    r = RiskWordResult.objects.get_or_create(analysis=analysis, riskword=k, amount=amount)[0]
+    r = RiskWordResult.objects.get_or_create(analysis=analysis, riskword=k, amount=amount, risk_factor=risk_factor)[0]
     r.save()
     return r
 
@@ -70,10 +72,6 @@ def add_chat_message(type_of_message, content, convo):
     m.save()
     return m
 
-def add_chat_convo(slug, title, file, start=None, end=None):
-    c = ChatGPTConvo.objects.create(slug=slug, title=title, file=file, start=start, end=end)
-    c.save()
-    return c
 
 def add_chat_filter(content, typeOfFilter, convo):
     f = ChatGPTFilter.objects.create(typeOfFilter=typeOfFilter,content=content)
