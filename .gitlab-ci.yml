@@ -18,4 +18,4 @@ lint-test-job:   # This job also runs in the test stage.
   script:
     - echo "Linting code"
     - pip install flake8
-    # - flake8 --max-line-length=200 --exclude=date_format_populate.py . Uncomment when finished
+    - flake8 --max-line-length=200 --exclude=date_format_populate.py . 
