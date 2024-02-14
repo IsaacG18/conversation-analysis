@@ -72,6 +72,7 @@ def content_review(request, file_slug):
         locations = Location.objects.filter(analysis=analysis)
         risk_words = RiskWordResult.objects.filter(analysis=analysis)
         vis_path = VisFile.objects.filter(analysis=analysis)[0]
+        chats = ChatGPTConvo.objects.filter(file=file)
 
         # Create Google Maps URLs for each location
         base_url = "https://www.google.com/maps/search/?api=1&"
@@ -82,7 +83,7 @@ def content_review(request, file_slug):
             locations_with_urls.append({'name': location.name, 'url': full_url})
             
         context_dict = {'messages': messages, 'persons': persons,
-                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path.file_path, 'URL': locations_with_urls, "file":file}
+                        'locations': locations, 'risk_words': risk_words, 'vis_path': vis_path.file_path, 'URL': locations_with_urls, "file":file, "chats":chats}
 
         return render(request, "conversation_analyst/content_review.html", context=context_dict)
 

@@ -119,8 +119,29 @@
               </div>
             </div>
           </div>
-          <button class="btn btn-outline-success chatgpt_new_message">New ChatGPT</button>
-          <button class="btn btn-outline-success"><a href="{%  url 'chatgpt_page_without_slug' %}">Existing ChatGPT</a></button>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                ChatGPT
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                <button class="btn btn-outline-success chatgpt_new_message">New ChatGPT</button>
+                <button class="btn btn-outline-success"><a href="{%  url 'chatgpt_page_without_slug' %}">Existing ChatGPT</a></button>
+                {% if chats %}
+                    <ul class="list-group">
+                        {% for chat in chats %}
+                          <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" >{{chat.slug}}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <strong>There are no chats present.</strong>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
           {% if vis_path %}
           <div class="accordion-item">
             <h2 class="accordion-header">
