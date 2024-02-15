@@ -8,9 +8,15 @@ unit-test-job:   # This job runs in the test stage.
   script:
     - pip install -r requirements.txt
     - pip install coverage
-    - coverage run --source='conversation_analyst' manage.py test conversation_analyst
+    - cd tp3
+    - python manage.py makemigrations
+    - python manage.py migrate
+    - python manage.py migrate --run-syncdb
+    - python date_format_populate.py
+    - coverage run --source='conversation_analyst' manage.py test conversation_analyst.tests
     - coverage report
   coverage: '/^TOTAL.*\s+(\d+\%)$/'
+
 
 
 lint-test-job:   # This job also runs in the test stage.
@@ -18,4 +24,4 @@ lint-test-job:   # This job also runs in the test stage.
   script:
     - echo "Linting code"
     - pip install flake8
-    # - flake8 --max-line-length=200 --exclude=date_format_populate.py . Uncomment when finished
+    - flake8 --max-line-length=200 --exclude=date_format_populate.py . 
