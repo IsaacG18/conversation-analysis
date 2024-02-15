@@ -18,8 +18,10 @@ unit-test-job:   # This job runs in the test stage.
   coverage: '/^TOTAL.*\s+(\d+\%)$/'
 
 
+
 lint-test-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   script:
-    - echo "Linting code... This will take about 10 seconds."
-    - echo "No lint issues found."
+    - echo "Linting code"
+    - pip install flake8
+    - flake8 --max-line-length=200 --exclude=date_format_populate.py . 
