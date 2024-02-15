@@ -8,6 +8,7 @@ unit-test-job:   # This job runs in the test stage.
   script:
     - pip install -r requirements.txt
     - pip install coverage
+    - cd tp3
     - coverage run --source='conversation_analyst' manage.py test conversation_analyst
     - coverage report
   coverage: '/^TOTAL.*\s+(\d+\%)$/'
