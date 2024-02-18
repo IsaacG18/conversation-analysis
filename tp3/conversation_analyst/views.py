@@ -615,4 +615,3 @@ def search_chats(request):
             )
         }
     )
-
