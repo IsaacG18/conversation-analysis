@@ -14,7 +14,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
 from openai import OpenAI
 from django.utils.http import urlencode
-
+import openai
 import os
 
 from .forms import UploadFileForm
@@ -32,7 +32,7 @@ from .models import (
     DateFormat,
     Delimiter,
     ChatGPTConvo,
-    ChatGPTMessage
+    ChatGPTMessage,
 )
 
 
@@ -104,6 +104,7 @@ def content_review(request, file_slug):
         locations = Location.objects.filter(analysis=analysis)
         risk_words = RiskWordResult.objects.filter(analysis=analysis)
         vis_path = VisFile.objects.filter(analysis=analysis)[0]
+        chats = ChatGPTConvo.objects.filter(file=file)
 
         # Create Google Maps URLs for each location
         base_url = ""
@@ -121,6 +122,7 @@ def content_review(request, file_slug):
             "vis_path": vis_path.file_path,
             "URL": locations_with_urls,
             "file": file,
+            "chats": chats,
         }
 
         return render(
@@ -173,7 +175,9 @@ def filter_view(request):
             messages = messages.filter(filter_condition)
     except Exception as e:
         print(e)
-        return JsonResponse({"result": "error", "message": f"Internal Server Error with error: {e}"})
+        return JsonResponse(
+            {"result": "error", "message": f"Internal Server Error with error: {e}"}
+        )
     return JsonResponse(
         {
             "results": render_to_string(
@@ -211,7 +215,9 @@ def create_suite(request):
             return JsonResponse(context_dict, status=201)
         except IntegrityError as e:
             # print(e)
-            return JsonResponse({"message": f"Suite name has to be unique with error: {e}"}, status=500)
+            return JsonResponse(
+                {"message": f"Suite name has to be unique with error: {e}"}, status=500
+            )
 
 
 def delete_suite(request):
@@ -392,7 +398,9 @@ def chatgpt_new_message(request):
 
     except Exception as e:
         print(e)
-        return JsonResponse({"result": "error", "message": f"Internal Server Error with error: {e}"})
+        return JsonResponse(
+            {"result": "error", "message": f"Internal Server Error with error: {e}"}
+        )
 
 
 def chatgpt_page(request, chatgpt_slug):
@@ -435,39 +443,93 @@ def chatgpt_page_without_slug(request):
 
 def message(request):
     chatgpt_slug = request.GET["chatgpt_slug"]
-    message_content = request.GET["message_content"]
     convo = ChatGPTConvo.objects.get(slug=chatgpt_slug)
     messages = ChatGPTMessage.objects.filter(convo=convo)
-    conversation_history = []
-    for message in messages:
-        conversation_history.append(
-            {"role": message.typeOfMessage, "content": message.content}
+    try:
+        message_content = request.GET["message_content"]
+        messages = ChatGPTMessage.objects.filter(convo=convo)
+        conversation_history = []
+        for message in messages:
+            conversation_history.append(
+                {"role": message.typeOfMessage, "content": message.content}
+            )
+
+        client = OpenAI(
+            api_key=os.environ.get("CHATGPT_API_KEY"),
         )
 
-    client = OpenAI(
-        api_key=os.environ.get("CHATGPT_API_KEY"),
-    )
+        conversation_history.append({"role": "user", "content": message_content})
 
-    conversation_history.append({"role": "user", "content": message_content})
-    add_chat_message("user", message_content, convo)
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo", messages=[*conversation_history]
+        )
 
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo", messages=[*conversation_history]
-    )
+        reply = response.choices[0].message.content
+        conversation_history.append({"role": "assistant", "content": reply})
+        add_chat_message("user", message_content, convo)
+        add_chat_message("assistant", reply, convo)
 
-    reply = response.choices[0].message.content
-    conversation_history.append({"role": "assistant", "content": reply})
-    add_chat_message("assistant", reply, convo)
-
-    messages = ChatGPTMessage.objects.filter(convo=convo)
-    return JsonResponse(
-        {
-            "results": render_to_string(
-                "conversation_analyst/chatgpt_messages.html",
-                {"convo": convo, "messages": messages},
-            )
-        }
-    )
+        messages = ChatGPTMessage.objects.filter(convo=convo)
+        return JsonResponse(
+            {
+                "results": render_to_string(
+                    "conversation_analyst/chatgpt_messages.html",
+                    {"convo": convo, "messages": messages},
+                )
+            }
+        )
+    except openai.APIError as e:
+        return JsonResponse(
+            {
+                "results": render_to_string(
+                    "conversation_analyst/chatgpt_messages.html",
+                    {
+                        "convo": convo,
+                        "messages": messages,
+                        "error": f"OpenAI API returned an API Error: {e}",
+                    },
+                )
+            }
+        )
+    except openai.APIConnectionError as e:
+        return JsonResponse(
+            {
+                "results": render_to_string(
+                    "conversation_analyst/chatgpt_messages.html",
+                    {
+                        "convo": convo,
+                        "messages": messages,
+                        "error": f"Failed to connect to OpenAI API: {e}",
+                    },
+                )
+            }
+        )
+    except openai.RateLimitError as e:
+        return JsonResponse(
+            {
+                "results": render_to_string(
+                    "conversation_analyst/chatgpt_messages.html",
+                    {
+                        "convo": convo,
+                        "messages": messages,
+                        "error": f"OpenAI API request exceeded rate limit: {e}",
+                    },
+                )
+            }
+        )
+    except Exception as e:
+        return JsonResponse(
+            {
+                "results": render_to_string(
+                    "conversation_analyst/chatgpt_messages.html",
+                    {
+                        "convo": convo,
+                        "messages": messages,
+                        "error": f"An error occurred: {e}",
+                    },
+                )
+            }
+        )
 
 
 def search_map(request):
@@ -505,7 +567,9 @@ def create_delimiter(request):
             context_dict = {"message": "New delimiter added", "delimId": delim_obj.id}
             return JsonResponse(context_dict, status=201)
         except IntegrityError as e:
-            return JsonResponse({"message": f"Delimiter has to be unique with error: {e}"}, status=500)
+            return JsonResponse(
+                {"message": f"Delimiter has to be unique with error: {e}"}, status=500
+            )
 
 
 def delete_delimiter(request):

@@ -13,6 +13,11 @@
           <div class="col-md-3 bg-light">
               <h3 class="mt-3">Past Chats</h3>
               <div class="scroll-container">
+                {% if convo.file %}
+                <a href="{% url 'content_review' convo.file.slug %}" class="btn btn-primary text-decoration-none">
+                    <span style="color: black; font-size: large;">Back to File</span>
+                </a>                
+                {% endif %}
                   {% if chats %}
                       <ul class="list-group">
                           {% for chat in chats %}
