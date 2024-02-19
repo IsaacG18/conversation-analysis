@@ -33,6 +33,7 @@ from .models import (
     Delimiter,
     ChatGPTConvo,
     ChatGPTMessage,
+    CustomThresholds
 )
 
 
@@ -696,7 +697,8 @@ def suite_selection(request, file_slug):
         try:
             file_obj = File.objects.get(slug=file_slug)
             messages = Message.objects.filter(file=file_obj)
-            process_file(file_obj, keywords, messages)
+            threshold = CustomThresholds.objects.all()[0]
+            process_file(file_obj, keywords, messages, threshold)
             return HttpResponseRedirect(
                 reverse("content_review", kwargs={"file_slug": file_obj.slug})
             )
