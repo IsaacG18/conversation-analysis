@@ -13,7 +13,7 @@ def parse_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":
     generate_message_objects(file, messages)
 
 
-def process_file(file, keywords, messages):
+def process_file(file, keywords, messages, threshold):
     chat_messages = [
         {
             "Timestamp": message.timestamp,
@@ -25,7 +25,7 @@ def process_file(file, keywords, messages):
     ]
     message_count = create_arrays(chat_messages)
     nlp_text, person_and_locations = tag_text(
-        chat_messages, keywords, ["PERSON", "GPE"]
+        chat_messages, keywords, ["PERSON", "GPE"], threshold.average_risk,threshold.sentiment_divider,threshold.max_risk,threshold.word_risk
     )
     risk_words = get_top_n_risk_keywords(nlp_text, 10)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
@@ -37,7 +37,6 @@ def process_file(file, keywords, messages):
         risk_words,
         common_topics,
     )
-
 
 def generate_message_objects(file, chat_messages):
     for message in chat_messages:
