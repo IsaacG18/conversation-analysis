@@ -112,6 +112,7 @@ def add_chat_filter(content, typeOfFilter, convo):
     fc.save()
     return f, fc
 
+
 def add_custom_threshold(average_risk, sentiment_divider, max_risk, word_risk):
     ct = CustomThresholds.objects.create(average_risk=average_risk, sentiment_divider=sentiment_divider, max_risk=max_risk, word_risk=word_risk)
     ct.save()
