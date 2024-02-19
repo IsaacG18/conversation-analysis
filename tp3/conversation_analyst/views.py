@@ -365,6 +365,74 @@ def export_view(request, file_slug):
     return response
 
 
+def quick_chat_message(request):
+    file_slug = request.GET["file_slug"]
+    try:
+        file = File.objects.get(slug=file_slug)
+        messages = Message.objects.filter(file=file)
+        system_message = "Here is an extract of a set of messages, please sumerise the messages. They are formatted of the messages will be'<Timestamp>: <Name>: <Message> \n"
+        for message in messages:
+            system_message += (
+                f"{message.timestamp}: {message.sender}:  {message.content} \n"
+            )
+        print(system_message)
+        client = OpenAI(
+            api_key=os.environ.get("CHATGPT_API_KEY"),
+        )
+        conversation_history = [{"role": "system", "content": system_message}, {"role": "user", "content": "please sumerise the messages"}]
+
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo", messages=[*conversation_history]
+        )
+
+        reply = response.choices[0].message.content
+        return JsonResponse(
+            {
+                "results": render_to_string(
+                    "conversation_analyst/quick_chat_result.html",
+                    {"response": reply},
+                )
+            }
+        )
+
+    except openai.APIError as e:
+        return JsonResponse(
+            {
+                "results": render_to_string(
+                    "conversation_analyst/quick_chat_result.html",
+                    {"response": f"OpenAI API returned an API Error: {e}"},
+                )
+            }
+        )
+    except openai.APIConnectionError as e:
+        return JsonResponse(
+            {
+                "results": render_to_string(
+                    "conversation_analyst/quick_chat_result.html",
+                    {"response": f"Failed to connect to OpenAI API: {e}"},
+                )
+            }
+        )
+    except openai.RateLimitError as e:
+        return JsonResponse(
+            {
+                "results": render_to_string(
+                    "conversation_analyst/quick_chat_result.html",
+                    {"response": f"OpenAI API request exceeded rate limit: {e}"},
+                )
+            }
+        )
+    except Exception as e:
+        return JsonResponse(
+            {
+                "results": render_to_string(
+                    "conversation_analyst/quick_chat_result.html",
+                    {"response": f"An error occurred: {e}"},
+                )
+            }
+        )
+
+
 def chatgpt_new_message(request):
     file_slug = request.GET["file_slug"]
     start_date = request.GET.get("startDate")
