@@ -361,20 +361,19 @@ def export_view(request, file_slug):
 
 def quick_chat_message(request):
     file_slug = request.GET["file_slug"]
-    query = request.GET["file_slug"]
     try:
         file = File.objects.get(slug=file_slug)
         messages = Message.objects.filter(file=file)
-        system_message = "You are answering questions about a some text messages with lots of detail, the formated of the messages will be'<Timestamp>: <Name>: <Message> \n"
+        system_message = "Here is an extract of a set of messages, please sumerise the messages. They are formatted of the messages will be'<Timestamp>: <Name>: <Message> \n"
         for message in messages:
             system_message += (
                 f"{message.timestamp}: {message.sender}:  {message.content} \n"
             )
-
+        print(system_message)
         client = OpenAI(
             api_key=os.environ.get("CHATGPT_API_KEY"),
         )
-        conversation_history = [{"role": "system", "content": system_message}, {"role": "user", "content": query}]
+        conversation_history = [{"role": "system", "content": system_message}, {"role": "user", "content": "please sumerise the messages"}]
 
         response = client.chat.completions.create(
             model="gpt-3.5-turbo", messages=[*conversation_history]
