@@ -660,7 +660,9 @@ def search_chats(request):
     if len(page_slug) > 0 and page_slug.strip() != "":
         convo = ChatGPTConvo.objects.get(slug=page_slug)
         if len(query) > 0 and query.strip() != "":
-            chats = chats.filter(title__icontains=query)
+            chats = chats.filter(slug__icontains=query)
+            print(chats)
+        
         return JsonResponse(
             {
                 "results": render_to_string(
