@@ -1,9 +1,10 @@
 from django.test import TestCase
 from django.urls import reverse
-from .models import KeywordSuite, RiskWord, ChatGPTMessage, ChatGPTConvo, Person, Message, File, Analysis, Delimiter, DateFormat, VisFile, Location, ChatGPTConvoFilter, ChatGPTFilter
+from .models import DateFormat,KeywordSuite, RiskWord, ChatGPTMessage, ChatGPTConvo, Person, Message, File, Analysis, Delimiter, DateFormat, VisFile, Location, ChatGPTConvoFilter, ChatGPTFilter
 from .scripts.nlp.nlp import tag_text, classify, get_top_n_risk_keywords, message_to_text, create_arrays, get_keyword_lamma, get_date_messages, label_entity, label_keyword
 from django.utils import timezone
 from .scripts.object_creators import add_chat_message, add_chat_filter, add_location, add_analysis, add_person, add_delim, add_date, add_vis, add_message, update_message
+from django.core.files.uploadedfile import SimpleUploadedFile
 import numpy as np
 import spacy
 
@@ -431,3 +432,39 @@ class SettingTestCase(TestCase):
         )
         risk_word_to_update.refresh_from_db()
         self.assertEqual(risk_word_to_update.risk_factor, new_risk_factor)
+
+
+class InputValidationTestCase(TestCase):
+    def setUp(self):
+        DateFormat.objects.create(
+            name='some_valid_timestamp', 
+            example='2023-01-01T00:00:00', 
+            format='%Y-%m-%dT%H:%M:%S', 
+            is_default=True
+        )
+    
+    def test_invalid_form_data(self):
+        uploaded_file = SimpleUploadedFile('test.txt', b'file_content', content_type='text/plain')
+        response = self.client.post(reverse('upload'), {
+            'file': uploaded_file,
+            'selected_timestamp': 'some_valid_timestamp'
+        })
+        self.assertEqual(response.status_code, 200)
+        
+
+class ChatGPTConvoFilterTestCase(TestCase):
+    def setUp(self):
+        self.file = File.objects.create(
+            file="uploads/sample_file1.txt",
+            title="Sample File 1",
+            format="txt",
+            slug="sample-file-1-" + timezone.now().strftime("%Y%m%d%H%M%S"),
+        )
+        self.convo = ChatGPTConvo.objects.create(file=self.file, title="Test Convo")
+
+    def test_add_chat_filter(self):
+        chat_filter, convo_filter = add_chat_filter("spam", "Filter", self.convo)
+        self.assertEqual(ChatGPTFilter.objects.count(), 1)
+        self.assertEqual(chat_filter.content, "spam")
+        self.assertEqual(ChatGPTConvoFilter.objects.count(), 1)
+        self.assertEqual(convo_filter.filter.content, "spam")
