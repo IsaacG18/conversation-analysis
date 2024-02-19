@@ -9,6 +9,7 @@
 <script type="text/javascript" src="{% static 'js/filterButton.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/highlight.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/chatgptcreate.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/quickchat.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/highlight.css' %}">
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
@@ -119,8 +120,29 @@
               </div>
             </div>
           </div>
-          <button class="btn btn-outline-success chatgpt_new_message">New ChatGPT</button>
-          <button class="btn btn-outline-success"><a href="{%  url 'chatgpt_page_without_slug' %}">Existing ChatGPT</a></button>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                ChatGPT
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse show">
+              <div class="accordion-body">
+                <button class="btn btn-outline-success chatgpt_new_message">New ChatGPT</button>
+                <button class="btn btn-outline-success"><a href="{%  url 'chatgpt_page_without_slug' %}">Existing ChatGPT</a></button>
+                {% if chats %}
+                    <ul class="list-group">
+                        {% for chat in chats %}
+                          <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" >{{chat.slug}}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <strong>There are no chats present.</strong>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
           {% if vis_path %}
           <div class="accordion-item">
             <h2 class="accordion-header">
@@ -137,6 +159,19 @@
           {% else %}
             <strong>There are no Visulation present.</strong>
           {% endif %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
+                ChatGPT Prompt
+              </button>
+            </h2>
+            <div id="collapseDateFilter" class="accordion-collapse collapse show">
+              <label for="message_content">ChatGPT Quick Ask:</label>
+              <button class="btn btn-primary chatgpt_quick_message" type="button">Summarise</button>
+              <div id="ChatGPT-results">
+              </div>
+            </div>
+          </div>
         </div>
         <div class="row justify-content-end mt-3 pe-2">
           <div class="col-2"><a href="{%  url 'suite_selection' file.slug %}" class="btn btn-outline-secondary" role="button">Regenerate</a></div>
