@@ -1,9 +1,9 @@
 from django.test import TestCase
 from django.urls import reverse
-from .models import DateFormat,KeywordSuite, RiskWord, ChatGPTMessage, ChatGPTConvo, Person, Message, File, Analysis, Delimiter, DateFormat, VisFile, Location, ChatGPTConvoFilter, ChatGPTFilter
-from .scripts.nlp.nlp import tag_text, classify, get_top_n_risk_keywords, message_to_text, create_arrays, get_keyword_lamma, get_date_messages, label_entity, label_keyword
+from .models import *
+from .scripts.nlp.nlp import *
 from django.utils import timezone
-from .scripts.object_creators import add_chat_message, add_chat_filter, add_location, add_analysis, add_person, add_delim, add_date, add_vis, add_message, update_message
+from .scripts.object_creators import *
 from django.core.files.uploadedfile import SimpleUploadedFile
 import numpy as np
 import spacy
