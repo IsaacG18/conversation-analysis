@@ -195,3 +195,9 @@ class ChatGPTFilter(models.Model):
 class ChatGPTConvoFilter(models.Model):
     convo = models.ForeignKey(ChatGPTConvo, on_delete=models.CASCADE)
     filter = models.ForeignKey(ChatGPTFilter, on_delete=models.CASCADE)
+
+class CustomThresholds(models.Model):
+    average_risk = models.FloatField(null=True)
+    sentiment_divider = models.FloatField(null=True)
+    max_risk = models.FloatField(null=True)
+    word_risk = models.FloatField(null=True)
