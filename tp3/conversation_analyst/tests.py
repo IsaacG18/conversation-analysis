@@ -1,9 +1,9 @@
 from django.test import TestCase
 from django.urls import reverse
-from .models import KeywordSuite, RiskWord, ChatGPTMessage, ChatGPTConvo, Person, Message, File, Analysis, Delimiter, DateFormat, VisFile, Location, ChatGPTConvoFilter, ChatGPTFilter
+from .models import KeywordSuite, RiskWord, ChatGPTMessage, ChatGPTConvo, Person, Message, File, Analysis, Delimiter, DateFormat, VisFile, Location, ChatGPTConvoFilter, ChatGPTFilter, CustomThresholds
 from .scripts.nlp.nlp import tag_text, classify, get_top_n_risk_keywords, message_to_text, create_arrays, get_keyword_lamma, get_date_messages, label_entity, label_keyword
 from django.utils import timezone
-from .scripts.object_creators import add_chat_message, add_chat_filter, add_location, add_analysis, add_person, add_delim, add_date, add_vis, add_message, update_message
+from .scripts.object_creators import add_chat_message, add_chat_filter, add_location, add_analysis, add_person, add_delim, add_date, add_vis, add_message, update_message, add_custom_threshold
 import numpy as np
 import spacy
 
@@ -141,6 +141,14 @@ class ObjectCreatorTests(TestCase):
         self.assertEqual(chat_filter.content, "spam")
         self.assertEqual(ChatGPTConvoFilter.objects.count(), 1)
         self.assertEqual(convo_filter.filter.content, "spam")
+
+    def test_add_custom_threshold(self):
+        ct = add_custom_threshold(average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7)
+        self.assertEqual(CustomThresholds.objects.count(), 1)
+        self.assertEqual(ct.average_risk, 0.8)
+        self.assertEqual(ct.sentiment_divider, 2)
+        self.assertEqual(ct.max_risk, 40)
+        self.assertEqual(ct.word_risk, 7)
 
 
 class RenameTests(TestCase):
