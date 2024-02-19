@@ -1,0 +1,15 @@
+<div class="scroll-container" id="search_results">
+    {% if chats %}
+        <ul class="list-group">
+            {% for chat in chats %}
+                {% if chat.slug == convo.slug %}
+                    <li class="list-group-item" style="background-color: grey;">{{chat.slug}}</li>
+                {% else %}
+                    <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" >{{chat.slug}}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <strong>There are no chats present.</strong>
+    {% endif %}
+</div>

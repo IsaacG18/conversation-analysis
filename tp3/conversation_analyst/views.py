@@ -719,3 +719,31 @@ def clear_duplicate_submission(request):
         except Exception as e:
             print(f"exception: {e}")
             return HttpResponse("An error occured while trying to delete the file")
+
+
+def search_chats(request):
+    chats = ChatGPTConvo.objects.order_by("-date")
+    page_slug = request.GET["page_slug"]
+    query = request.GET["query"]
+    if len(page_slug) > 0 and page_slug.strip() != "":
+        convo = ChatGPTConvo.objects.get(slug=page_slug)
+        if len(query) > 0 and query.strip() != "":
+            chats = chats.filter(slug__icontains=query)
+        return JsonResponse(
+            {
+                "results": render_to_string(
+                    "conversation_analyst/chats.html",
+                    {"convo": convo, "chats": chats},
+                )
+            }
+        )
+    if len(query) > 0 and query.strip() != "":
+        chats = chats.filter(title__icontains=query)
+    return JsonResponse(
+        {
+            "results": render_to_string(
+                "conversation_analyst/chats.html",
+                {"chats": chats},
+            )
+        }
+    )
