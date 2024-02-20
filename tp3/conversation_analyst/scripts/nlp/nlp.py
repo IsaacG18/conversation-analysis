@@ -350,6 +350,9 @@ def name_location_chatgpt(text):
     system_message = """I want all the names and locations form this this text, formate like this: 
                     ‘names: name1,name2,name3
                     locations: location1,location2’
+                    If there is neither still return like
+                    'names:
+                    locations:'
                     Here is the text: \n""" + text
 
     client = OpenAI(
@@ -369,4 +372,8 @@ def name_location_chatgpt(text):
     names, locations =rows[0].split(":")[1].split(",") ,rows[1].split(":")[1].split(",") 
     names = [name.strip() for name in names]
     locations = [location.strip() for location in locations]
+    if len(names) ==1 and names[0] == '':
+        names = []
+    if len(locations) ==1 and locations[0] == '':
+        locations = []
     return names, locations
