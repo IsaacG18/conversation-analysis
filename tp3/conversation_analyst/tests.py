@@ -6,7 +6,9 @@ from django.utils import timezone
 from .scripts.object_creators import *
 from django.core.files.uploadedfile import SimpleUploadedFile
 from .scripts.data_ingestion.plotter import *
-from unittest.mock import patch, mock_open
+from unittest.mock import patch, mock_open, MagicMock
+from django.core.files.base import ContentFile
+from .scripts.data_ingestion.file_process import *
 import os
 import numpy as np
 import spacy
@@ -505,3 +507,51 @@ class PlotterTests(TestCase):
         expected_full_path = os.path.join(expected_directory, "test_plot_plot123.png")
         mock_write_image.assert_called_with(expected_full_path)
         mock_makedirs.assert_called_once_with(expected_directory)
+        
+        
+class FileProcessTests(TestCase):
+    @patch('conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file')
+    @patch('conversation_analyst.scripts.data_ingestion.file_process.generate_message_objects')
+    def test_parse_file(self, mock_generate_message_objects, mock_parse_chat_file):
+        mock_file = MagicMock(spec=File)
+        mock_file.title = 'chat.txt'
+        mock_file.file.path = '/fake/path/to/chat.txt' 
+        mock_parse_chat_file.return_value = [
+            {'Timestamp': '2021-01-01 10:00:00', 'Sender': 'Alice', 'Message': 'Hello!'}
+        ]
+        parse_file(mock_file, date_formats=[], delimiters=[["Timestamp", ","], ["Sender", ":"]])
+
+        mock_parse_chat_file.assert_called_once_with('/fake/path/to/chat.txt', [["Timestamp", ","], ["Sender", ":"]], [])
+        mock_generate_message_objects.assert_called_once_with(mock_file, mock_parse_chat_file.return_value)
+    @patch('conversation_analyst.scripts.data_ingestion.file_process.create_arrays')
+    @patch('conversation_analyst.scripts.data_ingestion.file_process.tag_text')
+    @patch('conversation_analyst.scripts.data_ingestion.file_process.get_top_n_risk_keywords')
+    @patch('conversation_analyst.scripts.data_ingestion.file_process.get_top_n_common_topics_with_avg_risk')
+    @patch('conversation_analyst.scripts.data_ingestion.file_process.generate_analysis_objects')
+    def test_process_file(self, mock_generate_analysis_objects, mock_get_top_n_common_topics_with_avg_risk,
+                          mock_get_top_n_risk_keywords, mock_tag_text, mock_create_arrays):
+        mock_file = MagicMock(spec=File)
+        mock_file.slug = 'test-file'
+        mock_messages = [MagicMock(timestamp='2021-01-01 10:00:00', sender='Alice', content='Hello', id=1)]
+        chat_messages = [
+            {
+                "Timestamp": '2021-01-01 10:00:00',
+                "Sender": 'Alice',
+                "Message": 'Hello',
+                "ObjectId": 1,
+            }
+        ]
+
+        mock_create_arrays.return_value = {'Alice': {'message_count': 1}}
+        mock_tag_text.return_value = ('nlp_text', {'PERSON': ['Alice'], 'GPE': []})
+        mock_get_top_n_risk_keywords.return_value = [('keyword1', 0.5, 1)]
+        mock_get_top_n_common_topics_with_avg_risk.return_value = [('topic1', 0.5, 1)]
+
+        process_file(mock_file, ['keyword1', 'keyword2'], mock_messages)
+
+        # Assert test
+        mock_create_arrays.assert_called_once_with(chat_messages)
+        mock_tag_text.assert_called_once()
+        mock_get_top_n_risk_keywords.assert_called_once()
+        mock_get_top_n_common_topics_with_avg_risk.assert_called_once()
+        mock_generate_analysis_objects.assert_called_once()
