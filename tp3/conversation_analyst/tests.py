@@ -287,7 +287,7 @@ class TestNLP(TestCase):
 
     def test_label_entity(self):
         for entity in nlp("OpenAI").ents:
-            labeled_text, offset = label_entity(entity)
+            labeled_text, offset = label_entity(entity.label_, entity.text)
             self.assertEqual(labeled_text, '<span class="ORG OpenAI">OpenAI</span>')
             self.assertEqual(offset, 28)
 

@@ -376,7 +376,6 @@ def quick_chat_message(request):
             system_message += (
                 f"{message.timestamp}: {message.sender}:  {message.content} \n"
             )
-        print(system_message)
         client = OpenAI(
             api_key=os.environ.get("CHATGPT_API_KEY"),
         )
