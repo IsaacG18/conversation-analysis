@@ -5,14 +5,15 @@ from .scripts.nlp.nlp import *
 from django.utils import timezone
 from .scripts.object_creators import *
 from django.core.files.uploadedfile import SimpleUploadedFile
+from .scripts.data_ingestion.plotter import *
+from unittest.mock import patch, mock_open
+import os
 import numpy as np
 import spacy
 
 nlp = spacy.load("en_core_web_md")
 
 # Create your tests here.
-
-
 class DelimiterTestCase(TestCase):
     def setUp(self):
         Delimiter.objects.create(name="Comma", value=",", order=1, is_default=True)
@@ -468,3 +469,39 @@ class ChatGPTConvoFilterTestCase(TestCase):
         self.assertEqual(chat_filter.content, "spam")
         self.assertEqual(ChatGPTConvoFilter.objects.count(), 1)
         self.assertEqual(convo_filter.filter.content, "spam")
+        
+        
+class PlotterTests(TestCase):
+    @patch('os.makedirs')
+    @patch('os.path.exists', return_value=False)
+    @patch('os.getcwd', return_value='/fake/directory')
+    @patch('plotly.graph_objects.Figure.write_image')
+    def test_plots(self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs):      
+        chat_messages = [
+            {
+                "Sender": "Alice",
+                "Timestamp": "2024-02-10T08:00:00",
+                "Message": "Hello!",
+                "risk": 0,
+                "PERSON": 1,
+                "GPE": 0
+            },
+            {
+                "Sender": "Bob",
+                "Timestamp": "2024-02-10T08:05:00",
+                "Message": "Hi there!",
+                "risk": 1,
+                "PERSON": 0,
+                "GPE": 1
+            },
+        ]
+        name = "test_plot.png"
+        analysis_id = "123"
+        
+        plot_path = plots(chat_messages, name, analysis_id)
+        self.assertEqual(plot_path, "vis_uploads/test_plot_plot123.png")
+        mock_write_image.assert_called_once()
+        expected_directory = '/fake/directory/media/vis_uploads'
+        expected_full_path = os.path.join(expected_directory, "test_plot_plot123.png")
+        mock_write_image.assert_called_with(expected_full_path)
+        mock_makedirs.assert_called_once_with(expected_directory)
