@@ -11,6 +11,7 @@ from ..models import (
     ChatGPTMessage,
     ChatGPTFilter,
     ChatGPTConvoFilter,
+    CustomThresholds,
 )
 
 
@@ -110,3 +111,9 @@ def add_chat_filter(content, typeOfFilter, convo):
     fc = ChatGPTConvoFilter.objects.create(convo=convo, filter=f)
     fc.save()
     return f, fc
+
+
+def add_custom_threshold(average_risk, sentiment_divider, max_risk, word_risk):
+    ct = CustomThresholds.objects.create(average_risk=average_risk, sentiment_divider=sentiment_divider, max_risk=max_risk, word_risk=word_risk)
+    ct.save()
+    return ct

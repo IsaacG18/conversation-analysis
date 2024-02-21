@@ -6,27 +6,18 @@
   {% block body %}
   {% load static %}
   <script type="text/javascript" src="{% static 'js/chatgptmessage.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/searchchats.js' %}"></script>
   
   <div class="container-fluid">
       <div class="row">
           
           <div class="col-md-3 bg-light">
               <h3 class="mt-3">Past Chats</h3>
-              <div class="scroll-container">
-                  {% if chats %}
-                      <ul class="list-group">
-                          {% for chat in chats %}
-                              {% if chat.slug == convo.slug %}
-                                  <li class="list-group-item" style="background-color: grey;">{{chat.slug}}</li>
-                              {% else %}
-                                  <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" >{{chat.slug}}</a></li>
-                              {% endif %}
-                          {% endfor %}
-                      </ul>
-                  {% else %}
-                      <strong>There are no chats present.</strong>
-                  {% endif %}
+              <input type="text" class="form-control" id="search-input">
+              <div class="input-group-append">
+                <button class="btn btn-primary search-chats" type="button">Send</button>
               </div>
+              {% include "conversation_analyst/chats.html" %}
           </div>
   
           <div class="col-md-6">

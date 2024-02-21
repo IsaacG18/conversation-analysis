@@ -4,9 +4,6 @@ import numpy as np
 import re
 
 nlp = spacy.load("en_core_web_md")
-AVERAGE_RISK = 0.8
-MAX_RISK = 40
-SENTIMENT_DIVIDER = 2
 RISK_LEVELS = 2
 
 
@@ -61,12 +58,17 @@ def label_keyword(keyword, root):
     return start_tag + keyword + end_tag, offset
 
 
-def tag_text(messages, keywords, labels):
+def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7):
     """
     Arguments:
     messages (dictionary): A dictionary of messages to be tagged.
     keywords (list): A list of keywords.
     labels (list): A list of labels to be used.
+    average_risk (float): The average risk factor a message has to have to increase risk rating
+    sentiment_divider (float): This divids the effect of the sentiment on risk
+    max_risk (int): The max risk factor a message has to have to increase risk rating
+    word_risk(int): The max risk factor a token can have before the rating is increased
+
 
     Returns:
     messages (dictionary): A dictionary of messages to be tagged, risk value, display text
@@ -108,10 +110,10 @@ def tag_text(messages, keywords, labels):
             )
 
             if (keyword := keywords.filter(lemma=token.lemma_).first()) is not None:
-                risk = keyword.risk_factor * (1 + abs(sentiment) / SENTIMENT_DIVIDER)
+                risk = keyword.risk_factor * (1 + abs(sentiment) / sentiment_divider)
                 topics = keyword.topics.all()
                 risk_total += risk
-                if risk > 7:
+                if risk > word_risk:
                     message["risk"] += 1
 
                 labeled, offset = label_keyword(token_text, keyword.keyword)
@@ -128,9 +130,9 @@ def tag_text(messages, keywords, labels):
                     tag_list.append((keyword.keyword, risk, topics))
                     message["entities"].append(keyword.keyword)
 
-        if risk_total > 40:
+        if risk_total > max_risk:
             message["risk"] += 1
-        if risk_total / len(message["Message"].split()) > AVERAGE_RISK:
+        if risk_total / len(message["Message"].split()) > average_risk:
             message["risk"] += 1
         if message["risk"] > RISK_LEVELS:
             message["risk"] = RISK_LEVELS
