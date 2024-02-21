@@ -45,3 +45,17 @@ function formatMediaString(content) {
 
     return formattedString;
 }
+//function formatMediaString(content) {
+    //     var formattedString = `
+    //         <div class="media outgoing">
+    //                         <div class="media-content">
+    //                         <div class="media-details">
+    //                             <img src="{% static 'pictures/user.png' %}" class="mr-3 rounded-circle" alt="User Image">
+    //                             <p>{{message.content}}</p>
+    //                         </div>
+    //                         </div>
+    //                     </div>
+    //     `;
+    
+    //     return formattedString;
+    // }

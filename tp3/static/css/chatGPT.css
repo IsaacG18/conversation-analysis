@@ -10,6 +10,15 @@
     --gray-800: #343a40;
     --gray-900: #212529;
     --black: #000;
+
+    --text-color: #343541;
+    --icon-color: #a9a9bc;
+    --icon-hover-bg: #f1f1f3;
+    --placeholder-color: #9f9f9f;
+    --outgoing-media-bg: #FFFFFF;
+    --incoming-media-bg: #F7F7F8;
+    --outgoing-media-border: #FFFFFF;
+    --incoming-media-border: #D9D9E3;
 }
 
 h3 {
@@ -39,4 +48,47 @@ h3 {
 
 .side-past-charts .scroll-container .list-group-item:hover{
     background-color: var(--gray-500);
+}
+
+.chat-messages .media{
+    padding: 25px 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.chat-messages .media.outgoing{
+    background-color: var(--outgoing-media-bg);
+    border: 1px solid var(--outgoing-media-border);
+}
+
+.chat-messages .media.incoming{
+    background-color: var(--incoming-media-bg);
+    border: 1px solid var(--incoming-media-border);
+}
+
+.media .media-content{
+    max-width: 1200px;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.media .media-details{
+    display: flex;
+    align-items: center;
+}
+
+.media .media-details img{
+    width:35px;
+    height: 35px;
+    object-fit: cover;
+    border-radius: 2px;
+    justify-content: space-around;
+}
+
+.media .media-details p{
+    white-space: pre-wrap;
+    font-size: 1.05rem;
+    padding: 0 50px 0 25px;
 }
