@@ -2,7 +2,6 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import spacy
 import numpy as np
 import re
-import openai
 import os
 from openai import OpenAI
 
@@ -62,7 +61,7 @@ def label_keyword(keyword, root):
     return start_tag + keyword + end_tag, offset
 
 
-def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7,chatgpt=False):
+def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7, chatgpt=False):
     """
     Arguments:
     messages (dictionary): A dictionary of messages to be tagged.
@@ -347,7 +346,7 @@ def name_location_chatgpt(text):
     Description:
     Uses Chatgpt to find all the names and locations in the text
     """
-    system_message = """I want all the names and locations form this this text, formate like this: 
+    system_message = """I want all the names and locations form this this text, formate like this:
                     ‘names: name1,name2,name3
                     locations: location1,location2’
                     If there is neither still return like
@@ -358,7 +357,7 @@ def name_location_chatgpt(text):
     client = OpenAI(
             api_key=os.environ.get("CHATGPT_API_KEY"),
         )
-    conversation_history = [{"role": "system", "content": system_message}, {"role": "user", "content": """I want all the names and locations form this this text, formate like this: 
+    conversation_history = [{"role": "system", "content": system_message}, {"role": "user", "content": """I want all the names and locations form this this text, formate like this:
                     ‘names: name1,name2,name3
                     locations: location1,location2’
                     """}]
@@ -366,14 +365,12 @@ def name_location_chatgpt(text):
     response = client.chat.completions.create(
         model="gpt-3.5-turbo", messages=[*conversation_history]
     )
-    
     reply = response.choices[0].message.content
     rows = reply.split("\n")
-    names, locations =rows[0].split(":")[1].split(",") ,rows[1].split(":")[1].split(",") 
-    names = [name.strip() for name in names]
+    names, locations = rows[0].split(":")[1].split(","), rows[1].split(":")[1].split(",")
     locations = [location.strip() for location in locations]
-    if len(names) ==1 and names[0] == '':
+    if len(names) == 1 and names[0] == '':
         names = []
-    if len(locations) ==1 and locations[0] == '':
+    if len(locations) == 1 and locations[0] == '':
         locations = []
     return names, locations

@@ -346,7 +346,7 @@ class TestNLP(TestCase):
         expected_lemma = "run"
         lemma = get_keyword_lamma(keyword)
         self.assertEqual(lemma, expected_lemma)
-    
+
     def test_name_location_chatgpt_empty(self):
         names, locations = name_location_chatgpt("HERE")
         self.assertEqual(0, len(names))
@@ -358,7 +358,6 @@ class TestNLP(TestCase):
         self.assertEqual(1, len(locations))
         self.assertEqual("Isaac", names[0])
         self.assertEqual("Dundee", locations[0])
-        
 
 
 class ChatGPTFeatureTestCase(TestCase):
