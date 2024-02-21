@@ -331,7 +331,7 @@ class TestNLP(TestCase):
 
     def test_label_entity(self):
         for entity in nlp("OpenAI").ents:
-            labeled_text, offset = label_entity(entity)
+            labeled_text, offset = label_entity(entity.label_, entity.text)
             self.assertEqual(labeled_text, '<span class="ORG OpenAI">OpenAI</span>')
             self.assertEqual(offset, 28)
 
@@ -390,6 +390,18 @@ class TestNLP(TestCase):
         expected_lemma = "run"
         lemma = get_keyword_lamma(keyword)
         self.assertEqual(lemma, expected_lemma)
+
+    def test_name_location_chatgpt_empty(self):
+        names, locations = name_location_chatgpt("HERE")
+        self.assertEqual(0, len(names))
+        self.assertEqual(0, len(locations))
+
+    def test_name_location_chatgpt(self):
+        names, locations = name_location_chatgpt("Hello, I am Isaac, and I am from Dundee")
+        self.assertEqual(1, len(names))
+        self.assertEqual(1, len(locations))
+        self.assertEqual("Isaac", names[0])
+        self.assertEqual("Dundee", locations[0])
 
 
 class ChatGPTFeatureTestCase(TestCase):
