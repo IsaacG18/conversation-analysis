@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 from .models import *
 from .scripts.nlp.nlp import *
@@ -555,3 +555,34 @@ class FileProcessTests(TestCase):
         mock_get_top_n_risk_keywords.assert_called_once()
         mock_get_top_n_common_topics_with_avg_risk.assert_called_once()
         mock_generate_analysis_objects.assert_called_once()
+
+class HomePageTests(TestCase):
+    def test_homepage_without_query(self):
+        client = Client()
+        response = client.get(reverse('homepage'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'conversation_analyst/homepage.html')
+
+    def test_homepage_with_query(self):
+        client = Client()
+        response = client.get(reverse('homepage'), {'query': 'Sample'})
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'conversation_analyst/search_result.html')
+
+
+
+class ContentReviewTests(TestCase):
+    def setUp(self):
+        self.file = File.objects.create(
+            file="uploads/sample_file1.txt",
+            title="Sample File 1",
+            format="txt",
+            slug="sample-file-1-" + timezone.now().strftime("%Y%m%d%H%M%S"),
+        )
+        self.file.save()
+
+    def test_content(self):
+        self.file.save()
+        url = reverse('content_review', kwargs={'file_slug': self.file.slug})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
