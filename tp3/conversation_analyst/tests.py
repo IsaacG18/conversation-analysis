@@ -1,19 +1,55 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from .models import *
-from .scripts.nlp.nlp import *
+from .models import (
+    Delimiter,
+    File,
+    Analysis,
+    Person,
+    Location,
+    VisFile,
+    DateFormat,
+    KeywordSuite,
+    RiskWord,
+    ChatGPTConvo,
+    ChatGPTMessage,
+    ChatGPTFilter,
+    ChatGPTConvoFilter,
+)
+from .scripts.nlp.nlp import (
+    classify,
+    get_top_n_risk_keywords,
+    label_entity,
+    label_keyword,
+    message_to_text,
+    create_arrays,
+    get_date_messages,
+    get_keyword_lamma,
+    tag_text,
+)
 from django.utils import timezone
-from .scripts.object_creators import *
+from .scripts.object_creators import (
+    Message,
+    add_message,
+    update_message,
+    add_analysis,
+    add_person,
+    add_location,
+    add_vis,
+    add_date,
+    add_delim,
+    add_chat_message,
+    add_chat_filter,
+)
 from django.core.files.uploadedfile import SimpleUploadedFile
-from .scripts.data_ingestion.plotter import *
-from unittest.mock import patch, mock_open, MagicMock
-from django.core.files.base import ContentFile
-from .scripts.data_ingestion.file_process import *
+from .scripts.data_ingestion.plotter import plots
+from unittest.mock import patch, MagicMock
+from .scripts.data_ingestion.file_process import parse_file, process_file
 import os
 import numpy as np
 import spacy
 
 nlp = spacy.load("en_core_web_md")
+
 
 # Create your tests here.
 class DelimiterTestCase(TestCase):
@@ -440,20 +476,22 @@ class SettingTestCase(TestCase):
 class InputValidationTestCase(TestCase):
     def setUp(self):
         DateFormat.objects.create(
-            name='some_valid_timestamp', 
-            example='2023-01-01T00:00:00', 
-            format='%Y-%m-%dT%H:%M:%S', 
-            is_default=True
+            name="some_valid_timestamp",
+            example="2023-01-01T00:00:00",
+            format="%Y-%m-%dT%H:%M:%S",
+            is_default=True,
         )
-    
+
     def test_invalid_form_data(self):
-        uploaded_file = SimpleUploadedFile('test.txt', b'file_content', content_type='text/plain')
-        response = self.client.post(reverse('upload'), {
-            'file': uploaded_file,
-            'selected_timestamp': 'some_valid_timestamp'
-        })
+        uploaded_file = SimpleUploadedFile(
+            "test.txt", b"file_content", content_type="text/plain"
+        )
+        response = self.client.post(
+            reverse("upload"),
+            {"file": uploaded_file, "selected_timestamp": "some_valid_timestamp"},
+        )
         self.assertEqual(response.status_code, 200)
-        
+
 
 class ChatGPTConvoFilterTestCase(TestCase):
     def setUp(self):
@@ -471,14 +509,16 @@ class ChatGPTConvoFilterTestCase(TestCase):
         self.assertEqual(chat_filter.content, "spam")
         self.assertEqual(ChatGPTConvoFilter.objects.count(), 1)
         self.assertEqual(convo_filter.filter.content, "spam")
-        
-        
+
+
 class PlotterTests(TestCase):
-    @patch('os.makedirs')
-    @patch('os.path.exists', return_value=False)
-    @patch('os.getcwd', return_value='/fake/directory')
-    @patch('plotly.graph_objects.Figure.write_image')
-    def test_plots(self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs):      
+    @patch("os.makedirs")
+    @patch("os.path.exists", return_value=False)
+    @patch("os.getcwd", return_value="/fake/directory")
+    @patch("plotly.graph_objects.Figure.write_image")
+    def test_plots(
+        self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs
+    ):
         chat_messages = [
             {
                 "Sender": "Alice",
@@ -486,7 +526,7 @@ class PlotterTests(TestCase):
                 "Message": "Hello!",
                 "risk": 0,
                 "PERSON": 1,
-                "GPE": 0
+                "GPE": 0,
             },
             {
                 "Sender": "Bob",
@@ -494,60 +534,85 @@ class PlotterTests(TestCase):
                 "Message": "Hi there!",
                 "risk": 1,
                 "PERSON": 0,
-                "GPE": 1
+                "GPE": 1,
             },
         ]
         name = "test_plot.png"
         analysis_id = "123"
-        
+
         plot_path = plots(chat_messages, name, analysis_id)
         self.assertEqual(plot_path, "vis_uploads/test_plot_plot123.png")
         mock_write_image.assert_called_once()
-        expected_directory = '/fake/directory/media/vis_uploads'
+        expected_directory = "/fake/directory/media/vis_uploads"
         expected_full_path = os.path.join(expected_directory, "test_plot_plot123.png")
         mock_write_image.assert_called_with(expected_full_path)
         mock_makedirs.assert_called_once_with(expected_directory)
-        
-        
+
+
 class FileProcessTests(TestCase):
-    @patch('conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file')
-    @patch('conversation_analyst.scripts.data_ingestion.file_process.generate_message_objects')
+    @patch("conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file")
+    @patch(
+        "conversation_analyst.scripts.data_ingestion.file_process.generate_message_objects"
+    )
     def test_parse_file(self, mock_generate_message_objects, mock_parse_chat_file):
         mock_file = MagicMock(spec=File)
-        mock_file.title = 'chat.txt'
-        mock_file.file.path = '/fake/path/to/chat.txt' 
+        mock_file.title = "chat.txt"
+        mock_file.file.path = "/fake/path/to/chat.txt"
         mock_parse_chat_file.return_value = [
-            {'Timestamp': '2021-01-01 10:00:00', 'Sender': 'Alice', 'Message': 'Hello!'}
+            {"Timestamp": "2021-01-01 10:00:00", "Sender": "Alice", "Message": "Hello!"}
         ]
-        parse_file(mock_file, date_formats=[], delimiters=[["Timestamp", ","], ["Sender", ":"]])
+        parse_file(
+            mock_file, date_formats=[], delimiters=[["Timestamp", ","], ["Sender", ":"]]
+        )
 
-        mock_parse_chat_file.assert_called_once_with('/fake/path/to/chat.txt', [["Timestamp", ","], ["Sender", ":"]], [])
-        mock_generate_message_objects.assert_called_once_with(mock_file, mock_parse_chat_file.return_value)
-    @patch('conversation_analyst.scripts.data_ingestion.file_process.create_arrays')
-    @patch('conversation_analyst.scripts.data_ingestion.file_process.tag_text')
-    @patch('conversation_analyst.scripts.data_ingestion.file_process.get_top_n_risk_keywords')
-    @patch('conversation_analyst.scripts.data_ingestion.file_process.get_top_n_common_topics_with_avg_risk')
-    @patch('conversation_analyst.scripts.data_ingestion.file_process.generate_analysis_objects')
-    def test_process_file(self, mock_generate_analysis_objects, mock_get_top_n_common_topics_with_avg_risk,
-                          mock_get_top_n_risk_keywords, mock_tag_text, mock_create_arrays):
+        mock_parse_chat_file.assert_called_once_with(
+            "/fake/path/to/chat.txt", [["Timestamp", ","], ["Sender", ":"]], []
+        )
+        mock_generate_message_objects.assert_called_once_with(
+            mock_file, mock_parse_chat_file.return_value
+        )
+
+    @patch("conversation_analyst.scripts.data_ingestion.file_process.create_arrays")
+    @patch("conversation_analyst.scripts.data_ingestion.file_process.tag_text")
+    @patch(
+        "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_risk_keywords"
+    )
+    @patch(
+        "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_common_topics_with_avg_risk"
+    )
+    @patch(
+        "conversation_analyst.scripts.data_ingestion.file_process.generate_analysis_objects"
+    )
+    def test_process_file(
+        self,
+        mock_generate_analysis_objects,
+        mock_get_top_n_common_topics_with_avg_risk,
+        mock_get_top_n_risk_keywords,
+        mock_tag_text,
+        mock_create_arrays,
+    ):
         mock_file = MagicMock(spec=File)
-        mock_file.slug = 'test-file'
-        mock_messages = [MagicMock(timestamp='2021-01-01 10:00:00', sender='Alice', content='Hello', id=1)]
+        mock_file.slug = "test-file"
+        mock_messages = [
+            MagicMock(
+                timestamp="2021-01-01 10:00:00", sender="Alice", content="Hello", id=1
+            )
+        ]
         chat_messages = [
             {
-                "Timestamp": '2021-01-01 10:00:00',
-                "Sender": 'Alice',
-                "Message": 'Hello',
+                "Timestamp": "2021-01-01 10:00:00",
+                "Sender": "Alice",
+                "Message": "Hello",
                 "ObjectId": 1,
             }
         ]
 
-        mock_create_arrays.return_value = {'Alice': {'message_count': 1}}
-        mock_tag_text.return_value = ('nlp_text', {'PERSON': ['Alice'], 'GPE': []})
-        mock_get_top_n_risk_keywords.return_value = [('keyword1', 0.5, 1)]
-        mock_get_top_n_common_topics_with_avg_risk.return_value = [('topic1', 0.5, 1)]
+        mock_create_arrays.return_value = {"Alice": {"message_count": 1}}
+        mock_tag_text.return_value = ("nlp_text", {"PERSON": ["Alice"], "GPE": []})
+        mock_get_top_n_risk_keywords.return_value = [("keyword1", 0.5, 1)]
+        mock_get_top_n_common_topics_with_avg_risk.return_value = [("topic1", 0.5, 1)]
 
-        process_file(mock_file, ['keyword1', 'keyword2'], mock_messages)
+        process_file(mock_file, ["keyword1", "keyword2"], mock_messages)
 
         # Assert test
         mock_create_arrays.assert_called_once_with(chat_messages)
@@ -556,19 +621,19 @@ class FileProcessTests(TestCase):
         mock_get_top_n_common_topics_with_avg_risk.assert_called_once()
         mock_generate_analysis_objects.assert_called_once()
 
+
 class HomePageTests(TestCase):
     def test_homepage_without_query(self):
         client = Client()
-        response = client.get(reverse('homepage'))
+        response = client.get(reverse("homepage"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'conversation_analyst/homepage.html')
+        self.assertTemplateUsed(response, "conversation_analyst/homepage.html")
 
     def test_homepage_with_query(self):
         client = Client()
-        response = client.get(reverse('homepage'), {'query': 'Sample'})
+        response = client.get(reverse("homepage"), {"query": "Sample"})
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'conversation_analyst/search_result.html')
-
+        self.assertTemplateUsed(response, "conversation_analyst/search_result.html")
 
 
 class ContentReviewTests(TestCase):
@@ -583,6 +648,6 @@ class ContentReviewTests(TestCase):
 
     def test_content(self):
         self.file.save()
-        url = reverse('content_review', kwargs={'file_slug': self.file.slug})
+        url = reverse("content_review", kwargs={"file_slug": self.file.slug})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
