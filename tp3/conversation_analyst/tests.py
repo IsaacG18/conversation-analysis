@@ -14,6 +14,7 @@ from .models import (
     ChatGPTMessage,
     ChatGPTFilter,
     ChatGPTConvoFilter,
+    CustomThresholds,
 )
 from .scripts.nlp.nlp import (
     classify,
@@ -39,6 +40,7 @@ from .scripts.object_creators import (
     add_delim,
     add_chat_message,
     add_chat_filter,
+    add_custom_threshold,
 )
 from django.core.files.uploadedfile import SimpleUploadedFile
 from .scripts.data_ingestion.plotter import plots
@@ -183,7 +185,9 @@ class ObjectCreatorTests(TestCase):
         self.assertEqual(convo_filter.filter.content, "spam")
 
     def test_add_custom_threshold(self):
-        ct = add_custom_threshold(average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7)
+        ct = add_custom_threshold(
+            average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7
+        )
         self.assertEqual(CustomThresholds.objects.count(), 1)
         self.assertEqual(ct.average_risk, 0.8)
         self.assertEqual(ct.sentiment_divider, 2)
@@ -557,6 +561,14 @@ class PlotterTests(TestCase):
         mock_makedirs.assert_called_once_with(expected_directory)
 
 
+class Threshold:
+    def __init__(self, average_risk, sentiment_divider, max_risk, word_risk):
+        self.average_risk = average_risk
+        self.sentiment_divider = sentiment_divider
+        self.max_risk = max_risk
+        self.word_risk = word_risk
+
+
 class FileProcessTests(TestCase):
     @patch("conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file")
     @patch(
@@ -614,13 +626,13 @@ class FileProcessTests(TestCase):
                 "ObjectId": 1,
             }
         ]
+        threshold_mock = Threshold(
+            average_risk=0.5, sentiment_divider=0.7, max_risk=0.9, word_risk=1.2
+        )
 
-        mock_create_arrays.return_value = {"Alice": {"message_count": 1}}
-        mock_tag_text.return_value = ("nlp_text", {"PERSON": ["Alice"], "GPE": []})
-        mock_get_top_n_risk_keywords.return_value = [("keyword1", 0.5, 1)]
-        mock_get_top_n_common_topics_with_avg_risk.return_value = [("topic1", 0.5, 1)]
+        mock_tag_text.return_value = ("nlp_text_mock", {"PERSON": ["Alice"], "GPE": []})
 
-        process_file(mock_file, ["keyword1", "keyword2"], mock_messages)
+        process_file(mock_file, ["keyword1", "keyword2"], mock_messages, threshold_mock)
 
         # Assert test
         mock_create_arrays.assert_called_once_with(chat_messages)
