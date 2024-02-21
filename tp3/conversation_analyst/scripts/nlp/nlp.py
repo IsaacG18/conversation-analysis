@@ -368,6 +368,7 @@ def name_location_chatgpt(text):
     reply = response.choices[0].message.content
     rows = reply.split("\n")
     names, locations = rows[0].split(":")[1].split(","), rows[1].split(":")[1].split(",")
+    names = [name.strip() for name in names]
     locations = [location.strip() for location in locations]
     if len(names) == 1 and names[0] == '':
         names = []
