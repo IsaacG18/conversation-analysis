@@ -1,6 +1,15 @@
 $(document).ready(function(){
     $('#suite-list .suite-item:first').addClass('active-suite'); // set the first suite active by default
 
+    $('.s-tab').click(function(e){
+        if (!$(this).hasClass("active")){
+            $('.nav-item .tab-content').removeClass('active');
+            $(this).children().addClass('active');
+            getTabContent($(this).attr('id').split("-")[0]);
+        }
+    })
+
+
     $('#new-suite-form').submit(function(e){
         e.preventDefault();
         if ($(this).valid() == true){
@@ -387,5 +396,13 @@ $(document).ready(function(){
         }
     }
 
+    function getTabContent(tab){
+        console.log(tab);
+        $.get("settings", {"tab":tab},
+        function(data) {
+            console.log(data)
+            $('#tab-container').html(data);
+        })
+    }
 
 })

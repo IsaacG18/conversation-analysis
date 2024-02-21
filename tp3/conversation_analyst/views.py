@@ -214,17 +214,23 @@ def settings_page(request):
     # Define the settings page view function.
     # Retrieves keyword suites and associated risk words.
     # Renders the settings page with keyword suites and risk words.
-
-    keyword_suites = KeywordSuite.objects.all()
-    if len(keyword_suites) == 0:
-        context_dict = {}
+    tab = request.GET.get("tab", "default")
+    if tab=="threshold":
+        return HttpResponse("to be added")
     else:
-        suite = keyword_suites[0]
-        risk_words = RiskWord.objects.filter(suite=suite)
-        context_dict = {"keyword_suites": keyword_suites, "risk_words": risk_words}
-
-    return render(request, "conversation_analyst/settings.html", context=context_dict)
-
+        keyword_suites = KeywordSuite.objects.all()
+        if len(keyword_suites) == 0:
+            context_dict = {}
+        else:
+            suite = keyword_suites[0]
+            risk_words = RiskWord.objects.filter(suite=suite)
+            context_dict = {"keyword_suites": keyword_suites, "risk_words": risk_words}
+        if tab=="default":
+            print("no tab selected")
+            return render(request, "conversation_analyst/settings.html", context=context_dict)
+        else:
+            print("return rendered keywords...")
+            return render(request, "conversation_analyst/setting_tab.html", context=context_dict)
 
 def create_suite(request):
     # Define the create suite view function.
