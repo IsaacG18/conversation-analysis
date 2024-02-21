@@ -2,6 +2,8 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import spacy
 import numpy as np
 import re
+import os
+from openai import OpenAI
 
 nlp = spacy.load("en_core_web_md")
 RISK_LEVELS = 2
@@ -21,10 +23,11 @@ def classify(text):
     return text.replace(" ", "_")
 
 
-def label_entity(entity):
+def label_entity(label, text):
     """
     Arguments:
-    entity (str): A SpaCy entity to be labeled.
+    label (str): A entity label.
+    text (str): A entity text.
 
     Returns:
     lable text (str): HTML containing the label text surrounded by spans
@@ -33,10 +36,10 @@ def label_entity(entity):
     Description:
     This function generates HTML tags to label the given entity within a text.
     """
-    start_tag = f'<span class="{classify(entity.label_)} {classify(entity.text)}">'
+    start_tag = f'<span class="{classify(label)} {classify(text)}">'
     end_tag = "</span>"
     offset = len(start_tag) + len(end_tag)
-    return start_tag + entity.text + end_tag, offset
+    return start_tag + text + end_tag, offset
 
 
 def label_keyword(keyword, root):
@@ -58,7 +61,7 @@ def label_keyword(keyword, root):
     return start_tag + keyword + end_tag, offset
 
 
-def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7):
+def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7, chatgpt=False):
     """
     Arguments:
     messages (dictionary): A dictionary of messages to be tagged.
@@ -77,8 +80,16 @@ def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, 
     Description:
     This function tags messages with relevant keywords and entities.
     """
-    analyzer = SentimentIntensityAnalyzer()
+    if chatgpt:
+        label = ["PERSON", "GPE"]
+    names, names_lower, locations, locations_lower = [], [], [], []
     found_entities = {label: [] for label in labels}
+    if chatgpt:
+        text, _ = message_to_text(messages)
+        names, locations = name_location_chatgpt(text)
+        names_lower, locations_lower = [name.lower() for name in names], [location.lower() for location in locations]
+        found_entities[label[0]], found_entities[label[1]] = names, locations
+    analyzer = SentimentIntensityAnalyzer()
     for message in messages:
         distance = 0
         message["Display_Message"] = message["Message"]
@@ -88,20 +99,41 @@ def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, 
         message["doc"] = nlp(message["Message"])
         sentiment = analyzer.polarity_scores(message["Message"])["compound"]
         tag_list = []
-        for label in labels:
-            message[label] = 0
-        for entity in message["doc"].ents:
-            if entity.label_ in labels:
-                labeled, offset = label_entity(entity)
-                found_entities[entity.label_].append((entity.text))
+        if chatgpt:
+            for label in labels:
+                message[label] = 0
+            for entity in message["doc"].ents:
+                labeled, offset, label = "", 0, ""
+                if entity.text.lower() in names_lower:
+                    labeled, offset = label_entity(labels[0], entity.text)
+                    label = labels[0]
+                elif entity.text.lower() in locations_lower:
+                    labeled, offset = label_entity(labels[1], entity.text)
+                    label = labels[1]
+                else:
+                    continue
+                message["entities"].append(entity.text)
                 message["Display_Message"] = (
                     message["Display_Message"][:entity.start_char + distance]
                     + labeled
                     + message["Display_Message"][entity.end_char + distance:]
                 )
                 distance += offset
-                message[entity.label_] += 1
-                message["entities"].append(entity.text)
+        else:
+            for label in labels:
+                message[label] = 0
+            for entity in message["doc"].ents:
+                if entity.label_ in labels:
+                    labeled, offset = label_entity(entity.label_, entity.text)
+                    found_entities[entity.label_].append((entity.text))
+                    message["Display_Message"] = (
+                        message["Display_Message"][:entity.start_char + distance]
+                        + labeled
+                        + message["Display_Message"][entity.end_char + distance:]
+                    )
+                    distance += offset
+                    message[entity.label_] += 1
+                    message["entities"].append(entity.text)
         ptr = 0
         for token in message["doc"]:
             token_text = token.text
@@ -300,3 +332,46 @@ def get_keyword_lamma(keyword):
     doc = nlp(keyword)
     lemmas = [token.lemma_ for token in doc]
     return " ".join(lemmas)
+
+
+def name_location_chatgpt(text):
+    """
+    Arguments:
+    text (str): A whole text conversation
+
+    Returns:
+    names: TA list of names
+    locations: A list of locations
+
+    Description:
+    Uses Chatgpt to find all the names and locations in the text
+    """
+    system_message = """I want all the names and locations form this this text, formate like this:
+                    ‘names: name1,name2,name3
+                    locations: location1,location2’
+                    If there is neither still return like
+                    'names:
+                    locations:'
+                    Here is the text: \n""" + text
+
+    client = OpenAI(
+            api_key=os.environ.get("CHATGPT_API_KEY"),
+        )
+    conversation_history = [{"role": "system", "content": system_message}, {"role": "user", "content": """I want all the names and locations form this this text, formate like this:
+                    ‘names: name1,name2,name3
+                    locations: location1,location2’
+                    """}]
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo", messages=[*conversation_history]
+    )
+    reply = response.choices[0].message.content
+    rows = reply.split("\n")
+    names, locations = rows[0].split(":")[1].split(","), rows[1].split(":")[1].split(",")
+    names = [name.strip() for name in names]
+    locations = [location.strip() for location in locations]
+    if len(names) == 1 and names[0] == '':
+        names = []
+    if len(locations) == 1 and locations[0] == '':
+        locations = []
+    return names, locations

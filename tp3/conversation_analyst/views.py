@@ -13,7 +13,6 @@ import json
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
 from openai import OpenAI
-from django.utils.http import urlencode
 import openai
 import os
 
@@ -108,13 +107,11 @@ def content_review(request, file_slug):
         chats = ChatGPTConvo.objects.filter(file=file)
 
         # Create Google Maps URLs for each location
-        base_url = ""
+        base_url = "https://www.google.com/maps/search/?api=1&query=$"
         locations_with_urls = []
         for location in locations:
-            parameters = urlencode({"query": location.name})
-            full_url = f"{base_url}{parameters}"
+            full_url = f"{base_url}{location.name}"
             locations_with_urls.append({"name": location.name, "url": full_url})
-
         context_dict = {
             "messages": messages,
             "persons": persons,
@@ -376,7 +373,6 @@ def quick_chat_message(request):
             system_message += (
                 f"{message.timestamp}: {message.sender}:  {message.content} \n"
             )
-        print(system_message)
         client = OpenAI(
             api_key=os.environ.get("CHATGPT_API_KEY"),
         )
@@ -599,14 +595,6 @@ def message(request):
                 )
             }
         )
-
-
-def search_map(request):
-    base_url = "https://www.google.com/maps/search/?api=1&query="
-    location = request.GET.get("location", "")
-    parameters = location.replace(" ", "+")
-    full_url = f"{base_url}{parameters}"
-    return HttpResponseRedirect(full_url)
 
 
 def settings_delim(request):

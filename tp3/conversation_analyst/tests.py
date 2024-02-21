@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from .models import KeywordSuite, RiskWord, ChatGPTMessage, ChatGPTConvo, Person, Message, File, Analysis, Delimiter, DateFormat, VisFile, Location, ChatGPTConvoFilter, ChatGPTFilter, CustomThresholds
-from .scripts.nlp.nlp import tag_text, classify, get_top_n_risk_keywords, message_to_text, create_arrays, get_keyword_lamma, get_date_messages, label_entity, label_keyword
+from .scripts.nlp.nlp import tag_text, classify, get_top_n_risk_keywords, message_to_text, create_arrays, get_keyword_lamma, get_date_messages, label_entity, label_keyword, name_location_chatgpt
 from django.utils import timezone
 from .scripts.object_creators import add_chat_message, add_chat_filter, add_location, add_analysis, add_person, add_delim, add_date, add_vis, add_message, update_message, add_custom_threshold
 import numpy as np
@@ -287,7 +287,7 @@ class TestNLP(TestCase):
 
     def test_label_entity(self):
         for entity in nlp("OpenAI").ents:
-            labeled_text, offset = label_entity(entity)
+            labeled_text, offset = label_entity(entity.label_, entity.text)
             self.assertEqual(labeled_text, '<span class="ORG OpenAI">OpenAI</span>')
             self.assertEqual(offset, 28)
 
@@ -346,6 +346,18 @@ class TestNLP(TestCase):
         expected_lemma = "run"
         lemma = get_keyword_lamma(keyword)
         self.assertEqual(lemma, expected_lemma)
+
+    def test_name_location_chatgpt_empty(self):
+        names, locations = name_location_chatgpt("HERE")
+        self.assertEqual(0, len(names))
+        self.assertEqual(0, len(locations))
+
+    def test_name_location_chatgpt(self):
+        names, locations = name_location_chatgpt("Hello, I am Isaac, and I am from Dundee")
+        self.assertEqual(1, len(names))
+        self.assertEqual(1, len(locations))
+        self.assertEqual("Isaac", names[0])
+        self.assertEqual("Dundee", locations[0])
 
 
 class ChatGPTFeatureTestCase(TestCase):
