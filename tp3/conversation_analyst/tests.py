@@ -143,10 +143,10 @@ class ObjectCreatorTests(TestCase):
         self.assertEqual(convo_filter.filter.content, "spam")
 
     def test_add_custom_threshold(self):
-        ct = add_custom_threshold(average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7)
+        ct = add_custom_threshold(average_risk=0.8, sentiment_multiplier=2, max_risk=40, word_risk=7)
         self.assertEqual(CustomThresholds.objects.count(), 1)
         self.assertEqual(ct.average_risk, 0.8)
-        self.assertEqual(ct.sentiment_divider, 2)
+        self.assertEqual(ct.sentiment_multiplier, 2)
         self.assertEqual(ct.max_risk, 40)
         self.assertEqual(ct.word_risk, 7)
 

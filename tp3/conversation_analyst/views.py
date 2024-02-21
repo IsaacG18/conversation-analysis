@@ -215,8 +215,18 @@ def settings_page(request):
     # Retrieves keyword suites and associated risk words.
     # Renders the settings page with keyword suites and risk words.
     tab = request.GET.get("tab", "default")
-    if tab=="threshold":
-        return HttpResponse("to be added")
+    if tab == "threshold":
+        context_dict = {}
+        obj, created = CustomThresholds.objects.get_or_create(id=1)
+        if created:
+            context_dict["strictness_default"] = 2
+            context_dict["sentiment_default"] = 2
+        else:
+            context_dict["strictness_default"] = obj.strictness_level
+            context_dict["sentiment_default"] = obj.sentiment_level
+        return render(
+            request, "conversation_analyst/strictness.html", context=context_dict
+        )
     else:
         keyword_suites = KeywordSuite.objects.all()
         if len(keyword_suites) == 0:
@@ -225,12 +235,62 @@ def settings_page(request):
             suite = keyword_suites[0]
             risk_words = RiskWord.objects.filter(suite=suite)
             context_dict = {"keyword_suites": keyword_suites, "risk_words": risk_words}
-        if tab=="default":
+        if tab == "default":
             print("no tab selected")
-            return render(request, "conversation_analyst/settings.html", context=context_dict)
+            return render(
+                request, "conversation_analyst/settings.html", context=context_dict
+            )
         else:
             print("return rendered keywords...")
-            return render(request, "conversation_analyst/setting_tab.html", context=context_dict)
+            return render(
+                request, "conversation_analyst/setting_tab.html", context=context_dict
+            )
+
+
+def strictness_update(request):
+    if request.method == "POST":
+        attr = request.POST["attr"]
+        level = int(request.POST["level"])
+        obj = CustomThresholds.objects.get_or_create(id=1)[0]
+        if attr == "strictness":
+            obj.strictness_level = level
+            match level:
+                case 0:
+                    obj.word_risk = 10
+                    obj.max_risk = float("inf")
+                    obj.average_risk = float("inf")
+                    print("strictness value set to 0")
+                case 1:
+                    obj.word_risk = 8
+                    obj.max_risk = 50
+                    obj.average_risk = 1
+                case 2:
+                    obj.word_risk = 7
+                    obj.max_risk = 40
+                    obj.average_risk = 0.8
+                case 3:
+                    obj.word_risk = 6
+                    obj.max_risk = 30
+                    obj.average_risk = 0.8
+                case _:
+                    print("Invalid strictness level")
+        else:
+            obj.sentiment_level_level = level
+            match level:
+                case 0:
+                    obj.sentiment_multiplier = 0
+                    print("sentiment level set to 0")
+                case 1:
+                    obj.sentiment_multiplier = 0.2
+                case 2:
+                    obj.sentiment_multiplier = 0.5
+                case 3:
+                    obj.sentiment_multiplier = 0.8
+                case _:
+                    print("Invalid sentiment level")
+        obj.save()
+        return HttpResponse(f"attribute {attr} has been updated to level {level}")
+
 
 def create_suite(request):
     # Define the create suite view function.

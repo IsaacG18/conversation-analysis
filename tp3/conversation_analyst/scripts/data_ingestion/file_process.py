@@ -1,4 +1,9 @@
-from ..nlp.nlp import create_arrays, get_top_n_risk_keywords, get_top_n_common_topics_with_avg_risk, tag_text
+from ..nlp.nlp import (
+    create_arrays,
+    get_top_n_risk_keywords,
+    get_top_n_common_topics_with_avg_risk,
+    tag_text,
+)
 from .. import object_creators
 from . import ingestion, plotter
 
@@ -29,9 +34,9 @@ def process_file(file, keywords, messages, threshold):
         keywords,
         ["PERSON", "GPE"],
         threshold.average_risk,
-        threshold.sentiment_divider,
+        threshold.sentiment_multiplier,
         threshold.max_risk,
-        threshold.word_risk
+        threshold.word_risk,
     )
     risk_words = get_top_n_risk_keywords(nlp_text, 10)
     common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)

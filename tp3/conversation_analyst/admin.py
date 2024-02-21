@@ -12,6 +12,7 @@ from .models import (
     Topic,
     RiskWordResult,
     VisFile,
+    CustomThresholds
 )
 
 # Register your models here.
@@ -49,3 +50,4 @@ admin.site.register(KeywordPlan)
 admin.site.register(Topic)
 admin.site.register(RiskWordResult)
 admin.site.register(VisFile)
+admin.site.register(CustomThresholds)

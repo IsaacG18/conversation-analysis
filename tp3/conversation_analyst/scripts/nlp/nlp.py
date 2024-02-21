@@ -61,14 +61,23 @@ def label_keyword(keyword, root):
     return start_tag + keyword + end_tag, offset
 
 
-def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7, chatgpt=False):
+def tag_text(
+    messages,
+    keywords,
+    labels,
+    average_risk=0.8,
+    sentiment_multiplier=2,
+    max_risk=40,
+    word_risk=7,
+    chatgpt=False,
+):
     """
     Arguments:
     messages (dictionary): A dictionary of messages to be tagged.
     keywords (list): A list of keywords.
     labels (list): A list of labels to be used.
     average_risk (float): The average risk factor a message has to have to increase risk rating
-    sentiment_divider (float): This divids the effect of the sentiment on risk
+    sentiment_multiplier (float): This divids the effect of the sentiment on risk
     max_risk (int): The max risk factor a message has to have to increase risk rating
     word_risk(int): The max risk factor a token can have before the rating is increased
 
@@ -87,10 +96,14 @@ def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, 
     if chatgpt:
         text, _ = message_to_text(messages)
         names, locations = name_location_chatgpt(text)
-        names_lower, locations_lower = [name.lower() for name in names], [location.lower() for location in locations]
+        names_lower, locations_lower = (
+            [name.lower() for name in names],
+            [location.lower() for location in locations],
+        )
         found_entities[label[0]], found_entities[label[1]] = names, locations
     analyzer = SentimentIntensityAnalyzer()
     for message in messages:
+        print("message: ")
         distance = 0
         message["Display_Message"] = message["Message"]
         message["risk"] = 0
@@ -114,9 +127,9 @@ def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, 
                     continue
                 message["entities"].append(entity.text)
                 message["Display_Message"] = (
-                    message["Display_Message"][:entity.start_char + distance]
+                    message["Display_Message"][: entity.start_char + distance]
                     + labeled
-                    + message["Display_Message"][entity.end_char + distance:]
+                    + message["Display_Message"][entity.end_char + distance :]
                 )
                 distance += offset
         else:
@@ -127,9 +140,9 @@ def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, 
                     labeled, offset = label_entity(entity.label_, entity.text)
                     found_entities[entity.label_].append((entity.text))
                     message["Display_Message"] = (
-                        message["Display_Message"][:entity.start_char + distance]
+                        message["Display_Message"][: entity.start_char + distance]
                         + labeled
-                        + message["Display_Message"][entity.end_char + distance:]
+                        + message["Display_Message"][entity.end_char + distance :]
                     )
                     distance += offset
                     message[entity.label_] += 1
@@ -142,11 +155,15 @@ def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, 
             )
 
             if (keyword := keywords.filter(lemma=token.lemma_).first()) is not None:
-                risk = keyword.risk_factor * (1 + abs(sentiment) / sentiment_divider)
+                risk = keyword.risk_factor * (1 + abs(sentiment) * sentiment_multiplier)
                 topics = keyword.topics.all()
                 risk_total += risk
+                print(f"+{risk}")
                 if risk > word_risk:
                     message["risk"] += 1
+                    print(
+                        f"single word threshold met, risk level updated to {message["risk"]}"
+                    )
 
                 labeled, offset = label_keyword(token_text, keyword.keyword)
 
@@ -157,19 +174,24 @@ def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, 
                     message["Display_Message"] = (
                         message["Display_Message"][:start]
                         + labeled
-                        + message["Display_Message"][start + len(token_text):]
+                        + message["Display_Message"][start + len(token_text) :]
                     )
                     tag_list.append((keyword.keyword, risk, topics))
                     message["entities"].append(keyword.keyword)
 
         if risk_total > max_risk:
             message["risk"] += 1
+            print(f"sentence threshold met, risk level updated to {message["risk"]}")
         if risk_total / len(message["Message"].split()) > average_risk:
             message["risk"] += 1
+            print(f"average threshold met, risk level updated to {message["risk"]}")
         if message["risk"] > RISK_LEVELS:
             message["risk"] = RISK_LEVELS
 
         message["tags"] = tag_list
+    print(
+        f"average_risk={average_risk}, sentiment_multiplier={sentiment_multiplier}, max_risk={max_risk}, word_risk={word_risk}"
+    )
     return messages, found_entities
 
 
@@ -346,32 +368,44 @@ def name_location_chatgpt(text):
     Description:
     Uses Chatgpt to find all the names and locations in the text
     """
-    system_message = """I want all the names and locations form this this text, formate like this:
+    system_message = (
+        """I want all the names and locations form this this text, formate like this:
                     ‘names: name1,name2,name3
                     locations: location1,location2’
                     If there is neither still return like
                     'names:
                     locations:'
-                    Here is the text: \n""" + text
+                    Here is the text: \n"""
+        + text
+    )
 
     client = OpenAI(
-            api_key=os.environ.get("CHATGPT_API_KEY"),
-        )
-    conversation_history = [{"role": "system", "content": system_message}, {"role": "user", "content": """I want all the names and locations form this this text, formate like this:
+        api_key=os.environ.get("CHATGPT_API_KEY"),
+    )
+    conversation_history = [
+        {"role": "system", "content": system_message},
+        {
+            "role": "user",
+            "content": """I want all the names and locations form this this text, formate like this:
                     ‘names: name1,name2,name3
                     locations: location1,location2’
-                    """}]
+                    """,
+        },
+    ]
 
     response = client.chat.completions.create(
         model="gpt-3.5-turbo", messages=[*conversation_history]
     )
     reply = response.choices[0].message.content
     rows = reply.split("\n")
-    names, locations = rows[0].split(":")[1].split(","), rows[1].split(":")[1].split(",")
+    names, locations = (
+        rows[0].split(":")[1].split(","),
+        rows[1].split(":")[1].split(","),
+    )
     names = [name.strip() for name in names]
     locations = [location.strip() for location in locations]
-    if len(names) == 1 and names[0] == '':
+    if len(names) == 1 and names[0] == "":
         names = []
-    if len(locations) == 1 and locations[0] == '':
+    if len(locations) == 1 and locations[0] == "":
         locations = []
     return names, locations

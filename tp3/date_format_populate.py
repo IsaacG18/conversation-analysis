@@ -57,7 +57,7 @@ def populate_delims():
         add_delim(delim["name"], delim["order"], delim["value"], delim["is_default"])
 
 def populate_thresholds():
-    add_custom_threshold(average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7)
+    add_custom_threshold(strictness_level=2, sentiment_level=2, average_risk=0.8, sentiment_multiplier=0.5, max_risk=40, word_risk=7)
 
 if __name__ == "__main__":
     print("Starting population script...")
