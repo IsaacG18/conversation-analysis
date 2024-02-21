@@ -108,12 +108,13 @@ def content_review(request, file_slug):
         chats = ChatGPTConvo.objects.filter(file=file)
 
         # Create Google Maps URLs for each location
-        base_url = ""
+        base_url = "https://www.google.com/maps/search/?api=1&query=$"
         locations_with_urls = []
         for location in locations:
             parameters = urlencode({"query": location.name})
-            full_url = f"{base_url}{parameters}"
+            full_url = f"{base_url}{location.name}"
             locations_with_urls.append({"name": location.name, "url": full_url})
+            print("HERE",full_url)
 
         context_dict = {
             "messages": messages,
@@ -598,15 +599,6 @@ def message(request):
                 )
             }
         )
-
-
-def search_map(request):
-    base_url = "https://www.google.com/maps/search/?api=1&query="
-    location = request.GET.get("location", "")
-    parameters = location.replace(" ", "+")
-    full_url = f"{base_url}{parameters}"
-    return HttpResponseRedirect(full_url)
-
 
 def settings_delim(request):
     delims = Delimiter.objects.all()
