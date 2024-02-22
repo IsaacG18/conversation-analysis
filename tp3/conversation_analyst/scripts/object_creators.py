@@ -115,12 +115,12 @@ def add_chat_filter(content, typeOfFilter, convo):
 
 
 def add_custom_threshold(
-    strictness_level,
-    sentiment_level,
     average_risk,
     sentiment_multiplier,
     max_risk,
     word_risk,
+    strictness_level=2,
+    sentiment_level=2,
 ):
     ct = CustomThresholds.objects.create(
         strictness_level=strictness_level,
