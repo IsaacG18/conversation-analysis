@@ -444,6 +444,23 @@ def rename_file(request):
             return JsonResponse({"message": f"with error: {e}"})
 
 
+def delete_file(request):
+    # Define the delete file view function.
+    # Handles POST request to delete a file.
+    # Remove the file object from database.
+    # Returns HTTPresponse indicating success or failure.
+
+    if request.method == "POST":
+        try:
+            fileId = request.POST["fileId"]
+            file_obj = File.objects.get(id=fileId)
+            file_obj.delete()
+            return HttpResponse(f"file {fileId} has been successfully deleted")
+
+        except File.DoesNotExist:
+            return HttpResponse(f"file with id {fileId} doesn't exist")
+
+
 def export_view(request, file_slug):
     # Define the export view function.
     # Handles GET request to export file data in XML format.

@@ -26,6 +26,7 @@ urlpatterns = [
     path('check_suite', views.check_suite, name='check_suite'),
     path('risk_update', views.risk_update, name='risk_update'),
     path('rename_file', views.rename_file, name='rename_file'),
+    path('delete_file', views.delete_file, name='delete_file'),
     path('create_delim', views.create_delimiter, name='create_delim'),
     path('delete_delim', views.delete_delimiter, name='delete_delim'),
     path('order_update', views.order_update, name='order_update'),
