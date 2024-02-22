@@ -25,6 +25,7 @@ urlpatterns = [
     path('delete_keyword', views.delete_keyword, name='delete_keyword'),
     path('check_suite', views.check_suite, name='check_suite'),
     path('risk_update', views.risk_update, name='risk_update'),
+    path('gpt_switch', views.gpt_switch, name='gpt_switch'),
     path('rename_file', views.rename_file, name='rename_file'),
     path('create_delim', views.create_delimiter, name='create_delim'),
     path('delete_delim', views.delete_delimiter, name='delete_delim'),

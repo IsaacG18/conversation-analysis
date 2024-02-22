@@ -204,3 +204,7 @@ class CustomThresholds(models.Model):
     sentiment_multiplier = models.FloatField(null=True)
     max_risk = models.FloatField(null=True)
     word_risk = models.FloatField(null=True)
+
+
+class GptSwitch(models.Model):
+    on = models.BooleanField(default=False)

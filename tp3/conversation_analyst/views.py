@@ -33,6 +33,7 @@ from .models import (
     ChatGPTConvo,
     ChatGPTMessage,
     CustomThresholds,
+    GptSwitch,
 )
 
 
@@ -413,6 +414,22 @@ def risk_update(request):
         return HttpResponse(
             "risk factor of " + keyword_obj.keyword + " is updated to " + str(risk)
         )
+
+
+def gpt_switch(request):
+    if request.method == "POST":
+        try:
+            isChecked = json.loads(request.POST["value"])
+            switch, created = GptSwitch.objects.get_or_create(id=1)
+            switch.on = isChecked
+            switch.save()
+            if created:
+                return HttpResponse(f"gpt switched created, on: {isChecked}")
+            else:
+                return HttpResponse(f"switch on: {isChecked}")
+
+        except KeyError as e:
+            return HttpResponse(f"{e}")
 
 
 def rename_file(request):
