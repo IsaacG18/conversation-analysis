@@ -236,12 +236,10 @@ def settings_page(request):
             risk_words = RiskWord.objects.filter(suite=suite)
             context_dict = {"keyword_suites": keyword_suites, "risk_words": risk_words}
         if tab == "default":
-            print("no tab selected")
             return render(
                 request, "conversation_analyst/settings.html", context=context_dict
             )
         else:
-            print("return rendered keywords...")
             return render(
                 request, "conversation_analyst/setting_tab.html", context=context_dict
             )
@@ -259,7 +257,6 @@ def strictness_update(request):
                     obj.word_risk = 10
                     obj.max_risk = float("inf")
                     obj.average_risk = float("inf")
-                    print("strictness value set to 0")
                 case 1:
                     obj.word_risk = 8
                     obj.max_risk = 50
@@ -279,7 +276,6 @@ def strictness_update(request):
             match level:
                 case 0:
                     obj.sentiment_multiplier = 0
-                    print("sentiment level set to 0")
                 case 1:
                     obj.sentiment_multiplier = 0.2
                 case 2:

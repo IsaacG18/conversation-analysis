@@ -222,7 +222,6 @@ $(document).ready(function () {
     function refreshSuiteFocusOnCreation(suite) {
         $('.active-suite').removeClass('active-suite');
         $(suite).addClass('active-suite');
-        console.log(suite);
         $('.keyword-item').remove();
     }
 
@@ -324,7 +323,6 @@ $(document).ready(function () {
     function suiteCheck(e) {
         var suiteId = $(e.target).val();
         var isChecked = $(e.target).is(':checked');
-        console.log(`${suiteId} ${isChecked}`)
         $.ajax({
             type: 'POST',
             url: "/check_suite",
@@ -387,7 +385,6 @@ $(document).ready(function () {
     }
 
     function checkIfSuiteExist() {
-        console.log($('.active-suite'));
         if (!$('.active-suite').length) {
             $('#keyword-error-row').append(`<span>Please create a suite frist</span>`);
             return false;

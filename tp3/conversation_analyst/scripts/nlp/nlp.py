@@ -129,7 +129,7 @@ def tag_text(
                 message["Display_Message"] = (
                     message["Display_Message"][: entity.start_char + distance]
                     + labeled
-                    + message["Display_Message"][entity.end_char + distance :]
+                    + message["Display_Message"][entity.end_char + distance:]
                 )
                 distance += offset
         else:
@@ -142,7 +142,7 @@ def tag_text(
                     message["Display_Message"] = (
                         message["Display_Message"][: entity.start_char + distance]
                         + labeled
-                        + message["Display_Message"][entity.end_char + distance :]
+                        + message["Display_Message"][entity.end_char + distance:]
                     )
                     distance += offset
                     message[entity.label_] += 1
@@ -174,7 +174,7 @@ def tag_text(
                     message["Display_Message"] = (
                         message["Display_Message"][:start]
                         + labeled
-                        + message["Display_Message"][start + len(token_text) :]
+                        + message["Display_Message"][start + len(token_text):]
                     )
                     tag_list.append((keyword.keyword, risk, topics))
                     message["entities"].append(keyword.keyword)
