@@ -26,6 +26,7 @@ from .scripts.nlp.nlp import (
     get_date_messages,
     get_keyword_lamma,
     tag_text,
+    name_location_chatgpt
 )
 from django.utils import timezone
 from .scripts.object_creators import (
