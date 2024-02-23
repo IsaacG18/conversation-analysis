@@ -101,7 +101,7 @@ def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, 
 
         for label in labels:
             message[label] = 0
-        
+
         if chatgpt:
             chatgpt_find(message, labels[0], names)
             chatgpt_find(message, labels[1], locations)
@@ -135,9 +135,9 @@ def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, 
                 labeled, offset = label_keyword(token_text, keyword.keyword)
                 match = word_regex.search(message["Display_Message"], ptr)
                 if match:
-                    if message["Display_Message"][match.start()-7:match.start()-1]=="PERSON" or message["Display_Message"][match.start()-4:match.start()-1]=="GPE":
+                    if message["Display_Message"][match.start()-7:match.start()-1] == "PERSON" or message["Display_Message"][match.start()-4:match.start()-1] == "GPE":
                         ptr = match.end() + offset
-                        message["Display_Message"] = message["Display_Message"][:match.end()] + f" risk " + message["Display_Message"][match.end():]
+                        message["Display_Message"] = message["Display_Message"][:match.end()] + " risk " + message["Display_Message"][match.end():]
                         tag_list.append((keyword.keyword, risk, topics))
                         message["entities"].append(keyword.keyword)
                     else:
@@ -150,7 +150,6 @@ def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, 
                         )
                         tag_list.append((keyword.keyword, risk, topics))
                         message["entities"].append(keyword.keyword)
-        
         if risk_total > max_risk:
             message["risk"] += 1
         if risk_total / len(message["Message"].split()) > average_risk:
@@ -366,6 +365,7 @@ def name_location_chatgpt(text):
         locations = []
     return names, locations
 
+
 def chatgpt_find(message, chat_type, chat_list):
     """
     Arguments:
@@ -375,6 +375,6 @@ def chatgpt_find(message, chat_type, chat_list):
     Replaces the display text to inluded the HTML tags
     """
     for item in chat_list:
-        label, offset=  label_entity(chat_type, item)
+        label, offset = label_entity(chat_type, item)
         message["Display_Message"] = message["Display_Message"].replace(item, label)
         message[chat_type] += 1
