@@ -898,7 +898,7 @@ def suite_selection(request, file_slug):
             file_obj = File.objects.get(slug=file_slug)
             messages = Message.objects.filter(file=file_obj)
             threshold = CustomThresholds.objects.all()[0]
-            gpt_switch = GptSwitch.objects.get(id=1)
+            gpt_switch = GptSwitch.objects.get(id=1).on
             process_file(file_obj, keywords, messages, threshold, gpt_switch)
             return HttpResponseRedirect(
                 reverse("content_review", kwargs={"file_slug": file_obj.slug})

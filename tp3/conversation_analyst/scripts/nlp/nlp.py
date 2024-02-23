@@ -380,20 +380,23 @@ def name_location_chatgpt(text):
                     """,
         },
     ]
-
     response = client.chat.completions.create(
         model="gpt-3.5-turbo", messages=[*conversation_history]
     )
     reply = response.choices[0].message.content
     rows = reply.split("\n")
-    names, locations = (
-        rows[0].split(":")[1].split(","),
-        rows[1].split(":")[1].split(","),
-    )
-    names = [name.strip() for name in names]
-    locations = [location.strip() for location in locations]
-    if len(names) == 1 and names[0] == "":
+    try:
+        names, locations = (
+            rows[0].split(":")[1].split(","),
+            rows[1].split(":")[1].split(","),
+        )
+        names = [name.strip() for name in names]
+        locations = [location.strip() for location in locations]
+        if len(names) == 1 and names[0] == "":
+            names = []
+        if len(locations) == 1 and locations[0] == "":
+            locations = []
+    except IndexError:
         names = []
-    if len(locations) == 1 and locations[0] == "":
         locations = []
     return names, locations
