@@ -573,9 +573,9 @@ class PlotterTests(TestCase):
 
 
 class Threshold:
-    def __init__(self, average_risk, sentiment_divider, max_risk, word_risk):
+    def __init__(self, average_risk, sentiment_multiplier, max_risk, word_risk):
         self.average_risk = average_risk
-        self.sentiment_divider = sentiment_divider
+        self.sentiment_multiplier = sentiment_multiplier
         self.max_risk = max_risk
         self.word_risk = word_risk
 
