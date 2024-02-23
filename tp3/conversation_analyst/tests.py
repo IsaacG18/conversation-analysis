@@ -573,9 +573,9 @@ class PlotterTests(TestCase):
 
 
 class Threshold:
-    def __init__(self, average_risk, sentiment_divider, max_risk, word_risk):
+    def __init__(self, average_risk, sentiment_multiplier, max_risk, word_risk):
         self.average_risk = average_risk
-        self.sentiment_divider = sentiment_divider
+        self.sentiment_multiplier = sentiment_multiplier
         self.max_risk = max_risk
         self.word_risk = word_risk
 
@@ -638,7 +638,7 @@ class FileProcessTests(TestCase):
             }
         ]
         threshold_mock = Threshold(
-            average_risk=0.5, sentiment_divider=0.7, max_risk=0.9, word_risk=1.2
+            average_risk=0.5, sentiment_multiplier=0.7, max_risk=0.9, word_risk=1.2
         )
 
         mock_tag_text.return_value = ("nlp_text_mock", {"PERSON": ["Alice"], "GPE": []})
