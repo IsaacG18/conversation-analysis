@@ -61,7 +61,7 @@ def label_keyword(keyword, root):
     return start_tag + keyword + end_tag, offset
 
 
-def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7, chatgpt=False):
+def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7, chatgpt=True):
     """
     Arguments:
     messages (dictionary): A dictionary of messages to be tagged.
@@ -376,5 +376,7 @@ def chatgpt_find(message, chat_type, chat_list):
     """
     for item in chat_list:
         label, offset = label_entity(chat_type, item)
-        message["Display_Message"] = message["Display_Message"].replace(item, label)
-        message[chat_type] += 1
+        if item in message["Display_Message"]:
+            message["entities"].append(item)
+            message["Display_Message"] = message["Display_Message"].replace(item, label)
+            message[chat_type] += 1
