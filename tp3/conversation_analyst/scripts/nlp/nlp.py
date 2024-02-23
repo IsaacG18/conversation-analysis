@@ -103,7 +103,6 @@ def tag_text(
         found_entities[label[0]], found_entities[label[1]] = names, locations
     analyzer = SentimentIntensityAnalyzer()
     for message in messages:
-        print("message: ")
         distance = 0
         message["Display_Message"] = message["Message"]
         message["risk"] = 0
@@ -158,12 +157,8 @@ def tag_text(
                 risk = keyword.risk_factor * (1 + abs(sentiment) * sentiment_multiplier)
                 topics = keyword.topics.all()
                 risk_total += risk
-                print(f"+{risk}")
                 if risk > word_risk:
                     message["risk"] += 1
-                    print(
-                        f"single word threshold met, risk level updated to {message["risk"]}"
-                    )
 
                 labeled, offset = label_keyword(token_text, keyword.keyword)
 
@@ -178,20 +173,13 @@ def tag_text(
                     )
                     tag_list.append((keyword.keyword, risk, topics))
                     message["entities"].append(keyword.keyword)
-
         if risk_total > max_risk:
             message["risk"] += 1
-            print(f"sentence threshold met, risk level updated to {message["risk"]}")
         if risk_total / len(message["Message"].split()) > average_risk:
             message["risk"] += 1
-            print(f"average threshold met, risk level updated to {message["risk"]}")
         if message["risk"] > RISK_LEVELS:
             message["risk"] = RISK_LEVELS
-
         message["tags"] = tag_list
-    print(
-        f"average_risk={average_risk}, sentiment_multiplier={sentiment_multiplier}, max_risk={max_risk}, word_risk={word_risk}"
-    )
     return messages, found_entities
 
 

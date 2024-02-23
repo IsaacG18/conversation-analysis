@@ -638,7 +638,7 @@ class FileProcessTests(TestCase):
             }
         ]
         threshold_mock = Threshold(
-            average_risk=0.5, sentiment_divider=0.7, max_risk=0.9, word_risk=1.2
+            average_risk=0.5, sentiment_multiplier=0.7, max_risk=0.9, word_risk=1.2
         )
 
         mock_tag_text.return_value = ("nlp_text_mock", {"PERSON": ["Alice"], "GPE": []})
