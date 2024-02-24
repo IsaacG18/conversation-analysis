@@ -1,6 +1,8 @@
 from ..nlp.nlp import create_arrays, get_top_n_risk_keywords, get_top_n_common_topics_with_avg_risk, tag_text
 from .. import object_creators
 from . import ingestion, plotter
+from django.conf import settings
+import os
 
 
 def parse_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":"]]):
@@ -14,6 +16,7 @@ def parse_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":
 
 
 def process_file(file, keywords, messages, threshold):
+   
     chat_messages = [
         {
             "Timestamp": message.timestamp,
@@ -43,6 +46,11 @@ def process_file(file, keywords, messages, threshold):
         risk_words,
         common_topics,
     )
+    media_root = os.path.join(settings.MEDIA_ROOT, "uploads")
+    full_file_path = os.path.join(media_root, file.title)
+    if os.path.exists(full_file_path):
+        os.remove(full_file_path)
+
 
 
 def generate_message_objects(file, chat_messages):
