@@ -214,16 +214,78 @@ def settings_page(request):
     # Define the settings page view function.
     # Retrieves keyword suites and associated risk words.
     # Renders the settings page with keyword suites and risk words.
-
-    keyword_suites = KeywordSuite.objects.all()
-    if len(keyword_suites) == 0:
+    tab = request.GET.get("tab", "default")
+    if tab == "threshold":
         context_dict = {}
+        obj, created = CustomThresholds.objects.get_or_create(id=1)
+        if created:
+            context_dict["strictness_default"] = 2
+            context_dict["sentiment_default"] = 2
+        else:
+            context_dict["strictness_default"] = obj.strictness_level
+            context_dict["sentiment_default"] = obj.sentiment_level
+        return render(
+            request, "conversation_analyst/strictness.html", context=context_dict
+        )
     else:
-        suite = keyword_suites[0]
-        risk_words = RiskWord.objects.filter(suite=suite)
-        context_dict = {"keyword_suites": keyword_suites, "risk_words": risk_words}
+        keyword_suites = KeywordSuite.objects.all()
+        if len(keyword_suites) == 0:
+            context_dict = {}
+        else:
+            suite = keyword_suites[0]
+            risk_words = RiskWord.objects.filter(suite=suite)
+            context_dict = {"keyword_suites": keyword_suites, "risk_words": risk_words}
+        if tab == "default":
+            return render(
+                request, "conversation_analyst/settings.html", context=context_dict
+            )
+        else:
+            return render(
+                request, "conversation_analyst/setting_tab.html", context=context_dict
+            )
 
-    return render(request, "conversation_analyst/settings.html", context=context_dict)
+
+def strictness_update(request):
+    if request.method == "POST":
+        attr = request.POST["attr"]
+        level = int(request.POST["level"])
+        obj = CustomThresholds.objects.get_or_create(id=1)[0]
+        if attr == "strictness":
+            obj.strictness_level = level
+            match level:
+                case 0:
+                    obj.word_risk = 10
+                    obj.max_risk = float("inf")
+                    obj.average_risk = float("inf")
+                case 1:
+                    obj.word_risk = 8
+                    obj.max_risk = 50
+                    obj.average_risk = 1
+                case 2:
+                    obj.word_risk = 7
+                    obj.max_risk = 40
+                    obj.average_risk = 0.8
+                case 3:
+                    obj.word_risk = 6
+                    obj.max_risk = 30
+                    obj.average_risk = 0.8
+                case _:
+                    print("Invalid strictness level")
+        else:
+            obj.sentiment_level_level = level
+            match level:
+                case 0:
+                    obj.sentiment_multiplier = 0
+                case 1:
+                    obj.sentiment_multiplier = 0.2
+                case 2:
+                    obj.sentiment_multiplier = 0.5
+                case 3:
+                    obj.sentiment_multiplier = 0.8
+                case _:
+                    print("Invalid sentiment level")
+        obj.save()
+        return HttpResponse(f"attribute {attr} has been updated to level {level}")
 
 
 def create_suite(request):
@@ -380,6 +442,23 @@ def rename_file(request):
         except Exception as e:
             print(e)
             return JsonResponse({"message": f"with error: {e}"})
+
+
+def delete_file(request):
+    # Define the delete file view function.
+    # Handles POST request to delete a file.
+    # Remove the file object from database.
+    # Returns HTTPresponse indicating success or failure.
+
+    if request.method == "POST":
+        try:
+            fileId = request.POST["fileId"]
+            file_obj = File.objects.get(id=fileId)
+            file_obj.delete()
+            return HttpResponse(f"file {fileId} has been successfully deleted")
+
+        except File.DoesNotExist:
+            return HttpResponse(f"file with id {fileId} doesn't exist")
 
 
 def export_view(request, file_slug):

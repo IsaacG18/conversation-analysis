@@ -186,12 +186,10 @@ class ObjectCreatorTests(TestCase):
         self.assertEqual(convo_filter.filter.content, "spam")
 
     def test_add_custom_threshold(self):
-        ct = add_custom_threshold(
-            average_risk=0.8, sentiment_divider=2, max_risk=40, word_risk=7
-        )
+        ct = add_custom_threshold(average_risk=0.8, sentiment_multiplier=2, max_risk=40, word_risk=7)
         self.assertEqual(CustomThresholds.objects.count(), 1)
         self.assertEqual(ct.average_risk, 0.8)
-        self.assertEqual(ct.sentiment_divider, 2)
+        self.assertEqual(ct.sentiment_multiplier, 2)
         self.assertEqual(ct.max_risk, 40)
         self.assertEqual(ct.word_risk, 7)
 
@@ -575,9 +573,9 @@ class PlotterTests(TestCase):
 
 
 class Threshold:
-    def __init__(self, average_risk, sentiment_divider, max_risk, word_risk):
+    def __init__(self, average_risk, sentiment_multiplier, max_risk, word_risk):
         self.average_risk = average_risk
-        self.sentiment_divider = sentiment_divider
+        self.sentiment_multiplier = sentiment_multiplier
         self.max_risk = max_risk
         self.word_risk = word_risk
 
@@ -640,7 +638,7 @@ class FileProcessTests(TestCase):
             }
         ]
         threshold_mock = Threshold(
-            average_risk=0.5, sentiment_divider=0.7, max_risk=0.9, word_risk=1.2
+            average_risk=0.5, sentiment_multiplier=0.7, max_risk=0.9, word_risk=1.2
         )
 
         mock_tag_text.return_value = ("nlp_text_mock", {"PERSON": ["Alice"], "GPE": []})
