@@ -16,7 +16,6 @@ def parse_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":
 
 
 def process_file(file, keywords, messages, threshold):
-   
     chat_messages = [
         {
             "Timestamp": message.timestamp,
@@ -50,7 +49,6 @@ def process_file(file, keywords, messages, threshold):
     full_file_path = os.path.join(media_root, file.title)
     if os.path.exists(full_file_path):
         os.remove(full_file_path)
-
 
 
 def generate_message_objects(file, chat_messages):
