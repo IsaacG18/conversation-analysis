@@ -1,23 +1,32 @@
+{% load static %}
+<script type="text/javascript" src="{% static 'js/rename.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/deleteFile.js' %}"></script>
 <div id="results">
-    <div class="container-md">
+    <div class="container-md" id="result-container">
         {% if files %}
-            <div class="list-group">
+        <div class="list-group">
             {% for file in files %}
-                <div class="list-group-item">
-                <div class="d-flex justify-content-between">
-                    <a href="{%  url 'content_review' file.slug %}" class="file-title text-reset text-decoration-none" id="file-title-{{ file.id }}"><small>{{ file.title }}</small></a>
-                    <form id="file-rename-form-{{ file.id }}" class="file-rename-form d-none input-group-sm d-flex align-items-center">{% csrf_token %}
-                        <input class="file-rename form-control" type="text" value="" name="file_rename" id="file-rename-{{ file.id }}">
-                        <span class="suffix" id="suffix-{{ file.id }}"></span>
-                    </form>
-                    <small class="timestamp text-body-secondary">{{ file.date }}</small>
+            <div class="list-group-item file-item" id="file-item-{{ file.id }}">
+                <div class="row d-flex">
+                    <div class="col-6 d-flex justify-content-start">
+                        <a href="{%  url 'content_review' file.slug %}"
+                            class="file-title text-reset text-decoration-none" id="file-title-{{ file.id }}"><small>{{ file.title }}</small></a>
+                        <form id="file-rename-form-{{ file.id }}"
+                            class="file-rename-form d-none input-group-sm d-flex align-items-center">{% csrf_token %}
+                            <input class="file-rename form-control" type="text" value="" name="file_rename"
+                                id="file-rename-{{ file.id }}">
+                            <span class="suffix" id="suffix-{{ file.id }}"></span>
+                        </form>
+                    </div>
+                    <div class="col-5 d-flex justify-content-end"><small class="timestamp text-body-secondary">{{ file.date }}</small></div>
+                    <div class="col-1 d-flex justify-content-end"><button type="button" class="btn btn-link text-dark p-0 delete-file" id="delete-{{ file.id }}"><i class="bi bi-x"></i></button></div>
                 </div>
-                </div>
-                </li>
-            {% endfor %}
             </div>
+            </li>
+            {% endfor %}
+        </div>
         {% else %}
-            <strong>There are no files present.</strong>
+        <strong>There are no files present.</strong>
         {% endif %}
-     </div>
+    </div>
 </div>
