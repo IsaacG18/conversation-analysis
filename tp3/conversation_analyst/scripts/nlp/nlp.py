@@ -36,7 +36,7 @@ def label_entity(label, text):
     Description:
     This function generates HTML tags to label the given entity within a text.
     """
-    start_tag = f'<span class="{classify(label)} {classify(text)}">'
+    start_tag = f'<span class="{classify(label)} {classify(text)} Check_181831">'
     end_tag = "</span>"
     offset = len(start_tag) + len(end_tag)
     return start_tag + text + end_tag, offset
@@ -135,7 +135,8 @@ def tag_text(messages, keywords, labels, average_risk=0.8, sentiment_divider=2, 
                 labeled, offset = label_keyword(token_text, keyword.keyword)
                 match = word_regex.search(message["Display_Message"], ptr)
                 if match:
-                    if message["Display_Message"][match.start()-7:match.start()-1] == "PERSON" or message["Display_Message"][match.start()-4:match.start()-1] == "GPE":
+                    if (message["Display_Message"][match.start()-7:match.start()-1] == "PERSON" 
+                    or message["Display_Message"][match.start()-4:match.start()-1] == "GPE") and message["Display_Message"][match.end()+1:match.end()+13] =="Check_181831":
                         ptr = match.end() + offset
                         message["Display_Message"] = message["Display_Message"][:match.end()] + " risk " + message["Display_Message"][match.end():]
                         tag_list.append((keyword.keyword, risk, topics))
