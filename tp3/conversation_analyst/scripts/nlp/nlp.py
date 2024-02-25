@@ -105,7 +105,12 @@ def tag_text(
     analyzer = SentimentIntensityAnalyzer()
     for message in messages:
         distance, risk_total, tag_list = 0, 0, []
-        message["Display_Message"], message["risk"], message["entities"], message["doc"] = message["Message"], 0, [], nlp(message["Message"])
+        (
+            message["Display_Message"],
+            message["risk"],
+            message["entities"],
+            message["doc"],
+        ) = (message["Message"], 0, [], nlp(message["Message"]))
         sentiment = analyzer.polarity_scores(message["Message"])["compound"]
 
         for label in labels:
@@ -144,10 +149,24 @@ def tag_text(
                 labeled, offset = label_keyword(token_text, keyword.keyword)
                 match = word_regex.search(message["Display_Message"], ptr)
                 if match:
-                    if (message["Display_Message"][match.start()-7:match.start()-1] == "PERSON" 
-                    or message["Display_Message"][match.start()-4:match.start()-1] == "GPE") and message["Display_Message"][match.end()+1:match.end()+13] =="Check_181831":
+                    if (
+                        message["Display_Message"][
+                            match.start() - 7:match.start() - 1
+                        ]
+                        == "PERSON"
+                        or message["Display_Message"][
+                            match.start() - 4:match.start() - 1
+                        ]
+                        == "GPE"
+                    ) and message["Display_Message"][
+                        match.end() + 1:match.end() + 13
+                    ] == "Check_181831":
                         ptr = match.end() + offset
-                        message["Display_Message"] = message["Display_Message"][:match.end()] + " risk " + message["Display_Message"][match.end():]
+                        message["Display_Message"] = (
+                            message["Display_Message"][: match.end()]
+                            + " risk "
+                            + message["Display_Message"][match.end():]
+                        )
                         tag_list.append((keyword.keyword, risk, topics))
                         message["entities"].append(keyword.keyword)
                     else:
