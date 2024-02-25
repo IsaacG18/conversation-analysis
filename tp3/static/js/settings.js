@@ -1,9 +1,18 @@
-$(document).ready(function(){
+$(document).ready(function () {
     $('#suite-list .suite-item:first').addClass('active-suite'); // set the first suite active by default
 
-    $('#new-suite-form').submit(function(e){
+    $('.s-tab').click(function (e) {
+        if (!$(this).hasClass("active")) {
+            $('.nav-item .tab-content').removeClass('active');
+            $(this).children().addClass('active');
+            getTabContent($(this).attr('id').split("-")[0]);
+        }
+    })
+
+
+    $('#new-suite-form').submit(function (e) {
         e.preventDefault();
-        if ($(this).valid() == true){
+        if ($(this).valid() == true) {
             newSuiteName = $('#suite-name').val();
             $.ajax({
                 type: 'POST',
@@ -11,8 +20,8 @@ $(document).ready(function(){
                 headers: {
                     'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
                 },
-                data: {'name': newSuiteName},
-                success: function(response){
+                data: { 'name': newSuiteName },
+                success: function (response) {
                     var suiteId = response.suiteId;
                     $('#suite-name').val('');
                     // insert new suite item
@@ -30,22 +39,22 @@ $(document).ready(function(){
                     `)
                     // add event listners
                     id = '#suite-item-' + response.suiteId;
-                    $(id).click(function(e) {
+                    $(id).click(function (e) {
                         suiteClick(targetGrabber(e));
                     });
                     btn = '#delete-' + response.suiteId;
-                    $(btn).click(function(e){
+                    $(btn).click(function (e) {
                         deleteSuiteClick(e);
                     })
                     checkbox = '#checkbox-' + response.suiteId;
-                    $(checkbox).click(function(e){
+                    $(checkbox).click(function (e) {
                         suiteCheck(e);
                     })
                     refreshSuiteFocusOnCreation($(`#suite-item-${suiteId}`));
 
                     alert(response.message);
                 },
-                error: function(jqXHR) {
+                error: function (jqXHR) {
                     var errorMessage = 'An error occurred';
                     if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
                         errorMessage = jqXHR.responseJSON.message;
@@ -53,36 +62,36 @@ $(document).ready(function(){
                     alert(errorMessage);
                 }
             })
-    }
+        }
     })
 
     $('#new-suite-form').validate({
-        rules:{
+        rules: {
             suite_input: "required",
         },
         messages: {
             suite_input: "Please input a suite name",
         },
         errorElement: "span",
-        errorPlacement: function(error, element) {
+        errorPlacement: function (error, element) {
             error_row = $('#suite-error-row');
             error.appendTo(error_row);
 
-            setTimeout(function() {
+            setTimeout(function () {
                 error.remove();
             }, 3000);
-          },
-          onfocusout: false,
-          onkeyup: false,
+        },
+        onfocusout: false,
+        onkeyup: false,
     })
 
 
-    $('.suite-item').click(function(e) {
+    $('.suite-item').click(function (e) {
         suiteClick(targetGrabber(e));
     });
 
     $('#new-keyword-form').validate({
-        rules:{
+        rules: {
             keyword: "required",
             risk_factor: {
                 required: true,
@@ -96,22 +105,22 @@ $(document).ready(function(){
         },
         errorClass: "invalid",
         errorElement: "span",
-        errorPlacement: function(error, element) {
+        errorPlacement: function (error, element) {
             error_row = $('#keyword-error-row');
             error.appendTo(error_row);
 
-            setTimeout(function() {
+            setTimeout(function () {
                 error.remove();
             }, 3000);
-          },
-          onfocusout: false,
-          onkeyup: false,
+        },
+        onfocusout: false,
+        onkeyup: false,
     })
 
-    $('#new-keyword-form').submit(function(e){
+    $('#new-keyword-form').submit(function (e) {
         e.preventDefault();
-        if ($(this).valid() == true){
-            if (checkIfSuiteExist()==true){
+        if ($(this).valid() == true) {
+            if (checkIfSuiteExist() == true) {
                 var newKeyword = $('#new-keyword').val()
                 var newKeywordRisk = $('#new-keyword-risk').val()
                 var activeSuiteName = getSuiteName($('.active-suite'));
@@ -121,8 +130,8 @@ $(document).ready(function(){
                     headers: {
                         'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
                     },
-                    data: {'keyword': newKeyword, 'suite': activeSuiteName, 'risk': newKeywordRisk},
-                    success: function(response){
+                    data: { 'keyword': newKeyword, 'suite': activeSuiteName, 'risk': newKeywordRisk },
+                    success: function (response) {
                         keywordId = response.keywordId;
                         $('#new-keyword').val('');
                         $('#new-keyword-form').before(`<div class="list-group-item list-group-item-action keyword-item" id="keyword-item-${keywordId}">
@@ -141,15 +150,15 @@ $(document).ready(function(){
                         <div class="row align-items-center error-row" id="error-row-${keywordId}">
                         </div>
                     </div>`);
-                    $(`#delete-keyword-${keywordId}`).click(function(e){
-                        deleteKeywordClick(e);
-                    })
-                    $(`#risk-${keywordId}`).blur(function(e){
-                        RiskFactorBlur(e);
-                    })
+                        $(`#delete-keyword-${keywordId}`).click(function (e) {
+                            deleteKeywordClick(e);
+                        })
+                        $(`#risk-${keywordId}`).blur(function (e) {
+                            RiskFactorBlur(e);
+                        })
                         alert(response.message);
                     },
-                    error: function(jqXHR) {
+                    error: function (jqXHR) {
                         var errorMessage = 'An error occurred';
                         if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
                             errorMessage = jqXHR.responseJSON.detail;
@@ -157,38 +166,39 @@ $(document).ready(function(){
                         alert(errorMessage);
                     }
                 })
-    }}
+            }
+        }
     })
 
 
 
-    $('.delete-suite').click(function(e){
+    $('.delete-suite').click(function (e) {
         confirmDelete(e);
     })
 
 
-    $('.delete-keyword').click(function(e){
+    $('.delete-keyword').click(function (e) {
         deleteKeywordClick(e);
     })
 
-    $('.form-check-input').click(function(e){
+    $('.form-check-input').click(function (e) {
         suiteCheck(e);
     })
 
-    $('.keyword-risk').blur(function(e){
+    $('.keyword-risk').blur(function (e) {
         RiskFactorBlur(e);
     })
 
 
-    function displayKeywords(data){
+    function displayKeywords(data) {
         array = JSON.parse(data.objects);
         var toAppend = '';
-        $.each(array, function(index, object) {
+        $.each(array, function (index, object) {
             var keyword = object.fields.keyword;
             var risk = object.fields.risk_factor;
             var keywordId = object.pk
-            toAppend += 
-            `<div class="list-group-item list-group-item-action keyword-item" id="keyword-item-${keywordId}">
+            toAppend +=
+                `<div class="list-group-item list-group-item-action keyword-item" id="keyword-item-${keywordId}">
             <div class="row d-flex align-items-center justify-content-between">
               <div class="col-8">
                     <a href="#" class="text-reset text-decoration-none">${keyword}</a>
@@ -209,29 +219,28 @@ $(document).ready(function(){
         $('#new-keyword-form').before(toAppend);
     }
 
-    function refreshSuiteFocusOnCreation(suite){
+    function refreshSuiteFocusOnCreation(suite) {
         $('.active-suite').removeClass('active-suite');
         $(suite).addClass('active-suite');
-        console.log(suite);
         $('.keyword-item').remove();
     }
 
-    function refreshSuiteFocusOnDeletion(suite){
-        if (suite.hasClass('active-suite')){
+    function refreshSuiteFocusOnDeletion(suite) {
+        if (suite.hasClass('active-suite')) {
             suite.removeClass('active-suite');
-            if ($('.suite-item').length>1){
+            if ($('.suite-item').length > 1) {
                 suite.remove();
                 focusSuite = $('.suite-item:first');
                 suiteClick(focusSuite);
                 return;
-            }else{
+            } else {
                 $('.keyword-item').remove();
             }
         }
         suite.remove();
     }
 
-    function suiteClick(suite){
+    function suiteClick(suite) {
         $('.active-suite').removeClass('active-suite');
         suite.addClass('active-suite')
         activeSuiteName = getSuiteName(suite);
@@ -239,48 +248,48 @@ $(document).ready(function(){
             type: 'GET',
             url: "/select_suite",
             datatype: 'json',
-            data: {'suite': activeSuiteName},
-            success: function(data){
+            data: { 'suite': activeSuiteName },
+            success: function (data) {
                 displayKeywords(data);
                 initialiseKeywordForm();
-                $('.delete-keyword').click(function(e){
+                $('.delete-keyword').click(function (e) {
                     deleteKeywordClick(e);
                 })
-                $('.keyword-risk').blur(function(e){
+                $('.keyword-risk').blur(function (e) {
                     RiskFactorBlur(e);
                 })
             },
-            error: function(jqXHR, textStatus, errorThrown) {
+            error: function (jqXHR, textStatus, errorThrown) {
                 console.error('AJAX Error:', textStatus, errorThrown);
             }
         })
     }
 
-    function targetGrabber(e){
+    function targetGrabber(e) {
         return $(e.currentTarget);
     }
 
 
 
-    function initialiseKeywordForm(){
+    function initialiseKeywordForm() {
         $('#new-keyword-risk-error').remove();
         $('#new-keyword-error').remove();
         $('#new-keyword').val('');
         $('#new-keyword-risk').val('0');
     }
 
-    function deleteSuiteClick(e){
+    function deleteSuiteClick(e) {
         suiteId = $(e.target).val();
         $.ajax({
             type: 'GET',
             url: "/delete_suite",
             datatype: 'json',
-            data: {'suiteId': suiteId},
-            success: function(data){
+            data: { 'suiteId': suiteId },
+            success: function (data) {
                 alert(data);
                 refreshSuiteFocusOnDeletion($(`#suite-item-${suiteId}`));
             },
-            error: function(jqXHR, textStatus, errorThrown) {
+            error: function (jqXHR, textStatus, errorThrown) {
                 console.error('AJAX Error:', textStatus, errorThrown);
             }
         })
@@ -293,39 +302,38 @@ $(document).ready(function(){
         }
     }
 
-    function deleteKeywordClick(e){
+    function deleteKeywordClick(e) {
         keywordId = $(e.target).val();
         $.ajax({
             type: 'GET',
             url: "/delete_keyword",
             datatype: 'json',
-            data: {'keywordId': keywordId},
-            success: function(data){
+            data: { 'keywordId': keywordId },
+            success: function (data) {
                 alert(data);
                 id = '#keyword-item-' + keywordId;
                 $(id).remove();
             },
-            error: function(jqXHR, textStatus, errorThrown) {
+            error: function (jqXHR, textStatus, errorThrown) {
                 console.error('AJAX Error:', textStatus, errorThrown);
             }
         })
     }
 
-    function suiteCheck(e){
+    function suiteCheck(e) {
         var suiteId = $(e.target).val();
         var isChecked = $(e.target).is(':checked');
-        console.log(`${suiteId} ${isChecked}`)
         $.ajax({
             type: 'POST',
             url: "/check_suite",
             headers: {
                 'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
             },
-            data: {'suiteId': suiteId, 'value': isChecked},
-            success: function(response){
+            data: { 'suiteId': suiteId, 'value': isChecked },
+            success: function (response) {
                 console.log(response);
             },
-            error: function(jqXHR) {
+            error: function (jqXHR) {
                 var errorMessage = 'An error occurred';
                 if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
                     errorMessage = jqXHR.responseJSON.detail;
@@ -335,16 +343,16 @@ $(document).ready(function(){
         })
     }
 
-    function validateRiskInput(input){
-        if (input<0 || input>10){return false;}
+    function validateRiskInput(input) {
+        if (input < 0 || input > 10) { return false; }
         else return true;
     }
 
-    function RiskFactorBlur(e){
+    function RiskFactorBlur(e) {
         var risk = $(e.target).val();
         var keywordId = $(e.target).attr('id').split("-")[1];
 
-        if (validateRiskInput(risk) == true){
+        if (validateRiskInput(risk) == true) {
             $(`#error-row-${keywordId}`).empty();
             $.ajax({
                 type: 'POST',
@@ -352,11 +360,11 @@ $(document).ready(function(){
                 headers: {
                     'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
                 },
-                data: {'keyword': keywordId, 'risk': risk},
-                success: function(response){
+                data: { 'keyword': keywordId, 'risk': risk },
+                success: function (response) {
                     console.log(response);
                 },
-                error: function(jqXHR) {
+                error: function (jqXHR) {
                     var errorMessage = 'An error occurre';
                     if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
                         errorMessage = jqXHR.responseJSON.detail;
@@ -368,24 +376,29 @@ $(document).ready(function(){
         else {
             error_row = $(`#error-row-${keywordId}`);
             error_row.append('<span>Please input a number between 0 and 10</span>');
-            }
+        }
     }
 
 
-    function getSuiteName(suite){
+    function getSuiteName(suite) {
         return suite.find('.form-check-label').text();
     }
 
-    function checkIfSuiteExist(){
-        console.log($('.active-suite'));
+    function checkIfSuiteExist() {
         if (!$('.active-suite').length) {
             $('#keyword-error-row').append(`<span>Please create a suite frist</span>`);
             return false;
-        } else{
+        } else {
             $('#keyword-error-row').empty();
             return true;
         }
     }
 
+    function getTabContent(tab) {
+        $.get("settings", { "tab": tab },
+            function (data) {
+                $('#tab-container').html(data);
+            })
+    }
 
 })
