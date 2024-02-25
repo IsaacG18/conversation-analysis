@@ -90,50 +90,31 @@ def tag_text(
     This function tags messages with relevant keywords and entities.
     """
     if chatgpt:
-        label = ["PERSON", "GPE"]
-    names, names_lower, locations, locations_lower = [], [], [], []
+        labels = ["PERSON", "GPE"]
+    names, locations = [], []
     found_entities = {label: [] for label in labels}
     if chatgpt:
         text, _ = message_to_text(messages)
         names, locations = name_location_chatgpt(text)
-        names_lower, locations_lower = (
-            [name.lower() for name in names],
-            [location.lower() for location in locations],
-        )
-        found_entities[label[0]], found_entities[label[1]] = names, locations
+        result = []
+        for item in locations:
+            if item not in names:
+                result.append(item)
+        locations = result
+        found_entities[labels[0]], found_entities[labels[1]] = names, locations
     analyzer = SentimentIntensityAnalyzer()
     for message in messages:
-        distance = 0
-        message["Display_Message"] = message["Message"]
-        message["risk"] = 0
-        message["entities"] = []
-        risk_total = 0
-        message["doc"] = nlp(message["Message"])
+        distance, risk_total, tag_list = 0, 0, []
+        message["Display_Message"], message["risk"], message["entities"], message["doc"] = message["Message"], 0, [], nlp(message["Message"])
         sentiment = analyzer.polarity_scores(message["Message"])["compound"]
-        tag_list = []
+
+        for label in labels:
+            message[label] = 0
+
         if chatgpt:
-            for label in labels:
-                message[label] = 0
-            for entity in message["doc"].ents:
-                labeled, offset, label = "", 0, ""
-                if entity.text.lower() in names_lower:
-                    labeled, offset = label_entity(labels[0], entity.text)
-                    label = labels[0]
-                elif entity.text.lower() in locations_lower:
-                    labeled, offset = label_entity(labels[1], entity.text)
-                    label = labels[1]
-                else:
-                    continue
-                message["entities"].append(entity.text)
-                message["Display_Message"] = (
-                    message["Display_Message"][: entity.start_char + distance]
-                    + labeled
-                    + message["Display_Message"][entity.end_char + distance:]
-                )
-                distance += offset
+            chatgpt_find(message, labels[0], names)
+            chatgpt_find(message, labels[1], locations)
         else:
-            for label in labels:
-                message[label] = 0
             for entity in message["doc"].ents:
                 if entity.label_ in labels:
                     labeled, offset = label_entity(entity.label_, entity.text)
@@ -161,18 +142,23 @@ def tag_text(
                     message["risk"] += 1
 
                 labeled, offset = label_keyword(token_text, keyword.keyword)
-
                 match = word_regex.search(message["Display_Message"], ptr)
                 if match:
-                    start = match.start()
-                    ptr = match.end() + offset
-                    message["Display_Message"] = (
-                        message["Display_Message"][:start]
-                        + labeled
-                        + message["Display_Message"][start + len(token_text):]
-                    )
-                    tag_list.append((keyword.keyword, risk, topics))
-                    message["entities"].append(keyword.keyword)
+                    if message["Display_Message"][match.start()-7:match.start()-1] == "PERSON" or message["Display_Message"][match.start()-4:match.start()-1] == "GPE":
+                        ptr = match.end() + offset
+                        message["Display_Message"] = message["Display_Message"][:match.end()] + " risk " + message["Display_Message"][match.end():]
+                        tag_list.append((keyword.keyword, risk, topics))
+                        message["entities"].append(keyword.keyword)
+                    else:
+                        start = match.start()
+                        ptr = match.end() + offset
+                        message["Display_Message"] = (
+                            message["Display_Message"][:start]
+                            + labeled
+                            + message["Display_Message"][start + len(token_text):]
+                        )
+                        tag_list.append((keyword.keyword, risk, topics))
+                        message["entities"].append(keyword.keyword)
         if risk_total > max_risk:
             message["risk"] += 1
         if risk_total / len(message["Message"].split()) > average_risk:
@@ -180,6 +166,7 @@ def tag_text(
         if message["risk"] > RISK_LEVELS:
             message["risk"] = RISK_LEVELS
         message["tags"] = tag_list
+
     return messages, found_entities
 
 
@@ -386,14 +373,34 @@ def name_location_chatgpt(text):
     )
     reply = response.choices[0].message.content
     rows = reply.split("\n")
-    names, locations = (
-        rows[0].split(":")[1].split(","),
-        rows[1].split(":")[1].split(","),
-    )
-    names = [name.strip() for name in names]
-    locations = [location.strip() for location in locations]
-    if len(names) == 1 and names[0] == "":
+    try:
+        names, locations = (
+            rows[0].split(":")[1].split(","),
+            rows[1].split(":")[1].split(","),
+        )
+        names = [name.strip() for name in names]
+        locations = [location.strip() for location in locations]
+        if len(names) == 1 and names[0] == "":
+            names = []
+        if len(locations) == 1 and locations[0] == "":
+            locations = []
+    except IndexError:
         names = []
-    if len(locations) == 1 and locations[0] == "":
         locations = []
     return names, locations
+
+
+def chatgpt_find(message, chat_type, chat_list):
+    """
+    Arguments:
+    message (dict): Contains the data, and extra data about the message
+
+    Description:
+    Replaces the display text to inluded the HTML tags
+    """
+    for item in chat_list:
+        label, offset = label_entity(chat_type, item)
+        if item in message["Display_Message"]:
+            message["entities"].append(item)
+            message["Display_Message"] = message["Display_Message"].replace(item, label)
+            message[chat_type] += 1
