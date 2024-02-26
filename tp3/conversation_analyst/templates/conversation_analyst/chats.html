@@ -3,7 +3,7 @@
         <ul class="list-group">
             {% for chat in chats %}
                 {% if chat.slug == convo.slug %}
-                    <li class="list-group-item" style=" background-color: var(--gray-500);">{{chat.slug}}</li>
+                    <li class="list-group-item" style=" background-color: var(--gray-300);">{{chat.slug}}</li>
                 {% else %}
                     <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" >{{chat.slug}}</a></li>
                 {% endif %}

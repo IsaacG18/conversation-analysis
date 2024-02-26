@@ -32,30 +32,16 @@ $(document).ready(function () {
 })
 
 function formatMediaString(content) {
-    var formattedString = `
-        <div class="media">
-            <img src="/static/pictures/user.png" class="mr-3 rounded-circle" alt="User Image" style="width: 60px; height: 60px;">
-            <div class="media-body">
-                <h5 class="mt-0">User</h5>
-                ${content}
-            </div>
-        </div>
-        <hr>
-    `;
-
-    return formattedString;
-}
-//function formatMediaString(content) {
-    //     var formattedString = `
-    //         <div class="media outgoing">
-    //                         <div class="media-content">
-    //                         <div class="media-details">
-    //                             <img src="{% static 'pictures/user.png' %}" class="mr-3 rounded-circle" alt="User Image">
-    //                             <p>{{message.content}}</p>
-    //                         </div>
-    //                         </div>
-    //                     </div>
-    //     `;
+        var formattedString = `
+            <div class="media outgoing">
+                            <div class="media-content">
+                            <div class="media-details">
+                                <img src="/static/pictures/user.png" class="mr-3 rounded-circle" alt="User Image">
+                                <p>${content}</p>
+                            </div>
+                            </div>
+                        </div>
+        `;
     
-    //     return formattedString;
-    // }
+        return formattedString;
+    }
