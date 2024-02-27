@@ -11,8 +11,10 @@
 <script type="text/javascript" src="{% static 'js/highlight.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/chatgptcreate.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/quickchat.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/button-content-review.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/highlight.css' %}">
 <link rel="stylesheet" href="{% static 'css/messages.css' %}">
+<link rel="stylesheet" href="{% static 'css/content_review.css' %}">
 
 <div class="container-fluid">
   <div class="row">
@@ -39,8 +41,7 @@
             <div class="accordion-body">
               <label for="message_content">ChatGPT Quick Ask:</label>
               <button class="btn btn-primary chatgpt_quick_message" type="button">Summarise</button>
-              <div id="ChatGPT-results">
-              </div>
+              <div id="ChatGPT-results"></div>
             </div>
           </div>
         </div>
@@ -81,9 +82,9 @@
           </h2>
           <div id="risk-levels-collapse" class="accordion-collapse collapse show">
             <div class="accordion-body">
-              <button value="0" class="btn btn-outline-success risk">low risk</button>
-              <button value="1" class="btn btn-outline-success risk">medium risk</button>
-              <button value="2" class="btn btn-outline-success risk">high risk</button>
+              <button value="0" class="risk risk-button low">low risk</button>
+              <button value="1" class="risk risk-button medium">medium risk</button>
+              <button value="2" class="risk risk-button high">high risk</button>
             </div>
           </div>
         </div>
@@ -99,7 +100,7 @@
           <div id="person-collapse" class="accordion-collapse collapse show">
             <div class="accordion-body">
               {% for person in persons %}
-              <button class="btn btn-outline-primary filter person-button m-1">{{ person }}</button>
+              <button class="filter person-button m-1">{{ person }}</button>
               {% endfor %}
             </div>
           </div>
@@ -211,5 +212,4 @@
     </div>
   </div>
 </div>
-
 {% endblock %}

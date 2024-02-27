@@ -1,0 +1,36 @@
+.person-button, .risk-button{
+    color: black;
+    font-size: 16px;
+    padding: 0.5em 1em;
+    border-radius: 1em;
+    border: none;
+    outline: none;
+    background: #eae9e9;
+    cursor: pointer;
+}
+
+.risk-button-low--selected{
+    color: #FFFFFF;
+    background: green;
+}
+
+.risk-button-medium--selected{
+    background: #ffc108;
+}
+
+.risk-button-high--selected{
+    color: #FFFFFF;
+    background: #dc3546;
+}
+
+.person-button:not(.person-button--selected):hover,
+.risk-button:not(.risk-button-low--selected, .risk-button-medium--selected, .risk-button-high--selected):hover{
+    background: #d9d9d9;
+}
+
+.person-button--selected{
+    color: #FFFFFF;
+    background: rgb(126, 126, 126);
+}
+
+
