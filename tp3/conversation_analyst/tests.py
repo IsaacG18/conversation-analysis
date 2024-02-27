@@ -87,6 +87,22 @@ class DelimiterTestCase(TestCase):
         comma = Delimiter.objects.get(name="Comma")
         self.assertEqual(str(comma), "Comma")
 
+    def test_delimiter_large_order(self):
+        """Test handling of large order values."""
+        large_order_value = 2**31
+        delimiter = Delimiter.objects.create(
+            name="Pipe", value="|", order=large_order_value, is_default=False
+        )
+        self.assertEqual(delimiter.order, large_order_value)
+
+    def test_delimiter_str_special_characters(self):
+        """Test the __str__ method with special characters."""
+        name_with_special_chars = "Newline\nCarriage Return\r"
+        delimiter = Delimiter.objects.create(
+            name=name_with_special_chars, value="\n", order=5, is_default=False
+        )
+        self.assertEqual(str(delimiter), name_with_special_chars)
+
 
 class SearchFeatureTests(TestCase):
     def setUp(self):
@@ -108,6 +124,36 @@ class SearchFeatureTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Sample Search File")
         self.assertNotContains(response, "Sample File 1")
+
+    def test_search_with_special_characters(self):
+        response = self.client.get(reverse("homepage"), {"query": "Sample & File"})
+        self.assertEqual(response.status_code, 200)
+
+    def test_search_case_insensitivity(self):
+        response = self.client.get(reverse("homepage"), {"query": "sample search file"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Sample Search File")
+
+    def test_empty_query(self):
+        response = self.client.get(reverse("homepage"), {"query": ""})
+        self.assertEqual(response.status_code, 200)
+
+    def test_very_long_query(self):
+        long_query = "a" * 1000
+        response = self.client.get(reverse("homepage"), {"query": long_query})
+        self.assertEqual(response.status_code, 200)
+
+    def test_non_existing_query(self):
+        response = self.client.get(reverse("homepage"), {"query": "NonExisting"})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Sample File 1")
+        self.assertNotContains(response, "Sample Search File")
+
+    def test_sql_injection_protection(self):
+        response = self.client.get(
+            reverse("homepage"), {"query": "'; DROP TABLE files; --"}
+        )
+        self.assertEqual(response.status_code, 200)
 
 
 class ObjectCreatorTests(TestCase):
@@ -187,12 +233,30 @@ class ObjectCreatorTests(TestCase):
         self.assertEqual(convo_filter.filter.content, "spam")
 
     def test_add_custom_threshold(self):
-        ct = add_custom_threshold(average_risk=0.8, sentiment_multiplier=2, max_risk=40, word_risk=7)
+        ct = add_custom_threshold(
+            average_risk=0.8, sentiment_multiplier=2, max_risk=40, word_risk=7
+        )
         self.assertEqual(CustomThresholds.objects.count(), 1)
         self.assertEqual(ct.average_risk, 0.8)
         self.assertEqual(ct.sentiment_multiplier, 2)
         self.assertEqual(ct.max_risk, 40)
         self.assertEqual(ct.word_risk, 7)
+
+    # def test_update_non_existing_message(self):
+    #     with self.assertRaises(Message.DoesNotExist):
+    #         update_message(999, "Non-existing message", ["entity3", "entity4"], risk_rating=5)
+
+    # def test_add_person_with_long_name(self):
+    #     long_name = "John" * 50
+    #     person = add_person(self.analysis, long_name)
+    #     self.assertTrue(len(person.name) <= 50)
+
+    # def test_add_large_number_of_messages(self):
+    #     initial_count = Message.objects.count()
+    #     for _ in range(10000):
+    #         add_message(self.file, timezone.now(), "Mass Sender", "Mass message")
+    #     expected_count = initial_count + 10000
+    #     self.assertEqual(Message.objects.count(), expected_count)
 
 
 class RenameTests(TestCase):
@@ -397,7 +461,9 @@ class TestNLP(TestCase):
         self.assertEqual(0, len(locations))
 
     def test_name_location_chatgpt(self):
-        names, locations = name_location_chatgpt("Hello, I am Isaac, and I am from Dundee")
+        names, locations = name_location_chatgpt(
+            "Hello, I am Isaac, and I am from Dundee"
+        )
         self.assertEqual(1, len(names))
         self.assertEqual(1, len(locations))
         self.assertEqual("Isaac", names[0])
@@ -448,28 +514,6 @@ class ChatGPTFeatureTestCase(TestCase):
         self.assertEqual(messages.count(), 2)
         self.assertEqual(messages[0].content, "This is a test question?")
         self.assertEqual(messages[1].typeOfMessage, "Response")
-
-
-# class ChatGPTFilteringTestCase(TestCase):
-#     def setUp(self):
-#         test_file = File.objects.create(file='path/to/file', title='Test File', format='txt', slug='test-file-'
-#             + timezone.now().strftime("%Y%m%d%H%M%S"))
-#         date_today = timezone.now()
-#         ChatGPTConvo.objects.create(title="Conversation Today", file=test_file, date=date_today)
-#         ChatGPTConvo.objects.create(title="Conversation Yesterday", file=test_file, date=date_today - timedelta(days=1))
-#         ChatGPTConvo.objects.create(title="Conversation Last Week", file=test_file, date=date_today - timedelta(weeks=1))
-
-#     def test_filter_conversations_by_date_range(self):
-#         """Test filtering conversations within a specific date range."""
-#         date_today = timezone.now()
-#         start_date = date_today - timedelta(days=2)
-#         end_date = date_today
-#         conversations = ChatGPTConvo.objects.filter(date__range=(start_date, end_date))
-
-#         # Verify that only conversations within the last 2 days are returned
-#         self.assertEqual(conversations.count(), 2)
-#         self.assertTrue(any(convo.title == "Conversation Today" for convo in conversations))
-#         self.assertTrue(any(convo.title == "Conversation Yesterday" for convo in conversations))
 
 
 class SettingTestCase(TestCase):
@@ -534,6 +578,27 @@ class InputValidationTestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_upload_very_large_file(self):
+        large_file_content = b"a" * (20 * 1024 * 1024)
+        uploaded_file = SimpleUploadedFile(
+            "large_test.txt", large_file_content, content_type="text/plain"
+        )
+        response = self.client.post(
+            reverse("upload"),
+            {"file": uploaded_file, "selected_timestamp": "some_valid_timestamp"},
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_upload_unsupported_format(self):
+        uploaded_file = SimpleUploadedFile(
+            "test.unsupported", b"unsupported content", content_type="text/unsupported"
+        )
+        response = self.client.post(
+            reverse("upload"),
+            {"file": uploaded_file, "selected_timestamp": "some_valid_timestamp"},
+        )
+        self.assertEqual(response.status_code, 200)
+
 
 class ChatGPTConvoFilterTestCase(TestCase):
     def setUp(self):
@@ -589,6 +654,54 @@ class PlotterTests(TestCase):
         expected_full_path = os.path.join(expected_directory, "test_plot_plot123.png")
         mock_write_image.assert_called_with(expected_full_path)
         mock_makedirs.assert_called_once_with(expected_directory)
+
+    @patch("os.makedirs")
+    @patch("os.path.exists", return_value=False)
+    @patch("os.getcwd", return_value="/fake/directory")
+    @patch("plotly.graph_objects.Figure.write_image")
+    def test_plots_large_number_of_messages(
+        self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs
+    ):
+        chat_messages = [
+            {
+                "Sender": f"User{i % 3}",
+                "Timestamp": f"2024-02-10T08:{i:02d}:00",
+                "Message": f"Message {i}",
+                "risk": 5,
+                "PERSON": i % 4,
+                "GPE": 5,
+            }
+            for i in range(60)
+        ]
+        name = "test_large_plot.png"
+        analysis_id = "789"
+
+        plot_path = plots(chat_messages, name, analysis_id)
+        self.assertEqual(plot_path, "vis_uploads/test_large_plot_plot789.png")
+        mock_write_image.assert_called_once()
+        expected_directory = "/fake/directory/media/vis_uploads"
+        expected_full_path = os.path.join(
+            expected_directory, "test_large_plot_plot789.png"
+        )
+        mock_write_image.assert_called_with(expected_full_path)
+        mock_makedirs.assert_called_once_with(expected_directory)
+
+    @patch("os.makedirs")
+    @patch("os.path.exists", return_value=False)
+    @patch("os.getcwd", return_value="/fake/directory")
+    @patch("plotly.graph_objects.Figure.write_image")
+    def test_plots_invalid_data(
+        self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs
+    ):
+        chat_messages = [{"Sender": "Alice"}]
+        try:
+            plot_path = plots(chat_messages, "test_invalid_data_plot.png", "112")
+            self.assertIsNone(plot_path, "Plot path should be None for invalid data")
+        except KeyError as e:
+            self.assertIn(
+                "Timestamp", str(e), "Timestamp key is missing in the input data"
+            )
+        mock_write_image.assert_not_called()
 
 
 class Threshold:

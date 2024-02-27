@@ -3,21 +3,15 @@ $(document).ready(function () {
     $(".filter").mouseenter(function () {
         var buttonValue = "." + classify($(this).text());
         if ($(this).hasClass("person-button")) {
-            var personElements = document.querySelectorAll('.PERSON');
+            var personElements = document.querySelectorAll(buttonValue);
             personElements.forEach(function (personElement) {
-                var nestedDiv = personElement.querySelector(buttonValue);
-                if (nestedDiv) {
-                    nestedDiv.classList.add("green-text");
-                }
+                personElement.setAttribute("id","red-text");
             });
         } else if ($(this).hasClass("location-button")) {
-            var locationElements = document.querySelectorAll('.GPE');
+            var locationElements = document.querySelectorAll(buttonValue);
             locationElements.forEach(function (locationElement) {             
-                var nestedDiv = locationElement.querySelector(buttonValue);
                 convertLocationsToLinks();
-                if (nestedDiv) {
-                    nestedDiv.classList.add("yellow-background");
-                }
+                locationElement.setAttribute("id","yellow-background");
             });
         } else if ($(this).hasClass("risk-button")) {
             buttonValue = buttonValue.split("(")[0];
@@ -26,24 +20,17 @@ $(document).ready(function () {
             $(`.risk${buttonValue}`).addClass("bold");
         }
     }).mouseleave(function () {
-        // Handle mouseleave event here
         var buttonValue = "." + classify($(this).text());
         if ($(this).hasClass("person-button")) {
-            var personElements = document.querySelectorAll('.PERSON');
+            var personElements = document.querySelectorAll(buttonValue);
             personElements.forEach(function (personElement) {
-                var nestedDiv = personElement.querySelector(buttonValue);
-                if (nestedDiv) {
-                    nestedDiv.classList.remove("green-text");
-                }
+                personElement.removeAttribute("id","red-text");
             });
         } else if ($(this).hasClass("location-button")) {
-            var locationElements = document.querySelectorAll('.GPE');
-            locationElements.forEach(function (locationElement) {
-                var nestedDiv = locationElement.querySelector(buttonValue);
+            var locationElements = document.querySelectorAll(buttonValue);
+            locationElements.forEach(function (locationElement) {             
                 convertLocationsToLinks();
-                if (nestedDiv) {
-                    nestedDiv.classList.remove("yellow-background");
-                }
+                locationElement.removeAttribute("id","yellow-background");
             });
         } else if ($(this).hasClass("risk-button")) {
             buttonValue = buttonValue.split("(")[0];
@@ -74,13 +61,13 @@ style = ""
 
 var styles = `
   <style>
-    .green-text {
-        color: green;
+    #red-text {
+        color: red;
     }
     .bold {
         font-weight: bold;
     }
-    .yellow-background{
+    #yellow-background{
         background-color: yellow;
     }
   </style>
