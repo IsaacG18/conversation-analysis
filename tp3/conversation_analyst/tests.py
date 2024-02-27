@@ -26,7 +26,8 @@ from .scripts.nlp.nlp import (
     get_date_messages,
     get_keyword_lamma,
     tag_text,
-    name_location_chatgpt
+    name_location_chatgpt,
+    update_display
 )
 from django.utils import timezone
 from .scripts.object_creators import (
@@ -401,6 +402,24 @@ class TestNLP(TestCase):
         self.assertEqual(1, len(locations))
         self.assertEqual("Isaac", names[0])
         self.assertEqual("Dundee", locations[0])
+
+    def test_update_message_normal(self):
+        message = {}
+        message["Display_Message"] = "Hello!"
+        update_display(5, 5, message, "World")
+        self.assertEqual("HelloWorld!", message["Display_Message"])
+
+    def test_update_message_extreme_one(self):
+        message = {}
+        message["Display_Message"] = "Hello i am ,how are you"
+        update_display(11, 10, message, "David")
+        self.assertEqual("Hello i am David ,how are you", message["Display_Message"])
+
+    def test_update_message_extreme_two(self):
+        message = {}
+        message["Display_Message"] = ""
+        update_display(0, 0, message, "")
+        self.assertEqual(message["Display_Message"], "")
 
 
 class ChatGPTFeatureTestCase(TestCase):
