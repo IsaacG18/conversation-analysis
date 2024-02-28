@@ -13,7 +13,6 @@ import json
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
 from openai import OpenAI
-from django.utils.http import urlencode
 import openai
 import os
 
@@ -33,11 +32,16 @@ from .models import (
     Delimiter,
     ChatGPTConvo,
     ChatGPTMessage,
-    CustomThresholds
+    CustomThresholds,
+    GptSwitch,
 )
 
 
 def homepage(request, query=None):
+    # Define the homepage view function.
+    # Displays a list of files ordered by date.
+    # Handles search queries if provided, filtering files by title.
+
     files = File.objects.order_by("-date")
     try:
         query = request.GET["query"]
@@ -51,6 +55,11 @@ def homepage(request, query=None):
 
 
 def upload(request):
+    # Define the upload view function.
+    # Handles file upload via form submission.
+    # Parses the uploaded file, saves it, and redirects to suite selection.
+    # Handles errors during file processing and displays appropriate messages.
+
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -95,6 +104,11 @@ def upload(request):
 
 
 def content_review(request, file_slug):
+    # Define the content review view function.
+    # Displays detailed analysis of messages within a file.
+    # Retrieves messages, analysis, persons, locations, risk words, and chat conversations associated with the file.
+    # Generates Google Maps URLs for locations.
+
     try:
         file = File.objects.get(slug=file_slug)
         messages = Message.objects.filter(file=file)
@@ -108,13 +122,11 @@ def content_review(request, file_slug):
         chats = ChatGPTConvo.objects.filter(file=file)
 
         # Create Google Maps URLs for each location
-        base_url = ""
+        base_url = "https://www.google.com/maps/search/?api=1&query=$"
         locations_with_urls = []
         for location in locations:
-            parameters = urlencode({"query": location.name})
-            full_url = f"{base_url}{parameters}"
+            full_url = f"{base_url}{location.name}"
             locations_with_urls.append({"name": location.name, "url": full_url})
-
         context_dict = {
             "messages": messages,
             "persons": persons,
@@ -137,6 +149,11 @@ def content_review(request, file_slug):
 
 
 def filter_view(request):
+    # Define the filter view function.
+    # Handles AJAX requests for filtering messages.
+    # Filters messages based on provided parameters such as date range, keywords, and risk ratings.
+    # Returns JSON response with filtered message data.
+
     filters = request.GET.get("filters", "[]")
     filters = json.loads(filters)
     file_slug = request.GET["file_slug"]
@@ -195,18 +212,89 @@ def filter_view(request):
 
 
 def settings_page(request):
-    keyword_suites = KeywordSuite.objects.all()
-    if len(keyword_suites) == 0:
+    # Define the settings page view function.
+    # Retrieves keyword suites and associated risk words.
+    # Renders the settings page with keyword suites and risk words.
+    tab = request.GET.get("tab", "default")
+    if tab == "threshold":
         context_dict = {}
+        obj, created = CustomThresholds.objects.get_or_create(id=1)
+        if created:
+            context_dict["strictness_default"] = 2
+            context_dict["sentiment_default"] = 2
+        else:
+            context_dict["strictness_default"] = obj.strictness_level
+            context_dict["sentiment_default"] = obj.sentiment_level
+        return render(
+            request, "conversation_analyst/strictness.html", context=context_dict
+        )
     else:
-        suite = keyword_suites[0]
-        risk_words = RiskWord.objects.filter(suite=suite)
-        context_dict = {"keyword_suites": keyword_suites, "risk_words": risk_words}
+        keyword_suites = KeywordSuite.objects.all()
+        if len(keyword_suites) == 0:
+            context_dict = {}
+        else:
+            suite = keyword_suites[0]
+            risk_words = RiskWord.objects.filter(suite=suite)
+            context_dict = {"keyword_suites": keyword_suites, "risk_words": risk_words}
+        if tab == "default":
+            return render(
+                request, "conversation_analyst/settings.html", context=context_dict
+            )
+        else:
+            return render(
+                request, "conversation_analyst/setting_tab.html", context=context_dict
+            )
 
-    return render(request, "conversation_analyst/settings.html", context=context_dict)
+
+def strictness_update(request):
+    if request.method == "POST":
+        attr = request.POST["attr"]
+        level = int(request.POST["level"])
+        obj = CustomThresholds.objects.get_or_create(id=1)[0]
+        if attr == "strictness":
+            obj.strictness_level = level
+            match level:
+                case 0:
+                    obj.word_risk = 10
+                    obj.max_risk = float("inf")
+                    obj.average_risk = float("inf")
+                case 1:
+                    obj.word_risk = 8
+                    obj.max_risk = 50
+                    obj.average_risk = 1
+                case 2:
+                    obj.word_risk = 7
+                    obj.max_risk = 40
+                    obj.average_risk = 0.8
+                case 3:
+                    obj.word_risk = 6
+                    obj.max_risk = 30
+                    obj.average_risk = 0.8
+                case _:
+                    print("Invalid strictness level")
+        else:
+            obj.sentiment_level_level = level
+            match level:
+                case 0:
+                    obj.sentiment_multiplier = 0
+                case 1:
+                    obj.sentiment_multiplier = 0.2
+                case 2:
+                    obj.sentiment_multiplier = 0.5
+                case 3:
+                    obj.sentiment_multiplier = 0.8
+                case _:
+                    print("Invalid sentiment level")
+        obj.save()
+        return HttpResponse(f"attribute {attr} has been updated to level {level}")
 
 
 def create_suite(request):
+    # Define the create suite view function.
+    # Handles POST request to create a new keyword suite.
+    # Validates uniqueness of suite name and adds it to the database.
+    # Returns JSON response indicating success or failure.
+
     if request.method == "POST":
         try:
             suite_name = request.POST["name"]
@@ -222,6 +310,11 @@ def create_suite(request):
 
 
 def delete_suite(request):
+    # Define the delete suite view function.
+    # Handles GET request to delete a keyword suite.
+    # Deletes associated risk words and the suite itself.
+    # Returns HTTP response indicating success.
+
     if request.method == "GET":
         suite_id = request.GET["suiteId"]
         suite_obj = KeywordSuite.objects.get(id=suite_id)
@@ -231,6 +324,10 @@ def delete_suite(request):
 
 
 def select_suite(request):
+    # Define the select suite view function.
+    # Handles GET request to retrieve keywords associated with a keyword suite.
+    # Serializes keyword objects and returns JSON response.
+
     if request.method == "GET":
         suite_name = request.GET["suite"].strip()
         suite = KeywordSuite.objects.get(name=suite_name)
@@ -241,6 +338,11 @@ def select_suite(request):
 
 
 def create_keyword(request):
+    # Define the create keyword view function.
+    # Handles POST request to create a new keyword within a suite.
+    # Creates a new RiskWord object and associates it with the specified suite.
+    # Returns JSON response indicating success.
+
     if request.method == "POST":
         keyword = request.POST["keyword"]
         suite_name = request.POST["suite"].strip()
@@ -256,6 +358,11 @@ def create_keyword(request):
 
 
 def delete_keyword(request):
+    # Define the delete keyword view function.
+    # Handles GET request to delete a keyword.
+    # Deletes the specified keyword object.
+    # Returns HTTP response indicating success.
+
     if request.method == "GET":
         keyword_id = request.GET["keywordId"]
         RiskWord.objects.get(id=keyword_id).delete()
@@ -263,6 +370,11 @@ def delete_keyword(request):
 
 
 def check_suite(request):
+    # Define the check suite view function.
+    # Handles POST request to check/uncheck a keyword suite for a specific plan.
+    # Modifies keyword suite's plan association based on checkbox status.
+    # Returns HTTP response with status and message.
+
     if request.method == "POST":
         response = ""
         suite_id = request.POST["suiteId"]
@@ -287,6 +399,11 @@ def check_suite(request):
 
 
 def risk_update(request):
+    # Define the check suite view function.
+    # Handles POST request to check/uncheck a keyword suite for a specific plan.
+    # Modifies keyword suite's plan association based on checkbox status.
+    # Returns HTTP response with status and message.
+
     if request.method == "POST":
         keywordId = request.POST["keyword"]
         risk = int(request.POST["risk"])
@@ -299,7 +416,32 @@ def risk_update(request):
         )
 
 
+def gpt_switch(request):
+    # Define the gpt switch view function.
+    # Handle POST request to toggle GPT switch.
+    # Modifies the boolean field for GPT switch
+    # Returns HttpResponse indicating success or failure of the switch toggle.
+    if request.method == "POST":
+        try:
+            isChecked = json.loads(request.POST["value"])
+            switch, created = GptSwitch.objects.get_or_create(id=1)
+            switch.on = isChecked
+            switch.save()
+            if created:
+                return HttpResponse(f"gpt switched created, on: {isChecked}")
+            else:
+                return HttpResponse(f"switch on: {isChecked}")
+
+        except KeyError as e:
+            return HttpResponse(f"{e}")
+
+
 def rename_file(request):
+    # Define the rename file view function.
+    # Handles POST request to rename a file.
+    # Modifies the title of the specified file.
+    # Returns JSON response indicating success or failure.
+
     if request.method == "POST":
         try:
             newTitle = request.POST["fileName"]
@@ -323,7 +465,29 @@ def rename_file(request):
             return JsonResponse({"message": f"with error: {e}"})
 
 
+def delete_file(request):
+    # Define the delete file view function.
+    # Handles POST request to delete a file.
+    # Remove the file object from database.
+    # Returns HTTPresponse indicating success or failure.
+
+    if request.method == "POST":
+        try:
+            fileId = request.POST["fileId"]
+            file_obj = File.objects.get(id=fileId)
+            file_obj.delete()
+            return HttpResponse(f"file {fileId} has been successfully deleted")
+
+        except File.DoesNotExist:
+            return HttpResponse(f"file with id {fileId} doesn't exist")
+
+
 def export_view(request, file_slug):
+    # Define the export view function.
+    # Handles GET request to export file data in XML format.
+    # Retrieves file data and serializes it into XML format.
+    # Returns HTTP response with XML data for download.
+
     file = File.objects.get(slug=file_slug)
     messages = Message.objects.filter(file=file)
     analysis = Analysis.objects.get(file=file)
@@ -367,6 +531,11 @@ def export_view(request, file_slug):
 
 
 def quick_chat_message(request):
+    # Define the quick chat message view function.
+    # Handles GET request to generate quick chat response.
+    # Uses OpenAI GPT-3.5 to generate responses based on provided message.
+    # Returns JSON response with generated chat response.
+
     file_slug = request.GET["file_slug"]
     try:
         file = File.objects.get(slug=file_slug)
@@ -376,11 +545,13 @@ def quick_chat_message(request):
             system_message += (
                 f"{message.timestamp}: {message.sender}:  {message.content} \n"
             )
-        print(system_message)
         client = OpenAI(
             api_key=os.environ.get("CHATGPT_API_KEY"),
         )
-        conversation_history = [{"role": "system", "content": system_message}, {"role": "user", "content": "please sumerise the messages"}]
+        conversation_history = [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": "please sumerise the messages"},
+        ]
 
         response = client.chat.completions.create(
             model="gpt-3.5-turbo", messages=[*conversation_history]
@@ -435,6 +606,11 @@ def quick_chat_message(request):
 
 
 def chatgpt_new_message(request):
+    # Define the chatgpt new message view function.
+    # Handles GET request to create a new chat conversation.
+    # Creates a new chat conversation associated with the specified file.
+    # Returns JSON response with URL to the created conversation.
+
     file_slug = request.GET["file_slug"]
     start_date = request.GET.get("startDate")
     end_date = request.GET.get("endDate")
@@ -473,6 +649,11 @@ def chatgpt_new_message(request):
 
 
 def chatgpt_page(request, chatgpt_slug):
+    # Define the chatgpt page view function.
+    # Handles GET request to display chat conversation page.
+    # Retrieves messages, persons, locations, and risks associated with the conversation.
+    # Renders the chat conversation page with associated data.
+
     chats = ChatGPTConvo.objects.order_by("-date")
     convo = ChatGPTConvo.objects.get(slug=chatgpt_slug)
     analysis = Analysis.objects.get(file=convo.file)
@@ -506,11 +687,20 @@ def chatgpt_page(request, chatgpt_slug):
 
 
 def chatgpt_page_without_slug(request):
+    # Define the chatgpt page without slug view function.
+    # Handles GET request to display chat conversation page without a specific conversation.
+    # Retrieves and renders all available chat conversations.
+
     chats = ChatGPTConvo.objects.order_by("-date")
     return render(request, "conversation_analyst/chatgpt.html", {"chats": chats})
 
 
 def message(request):
+    # Define the message view function.
+    # Handles GET request to process user input in chat conversation.
+    # Uses OpenAI GPT-3.5 to generate responses based on conversation history and user input.
+    # Returns JSON response with updated conversation messages.
+
     chatgpt_slug = request.GET["chatgpt_slug"]
     convo = ChatGPTConvo.objects.get(slug=chatgpt_slug)
     messages = ChatGPTMessage.objects.filter(convo=convo)
@@ -601,15 +791,12 @@ def message(request):
         )
 
 
-def search_map(request):
-    base_url = "https://www.google.com/maps/search/?api=1&query="
-    location = request.GET.get("location", "")
-    parameters = location.replace(" ", "+")
-    full_url = f"{base_url}{parameters}"
-    return HttpResponseRedirect(full_url)
-
-
 def settings_delim(request):
+    # Define the settings delim view function.
+    # Handles GET request to display settings for delimiters.
+    # Retrieves all delimiters from the database.
+    # Renders the settings page with delimiter options.
+
     delims = Delimiter.objects.all()
 
     context_dict = {"delimiters": delims}
@@ -619,6 +806,9 @@ def settings_delim(request):
 
 
 def initialise_delim(delim_name, delim_value, order_value, default=False):
+    # Define the initialise delim view function.
+    # It creates the delimitors in the database
+    # returns a delimiter object.
     new_obj = Delimiter.objects.create(
         name=delim_name, value=delim_value, order=order_value, is_default=default
     )
@@ -627,6 +817,11 @@ def initialise_delim(delim_name, delim_value, order_value, default=False):
 
 
 def create_delimiter(request):
+    # Define the create delimiter view function.
+    # Handles POST request to create a new delimiter.
+    # Creates a new delimiter object and adds it to the database.
+    # Returns JSON response indicating success or failure.
+
     if request.method == "POST":
         try:
             delim_name = request.POST["name"]
@@ -642,6 +837,11 @@ def create_delimiter(request):
 
 
 def delete_delimiter(request):
+    # Define the delete delimiter view function.
+    # Handles GET request to delete a delimiter.
+    # Deletes the specified delimiter object.
+    # Returns HTTP response indicating success.
+
     if request.method == "GET":
         delim_id = request.GET["delimId"]
         Delimiter.objects.get(id=delim_id).delete()
@@ -649,6 +849,11 @@ def delete_delimiter(request):
 
 
 def order_update(request):
+    # Define the order update view function.
+    # Handles POST request to update the order of a delimiter.
+    # Modifies the order value of the specified delimiter.
+    # Returns HTTP response indicating success.
+
     if request.method == "POST":
         delimId = request.POST["delim"]
         order = int(request.POST["order"])
@@ -662,6 +867,11 @@ def order_update(request):
 
 
 def value_update(request):
+    # Define the value update view function.
+    # Handles POST request to update the value of a delimiter.
+    # Modifies the value of the specified delimiter.
+    # Returns HTTP response indicating success.
+
     if request.method == "POST":
         delimId = request.POST["delim"]
         value = request.POST["value"]
@@ -675,8 +885,14 @@ def value_update(request):
 
 
 def suite_selection(request, file_slug):
+    # Define the suite selection view function.
+    # Handles GET request to select a keyword suite for analysis.
+    # Retrieves available keyword suites.
+    # Renders the suite selection page with options to choose a suite.
+
     if request.method == "GET":
         keyword_suites = KeywordSuite.objects.all()
+        gpt_switch = GptSwitch.objects.get(id=1)
         if len(keyword_suites) == 0:
             context_dict = {}
         else:
@@ -685,6 +901,7 @@ def suite_selection(request, file_slug):
             context_dict = {"keyword_suites": keyword_suites, "risk_words": risk_words}
 
         context_dict["file_slug"] = file_slug
+        context_dict["gpt_switch"] = gpt_switch.on
         return render(
             request, "conversation_analyst/suite_selection.html", context=context_dict
         )
@@ -698,7 +915,8 @@ def suite_selection(request, file_slug):
             file_obj = File.objects.get(slug=file_slug)
             messages = Message.objects.filter(file=file_obj)
             threshold = CustomThresholds.objects.all()[0]
-            process_file(file_obj, keywords, messages, threshold)
+            gpt_switch = GptSwitch.objects.get(id=1).on
+            process_file(file_obj, keywords, messages, threshold, gpt_switch)
             return HttpResponseRedirect(
                 reverse("content_review", kwargs={"file_slug": file_obj.slug})
             )
@@ -709,6 +927,11 @@ def suite_selection(request, file_slug):
 
 
 def clear_duplicate_submission(request):
+    # Define the clear duplicate submission view function.
+    # Handles GET request to clear duplicate file submissions.
+    # Deletes the specified file if no associated analysis exists.
+    # Returns HTTP response indicating success.
+
     if request.method == "GET":
         try:
             file_slug = request.GET["file_slug"]
@@ -724,6 +947,11 @@ def clear_duplicate_submission(request):
 
 
 def search_chats(request):
+    # Define the search chats view function.
+    # Handles GET request to search chat conversations.
+    # Filters chat conversations based on provided query.
+    # Returns JSON response with filtered chat conversations.
+
     chats = ChatGPTConvo.objects.order_by("-date")
     page_slug = request.GET["page_slug"]
     query = request.GET["query"]

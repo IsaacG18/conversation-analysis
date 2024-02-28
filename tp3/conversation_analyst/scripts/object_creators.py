@@ -12,6 +12,7 @@ from ..models import (
     ChatGPTFilter,
     ChatGPTConvoFilter,
     CustomThresholds,
+    GptSwitch,
 )
 
 
@@ -113,7 +114,27 @@ def add_chat_filter(content, typeOfFilter, convo):
     return f, fc
 
 
-def add_custom_threshold(average_risk, sentiment_divider, max_risk, word_risk):
-    ct = CustomThresholds.objects.create(average_risk=average_risk, sentiment_divider=sentiment_divider, max_risk=max_risk, word_risk=word_risk)
+def add_custom_threshold(
+    average_risk,
+    sentiment_multiplier,
+    max_risk,
+    word_risk,
+    strictness_level=2,
+    sentiment_level=2,
+):
+    ct = CustomThresholds.objects.create(
+        strictness_level=strictness_level,
+        sentiment_level=sentiment_level,
+        average_risk=average_risk,
+        sentiment_multiplier=sentiment_multiplier,
+        max_risk=max_risk,
+        word_risk=word_risk,
+    )
     ct.save()
     return ct
+
+
+def add_gpt_switch():
+    s = GptSwitch.objects.create()
+    s.save()
+    return s

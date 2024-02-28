@@ -198,7 +198,13 @@ class ChatGPTConvoFilter(models.Model):
 
 
 class CustomThresholds(models.Model):
+    strictness_level = models.IntegerField(null=True)
+    sentiment_level = models.IntegerField(null=True)
     average_risk = models.FloatField(null=True)
-    sentiment_divider = models.FloatField(null=True)
+    sentiment_multiplier = models.FloatField(null=True)
     max_risk = models.FloatField(null=True)
     word_risk = models.FloatField(null=True)
+
+
+class GptSwitch(models.Model):
+    on = models.BooleanField(default=False)
