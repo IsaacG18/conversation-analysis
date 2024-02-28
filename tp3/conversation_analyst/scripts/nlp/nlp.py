@@ -124,11 +124,7 @@ def tag_text(
                 if entity.label_ in labels:
                     labeled, offset = label_entity(entity.label_, entity.text)
                     found_entities[entity.label_].append((entity.text))
-                    message["Display_Message"] = (
-                        message["Display_Message"][: entity.start_char + distance]
-                        + labeled
-                        + message["Display_Message"][entity.end_char + distance:]
-                    )
+                    update_display(entity.start_char + distance, entity.end_char + distance, message, labeled)
                     distance += offset
                     message[entity.label_] += 1
                     message["entities"].append(entity.text)
@@ -162,21 +158,13 @@ def tag_text(
                         match.end() + 1:match.end() + 13
                     ] == "Check_181831":
                         ptr = match.end() + offset
-                        message["Display_Message"] = (
-                            message["Display_Message"][: match.end()]
-                            + " risk "
-                            + message["Display_Message"][match.end():]
-                        )
+                        update_display(match.end(), match.end(), message, " risk ")
                         tag_list.append((keyword.keyword, risk, topics))
                         message["entities"].append(keyword.keyword)
                     else:
                         start = match.start()
                         ptr = match.end() + offset
-                        message["Display_Message"] = (
-                            message["Display_Message"][:start]
-                            + labeled
-                            + message["Display_Message"][start + len(token_text):]
-                        )
+                        update_display(start, start + len(token_text), message, labeled)
                         tag_list.append((keyword.keyword, risk, topics))
                         message["entities"].append(keyword.keyword)
         if risk_total > max_risk:
@@ -188,6 +176,20 @@ def tag_text(
         message["tags"] = tag_list
 
     return messages, found_entities
+
+
+def update_display(start, end, message, text):
+    """
+    Arguments:
+    start (int): The start index of the split in the message
+    end (int): The end index of the split in the message
+    message (dict): This is a dictionary that contraits a key Display_Message
+    text (text): A string
+
+    Description:
+    Adds the text in between the start and end point in message display message
+    """
+    message["Display_Message"] = message["Display_Message"][:start] + text + message["Display_Message"][end:]
 
 
 def get_top_n_risk_keywords(messages, n):
