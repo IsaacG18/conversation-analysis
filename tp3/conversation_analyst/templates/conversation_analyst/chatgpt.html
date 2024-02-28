@@ -27,23 +27,20 @@
     </section>
 
     <section class="main col-md-7">
-      <div class="scroll-container chat-container mt-3" id="scroll">
-        {% include "conversation_analyst/chatgpt_messages.html" %}
-        <br>
-        <h3 id="loading_message"></h3>
-        {% if messages %}
-        <div class="row justify-content-center" id="#row" style="height: 10rem;">
-          <div class="col-12">
-            <div class="input-group mb-3">
+      <div class="scroll-container chat-container mt-3">
+          {% include "conversation_analyst/chatgpt_messages.html" %}
+          <br>
+          <h3 id="loading_message"></h3>
+          {% if messages %}
+            <div class="fixed-bottom input-group mt-3">
               <input type="text" class="form-control" id="message_content" placeholder="Type your message">
               <button class="btn btn-secondary chatgpt_new_message" type="button"><span><i
                     class="bi bi-send"></i></span></button>
+
             </div>
-          </div>
-        </div>
-        {% endif%}
+        {% endif %}
       </div>
-    </section>
+      </section>
     {% include "conversation_analyst/prompts.html" %}
   </div>
 </div>
@@ -55,21 +52,4 @@
   }
 </style>
 
-<script>
-  $(document).ready(function () {
-    var sectionElement = document.getElementById('scroll');
-    var inputElement = document.getElementById('message_content');
-
-
-    setTimeout(function () {
-      focusOnInputElement(sectionElement, inputElement);
-    }, 0);
-
-    function focusOnInputElement(sectionElement, inputElement) {
-      var inputTopOffset = inputElement.parentElement.offsetTop;
-      sectionElement.scrollTop = inputTopOffset;
-    }
-  });
-
-</script>
 {% endblock %}
