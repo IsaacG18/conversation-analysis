@@ -26,8 +26,7 @@
             role="button">Regenerate</a></div>
         <div class="col-auto"><a href="{% url 'export_view' file.slug %}" class="btn btn-outline-success mr-1"
             role="button">Download XML</a></div>
-      </div>
-
+    </div>
       <div class="accordion">
 
         <div class="accordion-item">
@@ -117,8 +116,8 @@
           <div id="location-collapse" class="accordion-collapse collapse show">
             <div class="accordion-body">
               {% for location in locations %}
-              <button class="btn btn-outline-success filter location-button" data-url="{{ location.url }}">{{
-                location.name }}</button>
+              <button class="btn btn-outline-success filter location-button" data-url="{{ location.url }}">
+                {{location.name }}</button>
               {% endfor %}
             </div>
           </div>
@@ -155,11 +154,11 @@
             <div class="accordion-body">
               {% for risk_word in risk_words %}
               {% if risk_word.riskword.risk_factor > 5.0 %}
-              <button class="btn btn-danger filter risk-button">{{ risk_word.riskword.keyword }}({{ risk_word.amount
-                }})</button>
+              <button class="btn btn-danger filter risk-button">{{ risk_word.riskword.keyword }}
+                ({{ risk_word.riskword.amount }})</button>
               {% else %}
-              <button class="btn btn-warning filter risk-button">{{ risk_word.riskword.keyword }}({{ risk_word.amount
-                }})</button>
+              <button class="btn btn-warning filter risk-button">{{ risk_word.riskword.keyword }}
+                ({{ risk_word.riskword.amount }})</button>
               {% endif %}
               {% endfor %}
             </div>
