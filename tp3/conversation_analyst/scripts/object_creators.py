@@ -12,6 +12,7 @@ from ..models import (
     ChatGPTFilter,
     ChatGPTConvoFilter,
     CustomThresholds,
+    GptSwitch,
 )
 
 
@@ -131,3 +132,9 @@ def add_custom_threshold(
     )
     ct.save()
     return ct
+
+
+def add_gpt_switch():
+    s = GptSwitch.objects.create()
+    s.save()
+    return s

@@ -33,6 +33,7 @@ from .models import (
     ChatGPTConvo,
     ChatGPTMessage,
     CustomThresholds,
+    GptSwitch,
 )
 
 
@@ -413,6 +414,26 @@ def risk_update(request):
         return HttpResponse(
             "risk factor of " + keyword_obj.keyword + " is updated to " + str(risk)
         )
+
+
+def gpt_switch(request):
+    # Define the gpt switch view function.
+    # Handle POST request to toggle GPT switch.
+    # Modifies the boolean field for GPT switch
+    # Returns HttpResponse indicating success or failure of the switch toggle.
+    if request.method == "POST":
+        try:
+            isChecked = json.loads(request.POST["value"])
+            switch, created = GptSwitch.objects.get_or_create(id=1)
+            switch.on = isChecked
+            switch.save()
+            if created:
+                return HttpResponse(f"gpt switched created, on: {isChecked}")
+            else:
+                return HttpResponse(f"switch on: {isChecked}")
+
+        except KeyError as e:
+            return HttpResponse(f"{e}")
 
 
 def rename_file(request):
@@ -871,6 +892,7 @@ def suite_selection(request, file_slug):
 
     if request.method == "GET":
         keyword_suites = KeywordSuite.objects.all()
+        gpt_switch = GptSwitch.objects.get(id=1)
         if len(keyword_suites) == 0:
             context_dict = {}
         else:
@@ -879,6 +901,7 @@ def suite_selection(request, file_slug):
             context_dict = {"keyword_suites": keyword_suites, "risk_words": risk_words}
 
         context_dict["file_slug"] = file_slug
+        context_dict["gpt_switch"] = gpt_switch.on
         return render(
             request, "conversation_analyst/suite_selection.html", context=context_dict
         )
@@ -892,7 +915,8 @@ def suite_selection(request, file_slug):
             file_obj = File.objects.get(slug=file_slug)
             messages = Message.objects.filter(file=file_obj)
             threshold = CustomThresholds.objects.all()[0]
-            process_file(file_obj, keywords, messages, threshold)
+            gpt_switch = GptSwitch.objects.get(id=1).on
+            process_file(file_obj, keywords, messages, threshold, gpt_switch)
             return HttpResponseRedirect(
                 reverse("content_review", kwargs={"file_slug": file_obj.slug})
             )

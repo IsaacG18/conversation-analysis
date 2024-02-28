@@ -24,9 +24,9 @@
                     <div class="row d-flex align-items-center justify-content-between">
                         <div class="col-9 form-check" id="suite-check-{{ suite.id }}">
                             {% if suite.default %}
-                            <input class="form-check-input" type="checkbox" value="{{ suite.id }}" id="checkbox-{{ suite.id }}" checked>
+                            <input class="form-check-input suite-checkbox" type="checkbox" value="{{ suite.id }}" id="checkbox-{{ suite.id }}" checked>
                             {% else %}
-                            <input class="form-check-input" type="checkbox" value="{{ suite.id }}" id="checkbox-{{ suite.id }}">
+                            <input class="form-check-input suite-checkbox" type="checkbox" value="{{ suite.id }}" id="checkbox-{{ suite.id }}">
                             {% endif %}
                             <label class="form-check-label" for="checkbox-{{ suite.id }}">
                             {{ suite.name }}
@@ -100,6 +100,16 @@
                 </form>
             </div>
     </div>
+    </div>
+    <div class="row py-5">
+        <div class="form-check form-switch ps-5 ms-2">
+            {% if gpt_switch %}
+            <input class="form-check-input" type="checkbox" role="switch" id="gpt-switch" checked>
+            {% else %}
+            <input class="form-check-input" type="checkbox" role="switch" id="gpt-switch">
+            {% endif %}
+            <label class="form-check-label" for="flexSwitchCheckChecked">Use ChatGPT for analysis</label>
+          </div>
     </div>
     <div class="row my-5">
         <form method="POST" action="{% url 'suite_selection' file_slug %}" class="d-flex justify-content-end">

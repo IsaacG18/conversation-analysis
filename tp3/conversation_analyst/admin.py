@@ -12,7 +12,8 @@ from .models import (
     Topic,
     RiskWordResult,
     VisFile,
-    CustomThresholds
+    CustomThresholds,
+    GptSwitch
 )
 
 # Register your models here.
@@ -51,3 +52,4 @@ admin.site.register(Topic)
 admin.site.register(RiskWordResult)
 admin.site.register(VisFile)
 admin.site.register(CustomThresholds)
+admin.site.register(GptSwitch)

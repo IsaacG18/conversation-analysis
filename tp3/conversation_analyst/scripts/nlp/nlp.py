@@ -387,7 +387,6 @@ def name_location_chatgpt(text):
                     """,
         },
     ]
-
     response = client.chat.completions.create(
         model="gpt-3.5-turbo", messages=[*conversation_history]
     )
