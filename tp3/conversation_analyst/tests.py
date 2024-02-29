@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+import unittest
 from .models import (
     Delimiter,
     File,
@@ -27,7 +28,7 @@ from .scripts.nlp.nlp import (
     get_keyword_lamma,
     tag_text,
     name_location_chatgpt,
-    update_display
+    update_display,
 )
 from django.utils import timezone
 from .scripts.object_creators import (
@@ -47,10 +48,19 @@ from .scripts.object_creators import (
 from django.core.files.uploadedfile import SimpleUploadedFile
 from .scripts.data_ingestion.plotter import plots
 from unittest.mock import patch, MagicMock
-from .scripts.data_ingestion.file_process import parse_file, process_file
+from .scripts.data_ingestion.file_process import (
+    parse_file,
+    process_file,
+)
+from conversation_analyst.scripts.data_ingestion.ingestion import (
+    parse_chat_file,
+    parse_timestamp,
+)
 import os
 import numpy as np
 import spacy
+import tempfile
+from docx import Document
 
 nlp = spacy.load("en_core_web_md")
 
@@ -469,6 +479,40 @@ class TestNLP(TestCase):
         self.assertEqual("Isaac", names[0])
         self.assertEqual("Dundee", locations[0])
 
+    def test_label_entity_with_invalid_entity(self):
+        # Test with invalid entity that does not have label_ or text
+        with self.assertRaises(AttributeError):
+            label_entity(None, None)
+
+    def test_message_to_text_with_empty_messages(self):
+        # Test with empty messages list
+        text, _ = message_to_text([])
+        self.assertEqual(text, "")
+
+    def test_name_location_chatgpt_with_non_string_input(self):
+        # Test with non-string input
+        with self.assertRaises(TypeError):
+            name_location_chatgpt(None)
+
+    def test_name_location_chatgpt_with_long_string(self):
+        # Test with a very long string to test the limits of the NLP model
+        long_string = (
+            "Hello, I am Isaac, "
+            + "and I love visiting cities, " * 1000
+            + "and I am from Dundee"
+        )
+        names, locations = name_location_chatgpt(long_string)
+        self.assertEqual(1, len(names))
+        self.assertEqual(1, len(locations))
+        self.assertEqual("Isaac", names[0])
+        self.assertEqual("Dundee", locations[0])
+
+    def test_message_to_text_with_large_number_of_messages(self):
+        # Test with a large number of messages
+        large_messages = [{"Message": "Hello", "Sender": "Alice"}] * 10000
+        text, _ = message_to_text(large_messages)
+        self.assertTrue(len(text) > 0)
+
     def test_update_message_normal(self):
         message = {}
         message["Display_Message"] = "Hello!"
@@ -784,6 +828,42 @@ class FileProcessTests(TestCase):
         mock_get_top_n_common_topics_with_avg_risk.assert_called_once()
         mock_generate_analysis_objects.assert_called_once()
 
+    @patch("conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file")
+    def test_process_empty_file(self, mock_parse_chat_file):
+        mock_file = MagicMock(spec=File)
+        mock_file.file.path = "/fake/path/to/empty_file.txt"
+        mock_parse_chat_file.return_value = []
+
+        parse_file(
+            mock_file, date_formats=[], delimiters=[["Timestamp", ","], ["Sender", ":"]]
+        )
+
+    @patch("conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file")
+    def test_process_corrupted_file(self, mock_parse_chat_file):
+        mock_file = MagicMock(spec=File)
+        mock_file.file.path = "/fake/path/to/corrupted_file.txt"
+        mock_parse_chat_file.side_effect = ValueError("File format not recognized")
+
+        with self.assertRaises(ValueError):
+            parse_file(
+                mock_file,
+                date_formats=[],
+                delimiters=[["Timestamp", ","], ["Sender", ":"]],
+            )
+
+    @patch("conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file")
+    def test_process_nonexistent_file(self, mock_parse_chat_file):
+        mock_file = MagicMock(spec=File)
+        mock_file.file.path = "/fake/path/to/nonexistent_file.txt"
+        mock_parse_chat_file.side_effect = FileNotFoundError("File not found")
+
+        with self.assertRaises(FileNotFoundError):
+            parse_file(
+                mock_file,
+                date_formats=[],
+                delimiters=[["Timestamp", ","], ["Sender", ":"]],
+            )
+
 
 class HomePageTests(TestCase):
     def test_homepage_without_query(self):
@@ -797,6 +877,23 @@ class HomePageTests(TestCase):
         response = client.get(reverse("homepage"), {"query": "Sample"})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "conversation_analyst/search_result.html")
+
+    def test_homepage_with_very_long_query(self):
+        client = Client()
+        long_query = "a" * 1024  # 1024 characters long
+        response = client.get(reverse("homepage"), {"query": long_query})
+        self.assertEqual(response.status_code, 200)
+
+    def test_homepage_with_special_characters_in_query(self):
+        client = Client()
+        special_query = '!@#$%^&*()_+{}|:"<>?'
+        response = client.get(reverse("homepage"), {"query": special_query})
+        self.assertEqual(response.status_code, 200)
+
+    def test_homepage_with_nonexistent_query_parameter(self):
+        client = Client()
+        response = client.get(reverse("homepage"), {"nonexistent": "true"})
+        self.assertEqual(response.status_code, 200)
 
 
 class ContentReviewTests(TestCase):
@@ -814,3 +911,107 @@ class ContentReviewTests(TestCase):
         url = reverse("content_review", kwargs={"file_slug": self.file.slug})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+    def test_content_with_nonexistent_file_slug(self):
+        nonexistent_slug = "this-slug-does-not-exist-12345"
+        url = reverse("content_review", kwargs={"file_slug": nonexistent_slug})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("File not exist", response.content.decode())
+
+    def test_content_with_special_character_slug(self):
+        special_slug = "special-slug"
+        url = reverse("content_review", kwargs={"file_slug": special_slug})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+
+class TestTimestampParsing(unittest.TestCase):
+    def test_parse_invalid_timestamp(self):
+        """Test handling of an invalid timestamp format."""
+        with self.assertRaises(ValueError):
+            parse_timestamp("invalid-timestamp", "%Y-%m-%d %H:%M:%S")
+
+    def test_empty_timestamp(self):
+        """Test handling of an empty timestamp."""
+        with self.assertRaises(ValueError):
+            parse_timestamp("", "%Y-%m-%d %H:%M:%S")
+
+
+class TestParseChatFile(unittest.TestCase):
+    def create_temp_csv_file(self, headers, rows):
+        """Create a temporary CSV file."""
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        with open(temp_file.name, "w") as file:
+            file.write(",".join(headers) + "\n")
+            for row in rows:
+                file.write(",".join(row) + "\n")
+        return temp_file
+
+    def create_temp_docx_file(self, paragraphs):
+        """Create a temporary DOCX file."""
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        doc = Document()
+        for paragraph in paragraphs:
+            doc.add_paragraph(paragraph)
+        doc.save(temp_file.name)
+        return temp_file
+
+    def test_parse_csv_file(self):
+        """Test parsing a CSV file."""
+        headers = ["Timestamp", "Sender", "Message"]
+        rows = [
+            ["2021-01-01 10:00:00", "Alice", "Hello!"],
+            ["2021-01-01 10:05:00", "Bob", "Hi there!"],
+        ]
+        temp_file = self.create_temp_csv_file(headers, rows)
+        parsed_data = parse_chat_file(
+            temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
+        )
+        self.assertEqual(
+            parsed_data,
+            [],
+        )
+
+    def test_parse_docx_file(self):
+        """Test parsing a DOCX file."""
+        paragraphs = [
+            "2021-01-01 10:00:00, Alice: Hello!",
+            "2021-01-01 10:05:00, Bob: Hi there!",
+        ]
+        temp_file = self.create_temp_docx_file(paragraphs)
+        parsed_data = parse_chat_file(
+            temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
+        )
+        self.assertEqual(
+            parsed_data,
+            [],
+        )
+
+    def create_temp_invalid_file(self, content, file_extension=".txt"):
+        """Create a temporary file with invalid content and a specific extension."""
+        temp_file = tempfile.NamedTemporaryFile(
+            mode="w+t", suffix=file_extension, delete=False
+        )
+        temp_file.write(content)
+        temp_file.seek(0)
+        temp_file.close()
+        return temp_file.name
+
+    def test_parse_invalid_file_format(self):
+        """Test parsing a file with an invalid format."""
+        invalid_content = "Timestamp,Sender:Message\n2024-02-10T08:00:00,Alice:Hello\nInvalid Line Without Delimiter"
+        temp_file_path = self.create_temp_invalid_file(invalid_content, ".txt")
+
+        with self.assertRaises(ValueError) as context:
+            parse_chat_file(
+                temp_file_path,
+                [["Timestamp", ","], ["Sender", ":"]],
+                "%Y-%m-%d %H:%M:%S",
+            )
+
+        # Check if the specific error message is in the context of the exception
+        self.assertIn("Pattern mismatch detected", str(context.exception))
+
+        # Clean up by deleting the temporary file
+        os.unlink(temp_file_path)
