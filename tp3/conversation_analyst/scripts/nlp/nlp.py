@@ -384,8 +384,8 @@ def name_location_chatgpt(text):
         {
             "role": "user",
             "content": """I want all the names and locations form this this text, formate like this:
-                    ‘names: name1,name2,name3
-                    locations: location1,location2’
+                    names: name1,name2,name3
+                    locations: location1,location2
                     """,
         },
     ]
