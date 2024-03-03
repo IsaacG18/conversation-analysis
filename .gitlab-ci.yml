@@ -35,4 +35,4 @@ run_method:
     - python manage.py makemigrations
     - python manage.py migrate
     - python manage.py migrate --run-syncdb
-    - python speed_test_messages.py
+    - time python speed_test_messages.py
