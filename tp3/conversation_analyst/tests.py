@@ -23,7 +23,6 @@ from .scripts.nlp.nlp import (
     label_entity,
     label_keyword,
     message_to_text,
-    create_arrays,
     get_date_messages,
     get_keyword_lamma,
     tag_text,
@@ -426,39 +425,6 @@ class TestNLP(TestCase):
         text, _ = message_to_text(messages)
         self.assertEqual(text, expected_text)
 
-    def test_create_arrays(self):
-        parsed_data = [
-            {"Sender": "Alice", "Message": "Hello", "Timestamp": "2024-02-10 08:00:00"},
-            {
-                "Sender": "Bob",
-                "Message": "Hi there",
-                "Timestamp": "2024-02-10 08:05:00",
-            },
-            {
-                "Sender": "Alice",
-                "Message": "How are you?",
-                "Timestamp": "2024-02-10 08:10:00",
-            },
-        ]
-        date_messages = create_arrays(parsed_data)
-        self.assertIsInstance(date_messages["Alice"]["timestamps"], np.ndarray)
-        self.assertEqual(len(date_messages["Alice"]["timestamps"]), 2)
-        self.assertEqual(date_messages["Alice"]["timestamps"][0], "2024-02-10 08:00:00")
-        self.assertEqual(date_messages["Alice"]["timestamps"][1], "2024-02-10 08:10:00")
-
-        self.assertIsInstance(date_messages["Alice"]["message_lengths"], np.ndarray)
-        self.assertEqual(len(date_messages["Alice"]["message_lengths"]), 2)
-        self.assertEqual(date_messages["Alice"]["message_lengths"][0], 5)
-        self.assertEqual(date_messages["Alice"]["message_lengths"][1], 12)
-
-        self.assertIsInstance(date_messages["Bob"]["timestamps"], np.ndarray)
-        self.assertEqual(len(date_messages["Bob"]["timestamps"]), 1)
-        self.assertEqual(date_messages["Bob"]["timestamps"][0], "2024-02-10 08:05:00")
-
-        self.assertIsInstance(date_messages["Bob"]["message_lengths"], np.ndarray)
-        self.assertEqual(len(date_messages["Bob"]["message_lengths"]), 1)
-        self.assertEqual(date_messages["Bob"]["message_lengths"][0], 8)
-
     def test_get_keyword_lamma(self):
         keyword = "running"
         expected_lemma = "run"
@@ -779,7 +745,6 @@ class FileProcessTests(TestCase):
             mock_file, mock_parse_chat_file.return_value
         )
 
-    @patch("conversation_analyst.scripts.data_ingestion.file_process.create_arrays")
     @patch("conversation_analyst.scripts.data_ingestion.file_process.tag_text")
     @patch(
         "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_risk_keywords"
@@ -796,7 +761,6 @@ class FileProcessTests(TestCase):
         mock_get_top_n_common_topics_with_avg_risk,
         mock_get_top_n_risk_keywords,
         mock_tag_text,
-        mock_create_arrays,
     ):
         mock_file = MagicMock(spec=File)
         mock_file.slug = "test-file"
@@ -822,7 +786,6 @@ class FileProcessTests(TestCase):
         process_file(mock_file, ["keyword1", "keyword2"], mock_messages, threshold_mock)
 
         # Assert test
-        mock_create_arrays.assert_called_once_with(chat_messages)
         mock_tag_text.assert_called_once()
         mock_get_top_n_risk_keywords.assert_called_once()
         mock_get_top_n_common_topics_with_avg_risk.assert_called_once()

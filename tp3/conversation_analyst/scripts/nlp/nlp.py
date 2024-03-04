@@ -305,38 +305,6 @@ def message_to_text(list_of_messages):
     return text, list_of_messages
 
 
-def create_arrays(parsed_data):
-    """
-    Arguments:
-    parsed_data (dictionary): A dictionary of parsed data.
-
-    Returns:
-    dict: A dictionary containing arrays for each person with timestamps and message lengths.
-
-    Description:
-    This function creates arrays for each person from parsed data, including timestamps and message lengths.
-    """
-    person_arrays = {}
-
-    for entry in parsed_data:
-        sender_name = entry.get("Sender", None)
-        message_length = len(entry.get("Message", ""))
-
-        if sender_name is not None:
-            if sender_name not in person_arrays:
-                person_arrays[sender_name] = {"timestamps": [], "message_lengths": []}
-
-            person_arrays[sender_name]["timestamps"].append(entry.get("Timestamp", ""))
-            person_arrays[sender_name]["message_lengths"].append(message_length)
-
-    # Convert the lists to NumPy arrays
-    for person, data in person_arrays.items():
-        data["timestamps"] = np.array(data["timestamps"])
-        data["message_lengths"] = np.array(data["message_lengths"])
-
-    return person_arrays
-
-
 def get_keyword_lamma(keyword):
     """
     Arguments:
