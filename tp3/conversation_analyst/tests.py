@@ -765,14 +765,6 @@ class FileProcessTests(TestCase):
                 timestamp="2021-01-01 10:00:00", sender="Alice", content="Hello", id=1
             )
         ]
-        chat_messages = [
-            {
-                "Timestamp": "2021-01-01 10:00:00",
-                "Sender": "Alice",
-                "Message": "Hello",
-                "ObjectId": 1,
-            }
-        ]
         threshold_mock = Threshold(
             average_risk=0.5, sentiment_multiplier=0.7, max_risk=0.9, word_risk=1.2
         )

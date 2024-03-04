@@ -9,7 +9,7 @@ import os
 
 
 def parse_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":"]]):
-     """
+    """
     Arguments:
     file (file): The file object to the user
     date_formats (str): The format of the timestamps in the chat file
@@ -19,17 +19,15 @@ def parse_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":
     Description:
     This function checkt the file type, ingest the file, then ingests the file, then calls to generate objects for messages
     """
-    if not file.title.endswith((".docx", ".txt", ".csv")):
-        raise ValueError(
-            "Unsupported file type. Only .txt, .csv and .docx are supported."
-        )
 
+    if not file.title.endswith((".docx", ".txt", ".csv")):
+        raise ValueError("Unsupported file type. Only .txt, .csv and .docx are supported.")
     messages = ingestion.parse_chat_file(file.file.path, delimiters, date_formats)
     generate_message_objects(file, messages)
 
 
 def process_file(file, keywords, messages, threshold, gpt_switch=False):
-     """
+    """
     Arguments:
     file (file): The file object to the used
     keywords (list): A list of keyword objects
@@ -74,7 +72,7 @@ def process_file(file, keywords, messages, threshold, gpt_switch=False):
 
 
 def generate_message_objects(file, chat_messages):
-     """
+    """
     Arguments:
     file (file): The file object to the user
     chat_messages (list): A list of a dictionary of objects
