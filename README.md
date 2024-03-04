@@ -3,26 +3,66 @@
 To get this code running require steps for set up
 
 # Step 1 install python and pip
+You need to have Python 3.9 installed on your system. If you haven't installed it yet, you can download it from the [official Python website](https://www.python.org/downloads/) and follow the installation instructions for your operating system.
+
+To verify if pip is installed, you can run the following command in your terminal or command prompt:
+    --pip version
+
 
 # Step 2 clone the repo
 
-# Step 3 install packages
-pip install -r requirements.txt
+# Step 3 set up venv
+
+    pip install virtualenv
+
+Navigate to your project directory in the terminal or command prompt and run the following command to create a virtual environment named 'ca':
 
 
-# Step 4 add .env
+    virtualenv ca
 
-In tp3/tp3 create a file called .env
+**On Windows:**
+
+
+    ca\Scripts\activate
+
+**On macOS and Linux:**
+
+    source venv/bin/activate
+
+
+# Step 4 install packages
+**Window OS:**
+
+    pip install -r win_requirements.txt
+
+**Other OS:**
+
+    pip install -r requirements.txt
+
+
+# Step 5 add .env
+
+In tp3/tp3 **create a file** called **.env**
 
 Add in the file
-CHATGPT_API_KEY=<api-key>
 
-# Step 5 run these commands
+    CHATGPT_API_KEY=<api-key>
 
-python manage.py makemigrations
-python manage,py migrate
-python date_format_populate.py
+# Step 6 run these commands
+Create and run the migrations:
+
+    python manage.py makemigrations
+    
+    python manage,py migrate
+    
+    python manage,py migrate --run-syncdb
+
+Run the populate script
+
+    python date_format_populate.py
+
 
 # After set up to run the website uses this command
+File path: cs39-main/tp3
 
-python manage.py runserver
+    python manage.py runserver
