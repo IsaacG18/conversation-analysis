@@ -750,15 +750,11 @@ class FileProcessTests(TestCase):
         "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_risk_keywords"
     )
     @patch(
-        "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_common_topics_with_avg_risk"
-    )
-    @patch(
         "conversation_analyst.scripts.data_ingestion.file_process.generate_analysis_objects"
     )
     def test_process_file(
         self,
         mock_generate_analysis_objects,
-        mock_get_top_n_common_topics_with_avg_risk,
         mock_get_top_n_risk_keywords,
         mock_tag_text,
     ):
@@ -788,7 +784,6 @@ class FileProcessTests(TestCase):
         # Assert test
         mock_tag_text.assert_called_once()
         mock_get_top_n_risk_keywords.assert_called_once()
-        mock_get_top_n_common_topics_with_avg_risk.assert_called_once()
         mock_generate_analysis_objects.assert_called_once()
 
     @patch("conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file")

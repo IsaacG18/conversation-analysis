@@ -222,41 +222,6 @@ def get_top_n_risk_keywords(messages, n):
     return result
 
 
-def get_top_n_common_topics_with_avg_risk(messages, n):
-    """
-    Arguments:
-    messages (list): A list of tagged messages.
-    n (int): The number of top topics to retrieve.
-
-    Returns:
-    list: A list of top common topics along with their occurrence counts and average risk factors.
-
-    Description:
-    This function retrieves the top common topics with their average risk factors from tagged messages.
-    """
-    topics_count = {}
-    risk_factors = {}
-    for message in messages:
-        for token, risk, topics in message["tags"]:
-            if topics is not None:
-                for topic in topics:
-                    if topic in topics_count:
-                        topics_count[topic] += 1
-                    else:
-                        topics_count[topic] = 1
-                    if topic in risk_factors:
-                        risk_factors[topic] += risk
-                    else:
-                        risk_factors[topic] = risk
-    sorted_topics = sorted(topics_count, key=topics_count.get)
-    avg_risk_factors = []
-    for topic in reversed(sorted_topics):
-        avg_risk_factors.append(
-            [topic, topics_count[topic], risk_factors[topic] / topics_count[topic]]
-        )
-    return avg_risk_factors
-
-
 def get_date_messages(parsed_data):
     """
     Arguments:
