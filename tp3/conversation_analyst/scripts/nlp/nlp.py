@@ -366,12 +366,12 @@ def name_location_chatgpt(text):
     Uses Chatgpt to find all the names and locations in the text
     """
     system_message = (
-        """I want all the names and locations form this this text, formate like this:
-                    'names: name1,name2,name3
+        """I want all the person names and locations form this this text, formate like this:
+                    'persons: name1,name2,name3
                     locations: location1,location2'
-                    If there is a colon in the middle of location or name, they should be treated as a seperate name or location.
+                    If there is a colon in the middle of location or person, they should be treated as a seperate person or location.
                     If there is neither still return like
-                    'names:
+                    'persons:
                     locations:'
                     Here is the text: \n"""
         + text
@@ -384,8 +384,8 @@ def name_location_chatgpt(text):
         {"role": "system", "content": system_message},
         {
             "role": "user",
-            "content": """I want all the names and locations form this this text, formate like this:
-                    names: name1,name2,name3
+            "content": """I want all person names and locations form this this text, formate like this:
+                    persons: name1,name2,name3
                     locations: location1,location2
                     """,
         },
