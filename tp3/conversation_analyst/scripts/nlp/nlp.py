@@ -367,8 +367,9 @@ def name_location_chatgpt(text):
     """
     system_message = (
         """I want all the names and locations form this this text, formate like this:
-                    ‘names: name1,name2,name3
-                    locations: location1,location2’
+                    'names: name1,name2,name3
+                    locations: location1,location2'
+                    If there is a colon in the middle of location or name, they should be treated as a seperate name or location.
                     If there is neither still return like
                     'names:
                     locations:'
