@@ -74,7 +74,7 @@ def tag_text(
     """
     Arguments:
     messages (dictionary): A dictionary of messages to be tagged.
-    keywords (list): A list of keywords.
+    keywords (list): A list of keywords objects.
     labels (list): A list of labels to be used.
     average_risk (float): The average risk factor a message has to have to increase risk rating
     sentiment_multiplier (float): This divids the effect of the sentiment on risk
