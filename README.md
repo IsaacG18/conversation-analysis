@@ -66,3 +66,48 @@ Run the populate script
 File path: cs39-main/tp3
 
     python manage.py runserver
+
+
+# Versions
+
+  
+
+**1.0.0**
+Available from the 15th of January
+Access original only on Python Anywhere
+
+Core Feature:
+- NLP
+-- Sentiment Analysis (not integrated)
+-- Added Visualization for messages
+-- Keyword Identification
+-- Name and Location identification
+- Data ingestion
+-- Basic Customization of File ingestion
+-- Custom Keywords (only in settings)
+-- Compatibility with csv, docs, and txt
+-- Error Handling in upload
+- Front End
+-- Search homepage for files
+-- Word highlighting in content review
+-- Date Filtering 
+-- Key Highlighting
+- ChatGPT
+-- Nothing Implemented
+  
+**2.0.0**
+Available from the 15th of February, available as github and website
+- Content Review New features
+-- Google Maps API search
+-- Export XML data
+-- Add re-analysis of file
+- ChatGPT new features
+-- Added the ability to message chatgpt
+-- Added ability to create new chats
+-- Added ability to access old chats
+-- Added suggested prompts based on analysis
+- Other new features
+-- Renaming analysis on homepage
+- Improvements to existing features
+-- Search for root words in analysis
+-- Improved customization in file structure including; dates, types order, and ability to added extra delimiters
