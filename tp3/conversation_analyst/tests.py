@@ -51,7 +51,7 @@ from unittest.mock import patch, MagicMock
 from .scripts.data_ingestion.file_process import (
     parse_file,
     process_file,
-    generate_analysis_objects
+    generate_analysis_objects,
 )
 from conversation_analyst.scripts.data_ingestion.ingestion import (
     parse_chat_file,
@@ -867,15 +867,34 @@ class FileProcessTests(TestCase):
 
     @patch("conversation_analyst.scripts.data_ingestion.file_process.create_arrays")
     @patch("conversation_analyst.scripts.data_ingestion.file_process.tag_text")
-    @patch("conversation_analyst.scripts.data_ingestion.file_process.get_top_n_risk_keywords")
-    @patch("conversation_analyst.scripts.data_ingestion.file_process.get_top_n_common_topics_with_avg_risk")
-    @patch("conversation_analyst.scripts.data_ingestion.file_process.generate_analysis_objects")
-    def test_process_file_with_large_number_of_messages(self, mock_generate_analysis_objects, mock_get_top_n_common_topics_with_avg_risk,
-                                                        mock_get_top_n_risk_keywords, mock_tag_text, mock_create_arrays):
+    @patch(
+        "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_risk_keywords"
+    )
+    @patch(
+        "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_common_topics_with_avg_risk"
+    )
+    @patch(
+        "conversation_analyst.scripts.data_ingestion.file_process.generate_analysis_objects"
+    )
+    def test_process_file_with_large_number_of_messages(
+        self,
+        mock_generate_analysis_objects,
+        mock_get_top_n_common_topics_with_avg_risk,
+        mock_get_top_n_risk_keywords,
+        mock_tag_text,
+        mock_create_arrays,
+    ):
         mock_file = MagicMock(spec=File)
         mock_file.slug = "test-file"
-        mock_messages = [MagicMock(timestamp="2021-01-01 10:00:00", sender="Alice", content="Hello", id=i) for i in range(10000)]
-        threshold_mock = Threshold(average_risk=0.5, sentiment_multiplier=0.7, max_risk=0.9, word_risk=1.2)
+        mock_messages = [
+            MagicMock(
+                timestamp="2021-01-01 10:00:00", sender="Alice", content="Hello", id=i
+            )
+            for i in range(10000)
+        ]
+        threshold_mock = Threshold(
+            average_risk=0.5, sentiment_multiplier=0.7, max_risk=0.9, word_risk=1.2
+        )
         mock_tag_text.return_value = ("nlp_text_mock", {"PERSON": ["Alice"], "GPE": []})
         process_file(mock_file, ["keyword1", "keyword2"], mock_messages, threshold_mock)
         mock_tag_text.assert_called()
@@ -888,12 +907,41 @@ class TestGenerateAnalysisObjects(TestCase):
     @patch("conversation_analyst.scripts.object_creators.add_vis")
     @patch("conversation_analyst.scripts.object_creators.update_message")
     @patch("conversation_analyst.scripts.object_creators.add_analysis")
-    @patch("conversation_analyst.scripts.object_creators.plots")
-    def test_generate_analysis_objects(self, mock_plots, mock_add_analysis, mock_update_message, mock_add_vis, mock_add_person, mock_add_location, mock_add_risk_word_result):
+    @patch("conversation_analyst.scripts.data_ingestion.plotter")
+    def test_generate_analysis_objects(
+        self,
+        mock_plots,
+        mock_add_analysis,
+        mock_update_message,
+        mock_add_vis,
+        mock_add_person,
+        mock_add_location,
+        mock_add_risk_word_result,
+    ):
         mock_file = MagicMock()
         chat_messages = [
-            {"ObjectId": 1, "Display_Message": "Hello", "entities": ["entity1"], "risk": 0.5},
-            {"ObjectId": 2, "Display_Message": "World", "entities": ["entity2"], "risk": 0.7}
+            {
+                "ObjectId": 1,
+                "Sender": "Alice",
+                "Timestamp": "2024-02-10T08:00:00",
+                "Display_Message": "Hello",
+                "Message": "Hello!",
+                "risk": 0,
+                "PERSON": 1,
+                "GPE": 0,
+                "entities": ["entity1"],
+            },
+            {
+                "ObjectId": 2,
+                "Sender": "Bob",
+                "Timestamp": "2024-02-10T08:05:00",
+                "Display_Message": "Hi there!",
+                "Message": "Hi there!",
+                "risk": 1,
+                "PERSON": 0,
+                "GPE": 1,
+                "entities": ["entity2"],
+            },
         ]
         message_count = len(chat_messages)
         person_and_locations = {"PERSON": ["Alice", "Bob"], "GPE": ["City1", "City2"]}
@@ -905,13 +953,20 @@ class TestGenerateAnalysisObjects(TestCase):
 
         # Call the function under test
         generate_analysis_objects(
-            mock_file, chat_messages, message_count, person_and_locations, risk_words, common_topics
+            mock_file,
+            chat_messages,
+            message_count,
+            person_and_locations,
+            risk_words,
+            common_topics,
         )
 
         mock_add_analysis.assert_called_once_with(mock_file)
         self.assertEqual(mock_update_message.call_count, len(chat_messages))
         mock_add_vis.assert_called_once()
-        self.assertEqual(mock_add_person.call_count, len(person_and_locations["PERSON"]))
+        self.assertEqual(
+            mock_add_person.call_count, len(person_and_locations["PERSON"])
+        )
         self.assertEqual(mock_add_location.call_count, len(person_and_locations["GPE"]))
         self.assertEqual(mock_add_risk_word_result.call_count, len(risk_words))
 
