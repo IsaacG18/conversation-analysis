@@ -89,6 +89,9 @@ def tag_text(
     Description:
     This function tags messages with relevant keywords and entities.
     """
+    lemma_dict = {}
+    for keyword in keywords:
+        lemma_dict[keyword.lemma] = {"topics": keyword.topics.all(), "keyword": keyword.keyword, "risk_factor": keyword.risk_factor}
     if chatgpt:
         labels = ["PERSON", "GPE"]
     names, locations = [], []
@@ -134,15 +137,15 @@ def tag_text(
             word_regex = re.compile(
                 r"(?<![a-zA-Z0-9]){}(?![a-zA-Z0-9])".format(re.escape(token_text))
             )
-
-            if (keyword := keywords.filter(lemma=token.lemma_).first()) is not None:
-                risk = keyword.risk_factor * (1 + abs(sentiment) * sentiment_multiplier)
-                topics = keyword.topics.all()
+            keyword = lemma_dict.get(token.lemma_)
+            if (keyword is not None):
+                risk = keyword["risk_factor"] * (1 + abs(sentiment) / sentiment_multiplier)
+                topics = keyword["topics"]
                 risk_total += risk
                 if risk > word_risk:
                     message["risk"] += 1
 
-                labeled, offset = label_keyword(token_text, keyword.keyword)
+                labeled, offset = label_keyword(token_text, keyword["keyword"])
                 match = word_regex.search(message["Display_Message"], ptr)
                 if match:
                     if (
@@ -159,14 +162,14 @@ def tag_text(
                     ] == "Check_181831":
                         ptr = match.end() + offset
                         update_display(match.end(), match.end(), message, " risk ")
-                        tag_list.append((keyword.keyword, risk, topics))
-                        message["entities"].append(keyword.keyword)
+                        tag_list.append((keyword["keyword"], risk, topics))
+                        message["entities"].append(keyword["keyword"])
                     else:
                         start = match.start()
                         ptr = match.end() + offset
                         update_display(start, start + len(token_text), message, labeled)
-                        tag_list.append((keyword.keyword, risk, topics))
-                        message["entities"].append(keyword.keyword)
+                        tag_list.append((keyword["keyword"], risk, topics))
+                        message["entities"].append(keyword["keyword"])
         if risk_total > max_risk:
             message["risk"] += 1
         if risk_total / len(message["Message"].split()) > average_risk:
