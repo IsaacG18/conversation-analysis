@@ -1,6 +1,6 @@
 $(document).ready(function () {
-    document.querySelectorAll(".person-button").forEach(personButton => {
-        personButton.addEventListener("click", () => personButton.classList.toggle("person-button--selected"));
+    document.querySelectorAll(".filter-button").forEach(personButton => {
+        personButton.addEventListener("click", () => personButton.classList.toggle("filter-button--selected"));
     });
 
     $('.risk-button').click(function (e) {
