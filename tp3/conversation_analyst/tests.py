@@ -830,7 +830,7 @@ class TestGenerateAnalysisObjects(TestCase):
     @patch("conversation_analyst.scripts.object_creators.add_vis")
     @patch("conversation_analyst.scripts.object_creators.update_message")
     @patch("conversation_analyst.scripts.object_creators.add_analysis")
-    @patch("conversation_analyst.scripts.data_ingestion.plotter")
+    @patch("conversation_analyst.scripts.data_ingestion.plotter.plots")
     def test_generate_analysis_objects(
         self,
         mock_plots,
