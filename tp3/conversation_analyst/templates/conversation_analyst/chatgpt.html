@@ -28,6 +28,9 @@
 
     <section class="main col-md-7">
       <div class="scroll-container chat-container mt-3">
+        {% if empty %}
+          <h2 class="text-center mx-auto"> Select a conversation to continue</h2>
+        {% endif %}
           {% include "conversation_analyst/chatgpt_messages.html" %}
           <br>
           <h3 id="loading_message"></h3>
