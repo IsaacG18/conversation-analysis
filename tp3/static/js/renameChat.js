@@ -4,24 +4,21 @@ $(document).ready(function(){
 
     $('.chat-title').on( "dblclick", function(e){
         e.preventDefault();
-        console.log("dbclick");
-        clearTimeout(clickTimeout);
-        clickState = false;
 
-        chatName = $(e.target).text(); // split file name from suffix
+        chatName = $(e.target).text(); // split chat name from suffix
 
         if ($(e.target).is("a")){  // in case <small></small> is clicked
-            file = $(e.target).parent();
+            chat = $(e.target).parent();
         }
-        else file = $(e.target);
+        else chat = $(e.target);
 
-        chatId = file.attr('id').split("-")[2]; // update rename form
+        chatId = chat.attr('id').split("-")[2]; // update rename form
         $(`#chat-rename-${chatId}`).attr('value', chatName);
 
-        renameInput = file.next(".chat-rename-form") // show rename form
+        renameInput = chat.next(".chat-rename-form") // show rename form
         renameInput.removeClass('d-none');
         renameInput.children('.chat-rename').focus();
-        file.toggle();
+        chat.toggle();
     })
 
     $('.chat-rename-form').submit(function(e){
@@ -45,13 +42,12 @@ $(document).ready(function(){
             data: {'chatName': chatName, 'chatId': chatId},
             success: function(response){
                 console.log(response.message);
-                console.log(response.chatName);
                 titleObject = $(form).prev(".chat-title");
                 if (titleObject.hasClass('convo')){
                     titleObject.html(response.chatName);
                 }
                 else {
-                    titleObject.children('a').html(response.fileName);
+                    titleObject.children('a').html(response.chatName);
                 }
                 $(form).addClass('d-none');
                 titleObject.toggle();
