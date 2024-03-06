@@ -6,38 +6,38 @@ To get this code running require steps for set up
 You need to have Python 3.9 installed on your system. If you haven't installed it yet, you can download it from the [official Python website](https://www.python.org/downloads/) and follow the installation instructions for your operating system.
 
 To verify if pip is installed, you can run the following command in your terminal or command prompt:
---pip version
+    --pip version
 
 
 # Step 2 clone the repo
 
 # Step 3 set up venv
 
-**pip install virtualenv**
+    pip install virtualenv
 
 Navigate to your project directory in the terminal or command prompt and run the following command to create a virtual environment named 'ca':
 
 
-**virtualenv ca**
+    virtualenv ca
 
-On Windows:
+**On Windows:**
 
 
-**ca\Scripts\activate**
+    ca\Scripts\activate
 
-    On macOS and Linux:
+**On macOS and Linux:**
 
-**source venv/bin/activate**
+    source venv/bin/activate
 
 
 # Step 4 install packages
 **Window OS:**
 
-pip install -r win_requirements.txt
+    pip install -r win_requirements.txt
 
 **Other OS:**
 
-pip install -r requirements.txt
+    pip install -r requirements.txt
 
 
 # Step 5 add .env
@@ -45,19 +45,69 @@ pip install -r requirements.txt
 In tp3/tp3 **create a file** called **.env**
 
 Add in the file
-CHATGPT_API_KEY=<api-key>
+
+    CHATGPT_API_KEY=<api-key>
 
 # Step 6 run these commands
 Create and run the migrations:
-1. **python manage.py makemigrations**
-2. **python manage,py migrate**
-3. **python manage,py migrate --run-syncdb**
+
+    python manage.py makemigrations
+    
+    python manage,py migrate
+    
+    python manage,py migrate --run-syncdb
 
 Run the populate script
 
-4. **python date_format_populate.py**
+    python date_format_populate.py
 
 
 # After set up to run the website uses this command
 File path: cs39-main/tp3
-**python manage.py runserver**
+
+    python manage.py runserver
+
+
+# Versions
+
+  
+
+**1.0.0**
+Available from the 15th of January
+Access original only on Python Anywhere
+
+Core Feature:
+- NLP
+-- Sentiment Analysis (not integrated)
+-- Added Visualization for messages
+-- Keyword Identification
+-- Name and Location identification
+- Data ingestion
+-- Basic Customization of File ingestion
+-- Custom Keywords (only in settings)
+-- Compatibility with csv, docs, and txt
+-- Error Handling in upload
+- Front End
+-- Search homepage for files
+-- Word highlighting in content review
+-- Date Filtering 
+-- Key Highlighting
+- ChatGPT
+-- Nothing Implemented
+  
+**2.0.0**
+Available from the 15th of February, available as github and website
+- Content Review New features
+-- Google Maps API search
+-- Export XML data
+-- Add re-analysis of file
+- ChatGPT new features
+-- Added the ability to message chatgpt
+-- Added ability to create new chats
+-- Added ability to access old chats
+-- Added suggested prompts based on analysis
+- Other new features
+-- Renaming analysis on homepage
+- Improvements to existing features
+-- Search for root words in analysis
+-- Improved customization in file structure including; dates, types order, and ability to added extra delimiters

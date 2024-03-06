@@ -9,7 +9,16 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 <script type="text/javascript" src="{% static 'js/suiteSelection.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/waitingAnalyst.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 text-center">
+            <h2 id="waiting_file"></h2>
+            <img id="loadingImage" src="{% static 'pictures/Loading_icon.gif' %}" alt="Waiting Image" style="width: 200px; height: 120px; display: none;">
+        </div>
+    </div>
+</div>
 
 <div class="container-fluid px-5" id="suite-selectoin-containter">
     <div id="div" class="row justify-content-center">
@@ -108,7 +117,7 @@
             {% else %}
             <input class="form-check-input" type="checkbox" role="switch" id="gpt-switch">
             {% endif %}
-            <label class="form-check-label" for="flexSwitchCheckChecked">Use ChatGPT for analysis</label>
+            <label class="form-check-label" for="flexSwitchCheckChecked">Use ChatGPT for analysis [Warning External App; could lead to unforseen errors]</label>
           </div>
     </div>
     <div class="row my-5">
