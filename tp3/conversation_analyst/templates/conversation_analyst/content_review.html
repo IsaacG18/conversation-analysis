@@ -154,10 +154,10 @@
               {% for risk_word in risk_words %}
               {% if risk_word.riskword.risk_factor > 5.0 %}
                 <button class="filter risk-button high">{{ risk_word.riskword.keyword }}
-                  ({{ risk_word.riskword.amount }})</button>
+                  ({{ risk_word.amount }})</button>
               {% else %}
               <button class="filter risk-button high">{{ risk_word.riskword.keyword }}
-                ({{ risk_word.riskword.amount }})</button>
+                ({{ risk_word.amount }})</button>
               {% endif %}
               {% endfor %}
             </div>
