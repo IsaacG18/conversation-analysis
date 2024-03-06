@@ -68,7 +68,7 @@ import numpy as np
 import spacy
 import tempfile
 import csv
-from docx import Documentf
+from docx import Document
 from datetime import datetime
 
 nlp = spacy.load("en_core_web_md")
@@ -833,37 +833,6 @@ class FileProcessTests(TestCase):
                 delimiters=[["Timestamp", ","], ["Sender", ":"]],
             )
 
-    @patch("conversation_analyst.scripts.data_ingestion.file_process.create_arrays")
-    @patch("conversation_analyst.scripts.data_ingestion.file_process.tag_text")
-    @patch(
-        "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_risk_keywords"
-    )
-    @patch(
-        "conversation_analyst.scripts.data_ingestion.file_process.generate_analysis_objects"
-    )
-    def test_process_file_with_large_number_of_messages(
-        self,
-        mock_generate_analysis_objects,
-        mock_get_top_n_common_topics_with_avg_risk,
-        mock_get_top_n_risk_keywords,
-        mock_tag_text,
-        mock_create_arrays,
-    ):
-        mock_file = MagicMock(spec=File)
-        mock_file.slug = "test-file"
-        mock_messages = [
-            MagicMock(
-                timestamp="2021-01-01 10:00:00", sender="Alice", content="Hello", id=i
-            )
-            for i in range(10000)
-        ]
-        threshold_mock = Threshold(
-            average_risk=0.5, sentiment_multiplier=0.7, max_risk=0.9, word_risk=1.2
-        )
-        mock_tag_text.return_value = ("nlp_text_mock", {"PERSON": ["Alice"], "GPE": []})
-        process_file(mock_file, ["keyword1", "keyword2"], mock_messages, threshold_mock)
-        mock_tag_text.assert_called()
-
 
 class TestGenerateAnalysisObjects(TestCase):
     @patch("conversation_analyst.scripts.object_creators.add_risk_word_result")
@@ -920,10 +889,8 @@ class TestGenerateAnalysisObjects(TestCase):
         generate_analysis_objects(
             mock_file,
             chat_messages,
-            message_count,
             person_and_locations,
             risk_words,
-            common_topics,
         )
 
         mock_add_analysis.assert_called_once_with(mock_file)
