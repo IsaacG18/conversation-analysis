@@ -412,7 +412,7 @@ def risk_update(request):
         keyword_obj.save()
 
         return HttpResponse(
-            "risk factor of " + keyword_obj.keyword + " is updated to " + str(risk)
+            "risk factor of " + keyword_obj.keyword + " is updated to " + str(keyword_obj.risk_factor)
         )
 
 
@@ -618,7 +618,7 @@ def chatgpt_new_message(request):
         file = File.objects.get(slug=file_slug)
 
         convo = ChatGPTConvo.objects.create(file=file)
-        convo.save()
+        convo.init_save()
         filter_params = {"file": file}
         if start_date:
             convo.start = datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
@@ -631,6 +631,7 @@ def chatgpt_new_message(request):
                 end_date, "%Y-%m-%dT%H:%M"
             )
         messages = Message.objects.filter(**filter_params)
+        convo.save()
 
         system_message = "You are answering questions about a some text messages with lots of detail, the formated of the messages will be'<Timestamp>: <Name>: <Message> \n"
         for message in messages:
@@ -639,6 +640,7 @@ def chatgpt_new_message(request):
             )
 
         add_chat_message("system", system_message, convo)
+        print(f"convo slug {convo.slug}")
         return JsonResponse({"url": convo.slug})
 
     except Exception as e:
@@ -653,7 +655,6 @@ def chatgpt_page(request, chatgpt_slug):
     # Handles GET request to display chat conversation page.
     # Retrieves messages, persons, locations, and risks associated with the conversation.
     # Renders the chat conversation page with associated data.
-
     chats = ChatGPTConvo.objects.order_by("-date")
     convo = ChatGPTConvo.objects.get(slug=chatgpt_slug)
     analysis = Analysis.objects.get(file=convo.file)
@@ -977,3 +978,31 @@ def search_chats(request):
             )
         }
     )
+
+
+def rename_chat(request):
+    # Define the rename chat view function.
+    # Handles POST request to rename a chat.
+    # Modifies the title of the specified chat.
+    # Returns JSON response indicating success or failure.
+
+    if request.method == "POST":
+        try:
+            newTitle = request.POST["chatName"]
+            chatId = request.POST["chatId"]
+            chat_obj = ChatGPTConvo.objects.filter(id=chatId).first()
+            chat_obj.title = newTitle
+            chat_obj.save()
+
+            context_dict = {
+                "message": "file name of file "
+                + str(chat_obj.id)
+                + " is updated to "
+                + newTitle,
+                "chatName": newTitle,
+            }
+            return JsonResponse(context_dict)
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({"message": f"with error: {e}"})

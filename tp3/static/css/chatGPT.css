@@ -92,3 +92,10 @@ h3 {
     font-size: 1.05rem;
     padding: 0 50px 0 25px;
 }
+
+.chat-rename input[type="text"]{
+    width: 200px; /* Set fixed width */
+    overflow-x: hidden; /* Hide horizontal overflow */
+    overflow-y: auto; /* Allow vertical overflow with scrollbar */
+    background-color: #343541;
+}
