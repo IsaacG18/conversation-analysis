@@ -4,6 +4,7 @@ import numpy as np
 import re
 import os
 from openai import OpenAI
+import emoji
 
 nlp = spacy.load("en_core_web_md")
 RISK_LEVELS = 2
@@ -113,6 +114,7 @@ def tag_text(
         ) = (message["Message"], 0, [], nlp(message["Message"]))
         sentiment = analyzer.polarity_scores(message["Message"])["compound"]
 
+
         for label in labels:
             message[label] = 0
 
@@ -121,7 +123,8 @@ def tag_text(
             chatgpt_find(message, labels[1], locations)
         else:
             for entity in message["doc"].ents:
-                if entity.label_ in labels:
+                
+                if entity.label_ in labels and emoji.emoji_count(entity.text) == 0:
                     labeled, offset = label_entity(entity.label_, entity.text)
                     found_entities[entity.label_].append((entity.text))
                     update_display(entity.start_char + distance, entity.end_char + distance, message, labeled)
