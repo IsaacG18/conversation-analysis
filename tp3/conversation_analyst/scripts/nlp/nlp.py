@@ -162,13 +162,13 @@ def tag_text(
                     ] == "Check_181831":
                         ptr = match.end() + offset
                         update_display(match.end(), match.end(), message, " risk ")
-                        tag_list.append((keyword["keyword"], risk, topics))
+                        tag_list.append((keyword["keyword"], keyword["risk_factor"], topics))
                         message["entities"].append(keyword["keyword"])
                     else:
                         start = match.start()
                         ptr = match.end() + offset
                         update_display(start, start + len(token_text), message, labeled)
-                        tag_list.append((keyword["keyword"], risk, topics))
+                        tag_list.append((keyword["keyword"], keyword["risk_factor"], topics))
                         message["entities"].append(keyword["keyword"])
         if risk_total > max_risk:
             message["risk"] += 1
