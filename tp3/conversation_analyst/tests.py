@@ -68,8 +68,7 @@ import numpy as np
 import spacy
 import tempfile
 import csv
-from docx import Document
-from django.utils.text import slugify
+from docx import Documentf
 from datetime import datetime
 
 nlp = spacy.load("en_core_web_md")
@@ -776,6 +775,15 @@ class FileProcessTests(TestCase):
                 timestamp="2021-01-01 10:00:00", sender="Alice", content="Hello", id=1
             )
         ]
+        
+        chat_messages = [
+            {
+                "Timestamp": "2021-01-01 10:00:00",
+                "Sender": "Alice",
+                "Message": "Hello",
+                "ObjectId": 1,
+            }
+        ]
         threshold_mock = Threshold(
             average_risk=0.5, sentiment_multiplier=0.7, max_risk=0.9, word_risk=1.2
         )
@@ -829,9 +837,6 @@ class FileProcessTests(TestCase):
     @patch("conversation_analyst.scripts.data_ingestion.file_process.tag_text")
     @patch(
         "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_risk_keywords"
-    )
-    @patch(
-        "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_common_topics_with_avg_risk"
     )
     @patch(
         "conversation_analyst.scripts.data_ingestion.file_process.generate_analysis_objects"
