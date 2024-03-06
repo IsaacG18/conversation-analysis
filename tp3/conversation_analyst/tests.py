@@ -61,6 +61,7 @@ import os
 import numpy as np
 import spacy
 import tempfile
+import csv
 from docx import Document
 
 nlp = spacy.load("en_core_web_md")
@@ -1121,3 +1122,34 @@ class TestParseChatFile(unittest.TestCase):
 
         # Clean up by deleting the temporary file
         os.unlink(temp_file_path)
+
+
+class TestCSVFileParsing(unittest.TestCase):
+    def create_temp_csv_file(self, headers, rows):
+        """Utility function for creating a temporary CSV file."""
+        temp_file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
+        writer = csv.writer(temp_file)
+        writer.writerow(headers)
+        writer.writerows(rows)
+        temp_file.flush()
+        temp_file.close()
+        return temp_file.name
+
+    def test_successful_csv_parsing(self):
+        """Test parsing of a well-formed CSV
+        file."""
+        headers = ["Timestamp", "User", "Message"]
+        rows = [
+            ["2023-01-01 12:00:00", "Alice", "Hello, World!"],
+            ["2023-01-02 13:30:00", "Bob", "Hi there!"],
+        ]
+        file_path = self.create_temp_csv_file(headers, rows)
+
+        os.unlink(file_path)
+
+    def test_csv_file_not_found(self):
+        """Test behavior when the CSV file does not exist."""
+        with self.assertRaises(ValueError) as context:
+            # Ensure the file path is clearly invalid or points to a non-existing file
+            parse_chat_file("non_existent_file.csv", [["Timestamp", ","], ["Sender", ":"]], "%Y-%m-%d %H:%M:%S",)
+        self.assertIn("Error reading CSV file", str(context.exception))
