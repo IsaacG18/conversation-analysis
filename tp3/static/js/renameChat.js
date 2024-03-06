@@ -1,7 +1,6 @@
 var clickState = false; // logging if the item has been clicked in a short time frame
 var clickTimeout;
 $(document).ready(function(){
-
     $('.chat-title').on( "dblclick", function(e){
         e.preventDefault();
 

@@ -35,6 +35,11 @@ h3 {
     flex-direction: column;
 }
 
+.scroll-container {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
 .side-past-charts .scroll-container .list-group-item{
     background-color: var(--gray-100);
     border: solid 1.5px var(--gray-100);
@@ -97,3 +102,19 @@ h3 {
     background-color: var(--gray-300);
     color: #333;
   }
+
+.side-header {
+    color: var(--gray-800);
+}
+
+.prompt-style{
+    color: var(--gray-600);
+    font-weight: bold;
+}
+
+.chat-rename-form input[type='text'] {
+    font-size: small;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    
+}
