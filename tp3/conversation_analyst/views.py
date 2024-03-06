@@ -692,7 +692,7 @@ def chatgpt_page_without_slug(request):
     # Retrieves and renders all available chat conversations.
 
     chats = ChatGPTConvo.objects.order_by("-date")
-    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats, "empty":True})
+    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats, "empty": True})
 
 
 def message(request):
