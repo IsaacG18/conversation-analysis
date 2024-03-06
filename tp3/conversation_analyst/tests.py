@@ -5,8 +5,11 @@ from .models import (
     Delimiter,
     File,
     Analysis,
+    KeywordPlan,
     Person,
     Location,
+    RiskWordResult,
+    Topic,
     VisFile,
     DateFormat,
     KeywordSuite,
@@ -63,6 +66,8 @@ import spacy
 import tempfile
 import csv
 from docx import Document
+from django.utils.text import slugify
+from datetime import datetime
 
 nlp = spacy.load("en_core_web_md")
 
@@ -1153,3 +1158,135 @@ class TestCSVFileParsing(unittest.TestCase):
             # Ensure the file path is clearly invalid or points to a non-existing file
             parse_chat_file("non_existent_file.csv", [["Timestamp", ","], ["Sender", ":"]], "%Y-%m-%d %H:%M:%S",)
         self.assertIn("Error reading CSV file", str(context.exception))
+
+
+class ModelsTestCase(TestCase):
+    def test_file_init_save(self):
+        upload_file = SimpleUploadedFile("test_file.txt", b"file_content")
+        file_instance = File(file=upload_file)
+        file_instance.init_save()
+        self.assertEqual(file_instance.title, "test_file.txt")
+        self.assertEqual(file_instance.format, "txt")
+        self.assertTrue(file_instance.slug.startswith(slugify(file_instance.title)))
+
+    def test_message_set_main_sender(self):
+        file_instance = File.objects.create(
+            file=SimpleUploadedFile("test_file.txt", b"file_content")
+        )
+        message = Message.objects.create(
+            file=file_instance,
+            sender="Original Sender",
+            main_sender="Original",
+            timestamp=datetime.now(),
+        )
+        new_sender = "New Main Sender"
+        message.set_main_sender(new_sender)
+        self.assertEqual(message.main_sender, new_sender)
+
+    def test_keywordsuite_save(self):
+        global_plan, created = KeywordPlan.objects.get_or_create(name="global")
+        suite = KeywordSuite.objects.create(name="Suite", default=True)
+        suite.save()
+        self.assertIn(
+            global_plan,
+            suite.plans.all(),
+            "Global plan should be part of suite plans when default is True.",
+        )
+        suite.default = False
+        suite.save()
+        self.assertNotIn(
+            global_plan,
+            suite.plans.all(),
+            "Global plan should not be part of suite plans when default is False.",
+        )
+
+    def test_riskword_save(self):
+        suite = KeywordSuite.objects.create(name="Suite")
+        risk_word = RiskWord.objects.create(suite=suite, keyword="test")
+        self.assertEqual(risk_word.lemma, get_keyword_lamma("test"))
+
+    def test_delimiter_methods(self):
+        delimiter = Delimiter.objects.create(name="Comma", value=",", order=1)
+        self.assertEqual(delimiter.get_name(), "Comma")
+        self.assertEqual(delimiter.get_value(), ",")
+        self.assertEqual(delimiter.get_order(), 1)
+
+    def test_analysis_str(self):
+        file_instance = File.objects.create(
+            file=SimpleUploadedFile("test_file.txt", b"file_content")
+        )
+        analysis = Analysis.objects.create(file=file_instance)
+        self.assertEqual(str(analysis), str(file_instance))
+
+    def test_riskword_result_str(self):
+        riskword = RiskWord.objects.create(
+            suite=KeywordSuite.objects.create(name="Suite"), keyword="test"
+        )
+        analysis = Analysis.objects.create(
+            file=File.objects.create(
+                file=SimpleUploadedFile("test_file.txt", b"file_content")
+            )
+        )
+        result = RiskWordResult.objects.create(riskword=riskword, analysis=analysis)
+        self.assertIn(str(analysis), str(result))
+        self.assertIn(str(riskword), str(result))
+
+    def test_visfile_str(self):
+        file_instance = File.objects.create(
+            file=SimpleUploadedFile("test_file.txt", b"file_content")
+        )
+        analysis = Analysis.objects.create(file=file_instance)
+        visfile = VisFile.objects.create(file_path="path/to/visfile", analysis=analysis)
+        self.assertEqual(str(visfile), "path/to/visfile")
+
+    def test_dateformat_str(self):
+        date_format = DateFormat.objects.create(
+            name="ISO", example="2021-12-31", format="%Y-%m-%d"
+        )
+        self.assertEqual(str(date_format), "ISO")
+
+    def test_delimiter_str(self):
+        delimiter = Delimiter.objects.create(name="Comma", value=",")
+        self.assertEqual(str(delimiter), "Comma")
+
+    def test_chatgptconvo_save(self):
+        file_instance = File.objects.create(
+            file=SimpleUploadedFile("test_file.txt", b"file_content")
+        )
+        convo = ChatGPTConvo.objects.create(title="Initial", file=file_instance)
+        self.assertEqual(convo.title, file_instance.slug)
+        convo.save()
+        self.assertIn(str(convo.id), convo.slug)
+
+    def test_message_str_method(self):
+        file = File.objects.create(
+            file=SimpleUploadedFile("test.txt", b"dummy content")
+        )
+        message = Message.objects.create(
+            file=file,
+            timestamp=datetime.now(),
+            sender="sender",
+            main_sender="main_sender",
+            content="This is a test message.",
+            display_content="This is a test message with display content.",
+            risk_rating=0,
+            tags="test",
+        )
+        self.assertIn(message.sender, str(message))
+        self.assertIn(message.timestamp.strftime("%Y-%m-%d %H:%M:%S"), str(message))
+
+    def test_person_location_str_methods(self):
+        analysis = Analysis.objects.create()
+        person = Person.objects.create(name="John Doe", analysis=analysis)
+        location = Location.objects.create(name="Office", analysis=analysis)
+        self.assertEqual(str(person), person.name)
+        self.assertEqual(str(location), location.name)
+
+    def test_topic_str_method(self):
+        topic = Topic.objects.create(name="Test Topic")
+        self.assertEqual(str(topic), topic.name)
+
+    def test_riskword_save_method(self):
+        suite = KeywordSuite.objects.create(name="Suite")
+        risk_word = RiskWord.objects.create(suite=suite, keyword="test")
+        self.assertIsNotNone(risk_word.lemma)
