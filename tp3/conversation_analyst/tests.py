@@ -5,11 +5,8 @@ from .models import (
     Delimiter,
     File,
     Analysis,
-    KeywordPlan,
     Person,
     Location,
-    RiskWordResult,
-    Topic,
     VisFile,
     DateFormat,
     KeywordSuite,
@@ -775,15 +772,7 @@ class FileProcessTests(TestCase):
                 timestamp="2021-01-01 10:00:00", sender="Alice", content="Hello", id=1
             )
         ]
-        
-        chat_messages = [
-            {
-                "Timestamp": "2021-01-01 10:00:00",
-                "Sender": "Alice",
-                "Message": "Hello",
-                "ObjectId": 1,
-            }
-        ]
+
         threshold_mock = Threshold(
             average_risk=0.5, sentiment_multiplier=0.7, max_risk=0.9, word_risk=1.2
         )
@@ -877,10 +866,8 @@ class TestGenerateAnalysisObjects(TestCase):
                 "entities": ["entity2"],
             },
         ]
-        message_count = len(chat_messages)
         person_and_locations = {"PERSON": ["Alice", "Bob"], "GPE": ["City1", "City2"]}
         risk_words = [("risk1", 0.5, "desc1"), ("risk2", 0.7, "desc2")]
-        common_topics = ["topic1", "topic2"]
 
         mock_add_analysis.return_value = MagicMock()
         mock_plots.return_value = "path/to/visualization.png"
@@ -1058,7 +1045,7 @@ class TestParseChatFile(unittest.TestCase):
 class TestCSVFileParsing(unittest.TestCase):
     def create_temp_csv_file(self, headers, rows):
         """Utility function for creating a temporary CSV file."""
-        temp_file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
+        temp_file = tempfile.NamedTemporaryFile(mode="w+t", delete=False)
         writer = csv.writer(temp_file)
         writer.writerow(headers)
         writer.writerows(rows)
@@ -1082,7 +1069,11 @@ class TestCSVFileParsing(unittest.TestCase):
         """Test behavior when the CSV file does not exist."""
         with self.assertRaises(ValueError) as context:
             # Ensure the file path is clearly invalid or points to a non-existing file
-            parse_chat_file("non_existent_file.csv", [["Timestamp", ","], ["Sender", ":"]], "%Y-%m-%d %H:%M:%S",)
+            parse_chat_file(
+                "non_existent_file.csv",
+                [["Timestamp", ","], ["Sender", ":"]],
+                "%Y-%m-%d %H:%M:%S",
+            )
         self.assertIn("Error reading CSV file", str(context.exception))
 
 
