@@ -54,6 +54,7 @@ from unittest.mock import patch, MagicMock
 from .scripts.data_ingestion.file_process import (
     parse_file,
     process_file,
+    generate_analysis_objects,
 )
 from conversation_analyst.scripts.data_ingestion.ingestion import (
     parse_chat_file,
@@ -63,6 +64,7 @@ import os
 import numpy as np
 import spacy
 import tempfile
+import csv
 from docx import Document
 from datetime import datetime
 
@@ -770,6 +772,7 @@ class FileProcessTests(TestCase):
                 timestamp="2021-01-01 10:00:00", sender="Alice", content="Hello", id=1
             )
         ]
+
         threshold_mock = Threshold(
             average_risk=0.5, sentiment_multiplier=0.7, max_risk=0.9, word_risk=1.2
         )
@@ -818,6 +821,73 @@ class FileProcessTests(TestCase):
                 date_formats=[],
                 delimiters=[["Timestamp", ","], ["Sender", ":"]],
             )
+
+
+class TestGenerateAnalysisObjects(TestCase):
+    @patch("conversation_analyst.scripts.object_creators.add_risk_word_result")
+    @patch("conversation_analyst.scripts.object_creators.add_location")
+    @patch("conversation_analyst.scripts.object_creators.add_person")
+    @patch("conversation_analyst.scripts.object_creators.add_vis")
+    @patch("conversation_analyst.scripts.object_creators.update_message")
+    @patch("conversation_analyst.scripts.object_creators.add_analysis")
+    @patch("conversation_analyst.scripts.data_ingestion.plotter.plots")
+    def test_generate_analysis_objects(
+        self,
+        mock_plots,
+        mock_add_analysis,
+        mock_update_message,
+        mock_add_vis,
+        mock_add_person,
+        mock_add_location,
+        mock_add_risk_word_result,
+    ):
+        mock_file = MagicMock()
+        chat_messages = [
+            {
+                "ObjectId": 1,
+                "Sender": "Alice",
+                "Timestamp": "2024-02-10T08:00:00",
+                "Display_Message": "Hello",
+                "Message": "Hello!",
+                "risk": 0,
+                "PERSON": 1,
+                "GPE": 0,
+                "entities": ["entity1"],
+            },
+            {
+                "ObjectId": 2,
+                "Sender": "Bob",
+                "Timestamp": "2024-02-10T08:05:00",
+                "Display_Message": "Hi there!",
+                "Message": "Hi there!",
+                "risk": 1,
+                "PERSON": 0,
+                "GPE": 1,
+                "entities": ["entity2"],
+            },
+        ]
+        person_and_locations = {"PERSON": ["Alice", "Bob"], "GPE": ["City1", "City2"]}
+        risk_words = [("risk1", 0.5, "desc1"), ("risk2", 0.7, "desc2")]
+
+        mock_add_analysis.return_value = MagicMock()
+        mock_plots.return_value = "path/to/visualization.png"
+
+        # Call the function under test
+        generate_analysis_objects(
+            mock_file,
+            chat_messages,
+            person_and_locations,
+            risk_words,
+        )
+
+        mock_add_analysis.assert_called_once_with(mock_file)
+        self.assertEqual(mock_update_message.call_count, len(chat_messages))
+        mock_add_vis.assert_called_once()
+        self.assertEqual(
+            mock_add_person.call_count, len(person_and_locations["PERSON"])
+        )
+        self.assertEqual(mock_add_location.call_count, len(person_and_locations["GPE"]))
+        self.assertEqual(mock_add_risk_word_result.call_count, len(risk_words))
 
 
 class HomePageTests(TestCase):
@@ -970,6 +1040,41 @@ class TestParseChatFile(unittest.TestCase):
 
         # Clean up by deleting the temporary file
         os.unlink(temp_file_path)
+
+
+class TestCSVFileParsing(unittest.TestCase):
+    def create_temp_csv_file(self, headers, rows):
+        """Utility function for creating a temporary CSV file."""
+        temp_file = tempfile.NamedTemporaryFile(mode="w+t", delete=False)
+        writer = csv.writer(temp_file)
+        writer.writerow(headers)
+        writer.writerows(rows)
+        temp_file.flush()
+        temp_file.close()
+        return temp_file.name
+
+    def test_successful_csv_parsing(self):
+        """Test parsing of a well-formed CSV
+        file."""
+        headers = ["Timestamp", "User", "Message"]
+        rows = [
+            ["2023-01-01 12:00:00", "Alice", "Hello, World!"],
+            ["2023-01-02 13:30:00", "Bob", "Hi there!"],
+        ]
+        file_path = self.create_temp_csv_file(headers, rows)
+
+        os.unlink(file_path)
+
+    def test_csv_file_not_found(self):
+        """Test behavior when the CSV file does not exist."""
+        with self.assertRaises(ValueError) as context:
+            # Ensure the file path is clearly invalid or points to a non-existing file
+            parse_chat_file(
+                "non_existent_file.csv",
+                [["Timestamp", ","], ["Sender", ":"]],
+                "%Y-%m-%d %H:%M:%S",
+            )
+        self.assertIn("Error reading CSV file", str(context.exception))
 
 
 class ModelsTestCase(TestCase):
