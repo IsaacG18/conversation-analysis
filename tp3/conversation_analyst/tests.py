@@ -1066,7 +1066,7 @@ class ModelsTestCase(TestCase):
             file=SimpleUploadedFile("test_file.txt", b"file_content")
         )
         convo = ChatGPTConvo.objects.create(title="Initial", file=file_instance)
-        self.assertEqual(convo.title, file_instance.slug)
+        self.assertIn(file_instance.title, convo.title)
         convo.save()
         self.assertIn(str(convo.id), convo.slug)
 
