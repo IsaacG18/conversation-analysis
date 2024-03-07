@@ -521,6 +521,7 @@ def export_view(request, file_slug):
         SubElement(entry_element, "sender").text = message.sender
         SubElement(entry_element, "content").text = message.content
         SubElement(entry_element, "display_content").text = message.display_content
+        SubElement(entry_element, "risk_level").text = str(message.risk_rating)
     xml_data = minidom.parseString(tostring(root)).toprettyxml(indent="  ")
 
     response = HttpResponse(xml_data, content_type="application/xml")
