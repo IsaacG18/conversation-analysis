@@ -341,6 +341,11 @@ class TestTagText(TestCase):
         labeled_empty_messages, _ = tag_text(empty_messages, self.keywords, self.labels)
         self.assertEqual(labeled_empty_messages, [])
 
+    def test_tag_text(self):
+        emoji_message =  [{"Message": "😊", "risk": 0},]
+        labeled_empty_messages,found_entities = tag_text(emoji_message, self.keywords, ["PERSON"])
+        self.assertEqual(len(found_entities["PERSON"]),0)
+        
 
 class TestNLP(TestCase):
     def setUp(self):

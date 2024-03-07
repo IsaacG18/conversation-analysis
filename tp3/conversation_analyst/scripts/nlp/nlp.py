@@ -117,7 +117,6 @@ def tag_text(
         ) = (message["Message"], 0, [], nlp(message["Message"]))
         sentiment = analyzer.polarity_scores(message["Message"])["compound"]
 
-
         for label in labels:
             message[label] = 0
 
@@ -126,7 +125,6 @@ def tag_text(
             chatgpt_find(message, labels[1], locations)
         else:
             for entity in message["doc"].ents:
-                
                 if entity.label_ in labels and emoji.emoji_count(entity.text) == 0:
                     labeled, offset = label_entity(entity.label_, entity.text)
                     found_entities[entity.label_].append((entity.text))
