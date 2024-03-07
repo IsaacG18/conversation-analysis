@@ -1067,7 +1067,7 @@ class ModelsTestCase(TestCase):
         )
         convo = ChatGPTConvo.objects.create(title="Initial", file=file_instance)
         self.assertIn(file_instance.title, convo.title)
-        convo.save()
+        convo.init_save()
         self.assertIn(str(convo.id), convo.slug)
 
     def test_message_str_method(self):
