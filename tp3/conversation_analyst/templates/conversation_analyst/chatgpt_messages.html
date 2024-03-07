@@ -4,23 +4,23 @@
         {% for message in messages %}
             {% if message.typeOfMessage != "system" %}
                 {% if message.typeOfMessage == "user" %}
-                    <div class="media">
-                        <img src="{% static 'pictures/user.png' %}" class="mr-3 rounded-circle" alt="User Image" style="width: 60px; height: 60px;">
-                        <div class="media-body">
-                            <h5 class="mt-0">User</h5>
-                            {{message.content}}
+                    <div class="media outgoing">
+                        <div class="media-content">
+                        <div class="media-details">
+                            <img src="{% static 'pictures/user.png' %}" class="mr-3 rounded-circle" alt="User Image">
+                            <p>{{message.content}}</p>
+                        </div>
                         </div>
                     </div>
-                    <hr>
                 {% else %}
-                    <div class="media float-right" >
-                        <img src="{% static 'pictures/gpt.png' %}" class="mr-3 rounded-circle" alt="GPT Image" style="width: 60px; height: 60px;">
-                        <div class="media-body">
-                            <h5 class="mt-0">Assistant</h5>
-                            {{message.content}}
+                    <div class="media incoming float-right" >
+                        <div class="media-content">
+                        <div class="media-details">
+                            <img src="{% static 'pictures/gpt.png' %}" class="mr-3 rounded-circle" alt="GPT Image">
+                            <p>{{message.content}}</p>
+                        </div>
                         </div>
                     </div>
-                    <hr>
                 {% endif %}
             {% endif %}
         {% endfor %}

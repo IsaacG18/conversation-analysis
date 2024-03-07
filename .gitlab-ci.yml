@@ -36,3 +36,7 @@ run_method:
     - python manage.py migrate
     - python manage.py migrate --run-syncdb
     - time python speed_test_messages.py
+  only:
+    changes:
+      - tp3/conversation_analyst/scripts/*
+      - .gitlab-ci.yml

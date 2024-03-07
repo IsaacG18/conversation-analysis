@@ -521,6 +521,7 @@ def export_view(request, file_slug):
         SubElement(entry_element, "sender").text = message.sender
         SubElement(entry_element, "content").text = message.content
         SubElement(entry_element, "display_content").text = message.display_content
+        SubElement(entry_element, "risk_level").text = str(message.risk_rating)
     xml_data = minidom.parseString(tostring(root)).toprettyxml(indent="  ")
 
     response = HttpResponse(xml_data, content_type="application/xml")
@@ -692,7 +693,7 @@ def chatgpt_page_without_slug(request):
     # Retrieves and renders all available chat conversations.
 
     chats = ChatGPTConvo.objects.order_by("-date")
-    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats})
+    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats, "empty": True})
 
 
 def message(request):

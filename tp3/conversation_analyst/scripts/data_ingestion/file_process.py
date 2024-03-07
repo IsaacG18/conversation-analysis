@@ -1,7 +1,5 @@
 from ..nlp.nlp import (
-    create_arrays,
     get_top_n_risk_keywords,
-    get_top_n_common_topics_with_avg_risk,
     tag_text,
 )
 from .. import object_creators
@@ -11,16 +9,36 @@ import os
 
 
 def parse_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":"]]):
-    if not file.title.endswith((".docx", ".txt", ".csv")):
-        raise ValueError(
-            "Unsupported file type. Only .txt, .csv and .docx are supported."
-        )
+    """
+    Arguments:
+    file (file): The file object to the user
+    date_formats (str): The format of the timestamps in the chat file
+    delimiters (list): Is a list of list, with the internal list having it first element be the type and the second being the delimiter
 
+
+    Description:
+    This function checkt the file type, ingest the file, then ingests the file, then calls to generate objects for messages
+    """
+
+    if not file.title.endswith((".docx", ".txt", ".csv")):
+        raise ValueError("Unsupported file type. Only .txt, .csv and .docx are supported.")
     messages = ingestion.parse_chat_file(file.file.path, delimiters, date_formats)
     generate_message_objects(file, messages)
 
 
 def process_file(file, keywords, messages, threshold, gpt_switch=False):
+    """
+    Arguments:
+    file (file): The file object to the used
+    keywords (list): A list of keyword objects
+    messages (list): A list of message objects
+    threshold (threshold): The threshold object to the used
+
+
+    Description:
+    It coversts messages to a dictionary then start passing them into nlp functions, calls to geneate all the anylsis objects
+    Then deletes the uploaded file after all the details have been extracted.
+    """
     chat_messages = [
         {
             "Timestamp": message.timestamp,
@@ -30,7 +48,6 @@ def process_file(file, keywords, messages, threshold, gpt_switch=False):
         }
         for message in messages
     ]
-    message_count = create_arrays(chat_messages)
     nlp_text, person_and_locations = tag_text(
         chat_messages,
         keywords,
@@ -42,14 +59,11 @@ def process_file(file, keywords, messages, threshold, gpt_switch=False):
         gpt_switch
     )
     risk_words = get_top_n_risk_keywords(nlp_text, 10)
-    common_topics = get_top_n_common_topics_with_avg_risk(nlp_text, 3)
     generate_analysis_objects(
         file,
         chat_messages,
-        message_count,
         person_and_locations,
         risk_words,
-        common_topics,
     )
     media_root = os.path.join(settings.MEDIA_ROOT, "uploads")
     full_file_path = os.path.join(media_root, file.title)
@@ -58,15 +72,32 @@ def process_file(file, keywords, messages, threshold, gpt_switch=False):
 
 
 def generate_message_objects(file, chat_messages):
+    """
+    Arguments:
+    file (file): The file object to the user
+    chat_messages (list): A list of a dictionary of objects
+
+
+    Description:
+    This function loops through each message an creates message objects
+    """
     for message in chat_messages:
         object_creators.add_message(
             file, message["Timestamp"], message["Sender"], message["Message"]
         )
 
 
-def generate_analysis_objects(
-    file, chat_messages, message_count, person_and_locations, risk_words, common_topics
-):
+def generate_analysis_objects(file, chat_messages, person_and_locations, risk_words):
+    """
+    Arguments:
+    file (file): The file object to the user
+    chat_messages (list): A list of a message objects
+    person_and_locations(dict): A dictionary of two lists one containing all the names and the other locations
+    risk_words(list): A list of list which contain details about each risk word
+
+    Description:
+    This function loops through each message  and updates it, loops though each person, location, and risk word then adds it to the database
+    """
     persons = person_and_locations["PERSON"]
     locations = person_and_locations["GPE"]
 
