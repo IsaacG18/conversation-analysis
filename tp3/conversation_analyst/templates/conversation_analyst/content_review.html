@@ -133,7 +133,7 @@
                 {% if chats %}
                     <ul class="list-group">
                         {% for chat in chats %}
-                          <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" >{{chat.slug}}</a></li>
+                          <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" >{{chat.title}}</a></li>
                         {% endfor %}
                     </ul>
                 {% else %}

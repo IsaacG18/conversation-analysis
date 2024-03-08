@@ -36,4 +36,5 @@ urlpatterns = [
     path('suite_selection/<slug:file_slug>', views.suite_selection, name='suite_selection'),
     path('clear_duplicate_submission', views.clear_duplicate_submission, name='clear_duplicate_submission'),
     path('settings/strictness', views.strictness_update, name='strictness_update'),
+    path('rename_chat', views.rename_chat, name='rename_chat'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
