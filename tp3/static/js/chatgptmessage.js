@@ -1,5 +1,6 @@
 $(document).ready(function () {
-    $(".chatgpt_new_message").click(function () {
+    $(".chatgpt_new_message_form").submit(function (e) {
+        e.preventDefault();
         var message_content = document.getElementById('message_content').value;
         document.getElementById('message_content').value = ""
         document.getElementById('loading_message').innerHTML = "Loading Response"
@@ -12,7 +13,6 @@ $(document).ready(function () {
                 function(data) {
                     $('.results').replaceWith(data.results);
                     document.getElementById('loading_message').innerHTML = ""
-                    
                 });
     })
     $(".gpt_prompt").click(function () {

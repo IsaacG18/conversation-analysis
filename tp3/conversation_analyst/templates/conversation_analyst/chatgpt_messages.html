@@ -1,5 +1,5 @@
 {% load static %}
-<div class="chat-messages results">
+<div class="chat-messages results mt-0 pt-0 scroll-container">
     {% if messages %}
         {% for message in messages %}
             {% if message.typeOfMessage != "system" %}
@@ -24,8 +24,6 @@
                 {% endif %}
             {% endif %}
         {% endfor %}
-    {% else %}
-    <strong>There are no convo present.</strong>
     {% endif %}
     {% if error %}
     <strong>{{error}}</strong>

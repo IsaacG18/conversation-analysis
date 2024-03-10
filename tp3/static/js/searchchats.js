@@ -1,6 +1,8 @@
 $(document).ready(function () {
-    $(".search-chats").click(function () {
+    $("#search-chats").submit(function (e) {
+        e.preventDefault();
         var query = document.getElementById('search-input').value;
+        console.log(query);
         var page_slug = window.location.pathname.split('/').pop(); 
         $.get("search_chats",
                 {'query': query, "page_slug":page_slug},
