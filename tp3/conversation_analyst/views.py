@@ -33,6 +33,7 @@ from .models import (
     ChatGPTConvo,
     ChatGPTMessage,
     CustomThresholds,
+    GptSwitch,
 )
 
 
@@ -411,8 +412,28 @@ def risk_update(request):
         keyword_obj.save()
 
         return HttpResponse(
-            "risk factor of " + keyword_obj.keyword + " is updated to " + str(risk)
+            "risk factor of " + keyword_obj.keyword + " is updated to " + str(keyword_obj.risk_factor)
         )
+
+
+def gpt_switch(request):
+    # Define the gpt switch view function.
+    # Handle POST request to toggle GPT switch.
+    # Modifies the boolean field for GPT switch
+    # Returns HttpResponse indicating success or failure of the switch toggle.
+    if request.method == "POST":
+        try:
+            isChecked = json.loads(request.POST["value"])
+            switch, created = GptSwitch.objects.get_or_create(id=1)
+            switch.on = isChecked
+            switch.save()
+            if created:
+                return HttpResponse(f"gpt switched created, on: {isChecked}")
+            else:
+                return HttpResponse(f"switch on: {isChecked}")
+
+        except KeyError as e:
+            return HttpResponse(f"{e}")
 
 
 def rename_file(request):
@@ -500,6 +521,7 @@ def export_view(request, file_slug):
         SubElement(entry_element, "sender").text = message.sender
         SubElement(entry_element, "content").text = message.content
         SubElement(entry_element, "display_content").text = message.display_content
+        SubElement(entry_element, "risk_level").text = str(message.risk_rating)
     xml_data = minidom.parseString(tostring(root)).toprettyxml(indent="  ")
 
     response = HttpResponse(xml_data, content_type="application/xml")
@@ -597,7 +619,7 @@ def chatgpt_new_message(request):
         file = File.objects.get(slug=file_slug)
 
         convo = ChatGPTConvo.objects.create(file=file)
-        convo.save()
+        convo.init_save()
         filter_params = {"file": file}
         if start_date:
             convo.start = datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
@@ -610,6 +632,7 @@ def chatgpt_new_message(request):
                 end_date, "%Y-%m-%dT%H:%M"
             )
         messages = Message.objects.filter(**filter_params)
+        convo.save()
 
         system_message = "You are answering questions about a some text messages with lots of detail, the formated of the messages will be'<Timestamp>: <Name>: <Message> \n"
         for message in messages:
@@ -632,7 +655,6 @@ def chatgpt_page(request, chatgpt_slug):
     # Handles GET request to display chat conversation page.
     # Retrieves messages, persons, locations, and risks associated with the conversation.
     # Renders the chat conversation page with associated data.
-
     chats = ChatGPTConvo.objects.order_by("-date")
     convo = ChatGPTConvo.objects.get(slug=chatgpt_slug)
     analysis = Analysis.objects.get(file=convo.file)
@@ -671,7 +693,7 @@ def chatgpt_page_without_slug(request):
     # Retrieves and renders all available chat conversations.
 
     chats = ChatGPTConvo.objects.order_by("-date")
-    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats})
+    return render(request, "conversation_analyst/chatgpt.html", {"chats": chats, "empty": True})
 
 
 def message(request):
@@ -871,6 +893,7 @@ def suite_selection(request, file_slug):
 
     if request.method == "GET":
         keyword_suites = KeywordSuite.objects.all()
+        gpt_switch = GptSwitch.objects.get(id=1)
         if len(keyword_suites) == 0:
             context_dict = {}
         else:
@@ -879,6 +902,7 @@ def suite_selection(request, file_slug):
             context_dict = {"keyword_suites": keyword_suites, "risk_words": risk_words}
 
         context_dict["file_slug"] = file_slug
+        context_dict["gpt_switch"] = gpt_switch.on
         return render(
             request, "conversation_analyst/suite_selection.html", context=context_dict
         )
@@ -892,7 +916,8 @@ def suite_selection(request, file_slug):
             file_obj = File.objects.get(slug=file_slug)
             messages = Message.objects.filter(file=file_obj)
             threshold = CustomThresholds.objects.all()[0]
-            process_file(file_obj, keywords, messages, threshold)
+            gpt_switch = GptSwitch.objects.get(id=1).on
+            process_file(file_obj, keywords, messages, threshold, gpt_switch)
             return HttpResponseRedirect(
                 reverse("content_review", kwargs={"file_slug": file_obj.slug})
             )
@@ -934,7 +959,7 @@ def search_chats(request):
     if len(page_slug) > 0 and page_slug.strip() != "":
         convo = ChatGPTConvo.objects.get(slug=page_slug)
         if len(query) > 0 and query.strip() != "":
-            chats = chats.filter(slug__icontains=query)
+            chats = chats.filter(title__icontains=query)
         return JsonResponse(
             {
                 "results": render_to_string(
@@ -953,3 +978,31 @@ def search_chats(request):
             )
         }
     )
+
+
+def rename_chat(request):
+    # Define the rename chat view function.
+    # Handles POST request to rename a chat.
+    # Modifies the title of the specified chat.
+    # Returns JSON response indicating success or failure.
+
+    if request.method == "POST":
+        try:
+            newTitle = request.POST["chatName"]
+            chatId = request.POST["chatId"]
+            chat_obj = ChatGPTConvo.objects.filter(id=chatId).first()
+            chat_obj.title = newTitle
+            chat_obj.save()
+
+            context_dict = {
+                "message": "file name of file "
+                + str(chat_obj.id)
+                + " is updated to "
+                + newTitle,
+                "chatName": newTitle,
+            }
+            return JsonResponse(context_dict)
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({"message": f"with error: {e}"})

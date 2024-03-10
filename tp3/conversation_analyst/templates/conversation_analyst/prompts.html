@@ -1,7 +1,7 @@
 {% load static %}
 <div class="col-md-3 bg-light prompts">
-    <h3 class="mt-3">Prompts</h3>
-    <div class="scroll-container">
+    <div class="prompt-style my-3 ms-2">Here are some suggestions...</div>
+    <div class="scroll-container mt-2">
         {% if convo %}
             <ul class="list-group">
                 <li class="list-group-item gpt_prompt">What is this conversation about</li>
@@ -17,7 +17,7 @@
                 {% endfor %}
             </ul>
         {% else %}
-            <strong>There are no prompts present.</strong>
+            <div class="prompt-style ms-2">Select a conversation to get some prompts!</div>
         {% endif %}
     </div>
 </div>

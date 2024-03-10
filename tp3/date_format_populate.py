@@ -7,7 +7,7 @@ import django
 django.setup()
 
 from conversation_analyst.scripts.data_ingestion import ingestion
-from conversation_analyst.scripts.object_creators import add_date, add_delim, add_custom_threshold
+from conversation_analyst.scripts.object_creators import add_date, add_delim, add_custom_threshold, add_gpt_switch
 
 
 def populate_dates():
@@ -59,6 +59,8 @@ def populate_delims():
 def populate_thresholds():
     add_custom_threshold(average_risk=0.8, sentiment_multiplier=0.5, max_risk=40, word_risk=7, strictness_level=2, sentiment_level=2)
 
+    
+
 if __name__ == "__main__":
     print("Starting population script...")
     media_dir = "media"
@@ -75,5 +77,6 @@ if __name__ == "__main__":
     populate_dates()
     populate_delims()
     populate_thresholds()
+    add_gpt_switch()
     
     print("Finished")

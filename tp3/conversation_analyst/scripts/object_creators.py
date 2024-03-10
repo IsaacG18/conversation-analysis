@@ -12,6 +12,7 @@ from ..models import (
     ChatGPTFilter,
     ChatGPTConvoFilter,
     CustomThresholds,
+    GptSwitch,
 )
 
 
@@ -69,7 +70,7 @@ def add_risk_word(analysis, keyword, amount, risk_factor=0):
 def add_risk_word_result(analysis, keyword, amount, risk_factor=0):
     k = RiskWord.objects.filter(keyword=keyword).first()
     r = RiskWordResult.objects.get_or_create(
-        analysis=analysis, riskword=k, amount=amount
+        analysis=analysis, riskword=k, amount=amount, risk_factor=risk_factor
     )[0]
     r.save()
     return r
@@ -131,3 +132,9 @@ def add_custom_threshold(
     )
     ct.save()
     return ct
+
+
+def add_gpt_switch():
+    s = GptSwitch.objects.create()
+    s.save()
+    return s

@@ -175,9 +175,9 @@ class ChatGPTConvo(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True)
 
-    def save(self, *args, **kwargs):
-        self.title = self.file.slug
-        self.slug = slugify(self.title + " " + str(self.id))
+    def init_save(self, *args, **kwargs):
+        self.title = self.file.title + "-chat" + str(self.id)
+        self.slug = slugify(self.file.slug + " " + str(self.id))
         super(ChatGPTConvo, self).save(*args, **kwargs)
 
 
@@ -204,3 +204,7 @@ class CustomThresholds(models.Model):
     sentiment_multiplier = models.FloatField(null=True)
     max_risk = models.FloatField(null=True)
     word_risk = models.FloatField(null=True)
+
+
+class GptSwitch(models.Model):
+    on = models.BooleanField(default=False)

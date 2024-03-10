@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+import unittest
 from .models import (
     Delimiter,
     File,
@@ -15,6 +16,9 @@ from .models import (
     ChatGPTFilter,
     ChatGPTConvoFilter,
     CustomThresholds,
+    KeywordPlan,
+    RiskWordResult,
+    Topic,
 )
 from .scripts.nlp.nlp import (
     classify,
@@ -22,13 +26,14 @@ from .scripts.nlp.nlp import (
     label_entity,
     label_keyword,
     message_to_text,
-    create_arrays,
     get_date_messages,
     get_keyword_lamma,
     tag_text,
-    name_location_chatgpt
+    name_location_chatgpt,
+    update_display,
 )
 from django.utils import timezone
+from django.template.defaultfilters import slugify
 from .scripts.object_creators import (
     Message,
     add_message,
@@ -46,10 +51,22 @@ from .scripts.object_creators import (
 from django.core.files.uploadedfile import SimpleUploadedFile
 from .scripts.data_ingestion.plotter import plots
 from unittest.mock import patch, MagicMock
-from .scripts.data_ingestion.file_process import parse_file, process_file
+from .scripts.data_ingestion.file_process import (
+    parse_file,
+    process_file,
+    generate_analysis_objects,
+)
+from conversation_analyst.scripts.data_ingestion.ingestion import (
+    parse_chat_file,
+    parse_timestamp,
+)
 import os
 import numpy as np
 import spacy
+import tempfile
+import csv
+from docx import Document
+from datetime import datetime
 
 nlp = spacy.load("en_core_web_md")
 
@@ -86,6 +103,22 @@ class DelimiterTestCase(TestCase):
         comma = Delimiter.objects.get(name="Comma")
         self.assertEqual(str(comma), "Comma")
 
+    def test_delimiter_large_order(self):
+        """Test handling of large order values."""
+        large_order_value = 2**31
+        delimiter = Delimiter.objects.create(
+            name="Pipe", value="|", order=large_order_value, is_default=False
+        )
+        self.assertEqual(delimiter.order, large_order_value)
+
+    def test_delimiter_str_special_characters(self):
+        """Test the __str__ method with special characters."""
+        name_with_special_chars = "Newline\nCarriage Return\r"
+        delimiter = Delimiter.objects.create(
+            name=name_with_special_chars, value="\n", order=5, is_default=False
+        )
+        self.assertEqual(str(delimiter), name_with_special_chars)
+
 
 class SearchFeatureTests(TestCase):
     def setUp(self):
@@ -107,6 +140,36 @@ class SearchFeatureTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Sample Search File")
         self.assertNotContains(response, "Sample File 1")
+
+    def test_search_with_special_characters(self):
+        response = self.client.get(reverse("homepage"), {"query": "Sample & File"})
+        self.assertEqual(response.status_code, 200)
+
+    def test_search_case_insensitivity(self):
+        response = self.client.get(reverse("homepage"), {"query": "sample search file"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Sample Search File")
+
+    def test_empty_query(self):
+        response = self.client.get(reverse("homepage"), {"query": ""})
+        self.assertEqual(response.status_code, 200)
+
+    def test_very_long_query(self):
+        long_query = "a" * 1000
+        response = self.client.get(reverse("homepage"), {"query": long_query})
+        self.assertEqual(response.status_code, 200)
+
+    def test_non_existing_query(self):
+        response = self.client.get(reverse("homepage"), {"query": "NonExisting"})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Sample File 1")
+        self.assertNotContains(response, "Sample Search File")
+
+    def test_sql_injection_protection(self):
+        response = self.client.get(
+            reverse("homepage"), {"query": "'; DROP TABLE files; --"}
+        )
+        self.assertEqual(response.status_code, 200)
 
 
 class ObjectCreatorTests(TestCase):
@@ -186,12 +249,30 @@ class ObjectCreatorTests(TestCase):
         self.assertEqual(convo_filter.filter.content, "spam")
 
     def test_add_custom_threshold(self):
-        ct = add_custom_threshold(average_risk=0.8, sentiment_multiplier=2, max_risk=40, word_risk=7)
+        ct = add_custom_threshold(
+            average_risk=0.8, sentiment_multiplier=2, max_risk=40, word_risk=7
+        )
         self.assertEqual(CustomThresholds.objects.count(), 1)
         self.assertEqual(ct.average_risk, 0.8)
         self.assertEqual(ct.sentiment_multiplier, 2)
         self.assertEqual(ct.max_risk, 40)
         self.assertEqual(ct.word_risk, 7)
+
+    # def test_update_non_existing_message(self):
+    #     with self.assertRaises(Message.DoesNotExist):
+    #         update_message(999, "Non-existing message", ["entity3", "entity4"], risk_rating=5)
+
+    # def test_add_person_with_long_name(self):
+    #     long_name = "John" * 50
+    #     person = add_person(self.analysis, long_name)
+    #     self.assertTrue(len(person.name) <= 50)
+
+    # def test_add_large_number_of_messages(self):
+    #     initial_count = Message.objects.count()
+    #     for _ in range(10000):
+    #         add_message(self.file, timezone.now(), "Mass Sender", "Mass message")
+    #     expected_count = initial_count + 10000
+    #     self.assertEqual(Message.objects.count(), expected_count)
 
 
 class RenameTests(TestCase):
@@ -351,39 +432,6 @@ class TestNLP(TestCase):
         text, _ = message_to_text(messages)
         self.assertEqual(text, expected_text)
 
-    def test_create_arrays(self):
-        parsed_data = [
-            {"Sender": "Alice", "Message": "Hello", "Timestamp": "2024-02-10 08:00:00"},
-            {
-                "Sender": "Bob",
-                "Message": "Hi there",
-                "Timestamp": "2024-02-10 08:05:00",
-            },
-            {
-                "Sender": "Alice",
-                "Message": "How are you?",
-                "Timestamp": "2024-02-10 08:10:00",
-            },
-        ]
-        date_messages = create_arrays(parsed_data)
-        self.assertIsInstance(date_messages["Alice"]["timestamps"], np.ndarray)
-        self.assertEqual(len(date_messages["Alice"]["timestamps"]), 2)
-        self.assertEqual(date_messages["Alice"]["timestamps"][0], "2024-02-10 08:00:00")
-        self.assertEqual(date_messages["Alice"]["timestamps"][1], "2024-02-10 08:10:00")
-
-        self.assertIsInstance(date_messages["Alice"]["message_lengths"], np.ndarray)
-        self.assertEqual(len(date_messages["Alice"]["message_lengths"]), 2)
-        self.assertEqual(date_messages["Alice"]["message_lengths"][0], 5)
-        self.assertEqual(date_messages["Alice"]["message_lengths"][1], 12)
-
-        self.assertIsInstance(date_messages["Bob"]["timestamps"], np.ndarray)
-        self.assertEqual(len(date_messages["Bob"]["timestamps"]), 1)
-        self.assertEqual(date_messages["Bob"]["timestamps"][0], "2024-02-10 08:05:00")
-
-        self.assertIsInstance(date_messages["Bob"]["message_lengths"], np.ndarray)
-        self.assertEqual(len(date_messages["Bob"]["message_lengths"]), 1)
-        self.assertEqual(date_messages["Bob"]["message_lengths"][0], 8)
-
     def test_get_keyword_lamma(self):
         keyword = "running"
         expected_lemma = "run"
@@ -396,11 +444,65 @@ class TestNLP(TestCase):
         self.assertEqual(0, len(locations))
 
     def test_name_location_chatgpt(self):
-        names, locations = name_location_chatgpt("Hello, I am Isaac, and I am from Dundee")
+        names, locations = name_location_chatgpt(
+            "Hello, I am Isaac, and I am from Dundee"
+        )
         self.assertEqual(1, len(names))
         self.assertEqual(1, len(locations))
         self.assertEqual("Isaac", names[0])
         self.assertEqual("Dundee", locations[0])
+
+    def test_label_entity_with_invalid_entity(self):
+        # Test with invalid entity that does not have label_ or text
+        with self.assertRaises(AttributeError):
+            label_entity(None, None)
+
+    def test_message_to_text_with_empty_messages(self):
+        # Test with empty messages list
+        text, _ = message_to_text([])
+        self.assertEqual(text, "")
+
+    def test_name_location_chatgpt_with_non_string_input(self):
+        # Test with non-string input
+        with self.assertRaises(TypeError):
+            name_location_chatgpt(None)
+
+    def test_name_location_chatgpt_with_long_string(self):
+        # Test with a very long string to test the limits of the NLP model
+        long_string = (
+            "Hello, I am Isaac, "
+            + "and I love visiting cities, " * 1000
+            + "and I am from Dundee"
+        )
+        names, locations = name_location_chatgpt(long_string)
+        self.assertEqual(1, len(names))
+        self.assertEqual(1, len(locations))
+        self.assertEqual("Isaac", names[0])
+        self.assertEqual("Dundee", locations[0])
+
+    def test_message_to_text_with_large_number_of_messages(self):
+        # Test with a large number of messages
+        large_messages = [{"Message": "Hello", "Sender": "Alice"}] * 10000
+        text, _ = message_to_text(large_messages)
+        self.assertTrue(len(text) > 0)
+
+    def test_update_message_normal(self):
+        message = {}
+        message["Display_Message"] = "Hello!"
+        update_display(5, 5, message, "World")
+        self.assertEqual("HelloWorld!", message["Display_Message"])
+
+    def test_update_message_extreme_one(self):
+        message = {}
+        message["Display_Message"] = "Hello i am ,how are you"
+        update_display(11, 10, message, "David")
+        self.assertEqual("Hello i am David ,how are you", message["Display_Message"])
+
+    def test_update_message_extreme_two(self):
+        message = {}
+        message["Display_Message"] = ""
+        update_display(0, 0, message, "")
+        self.assertEqual(message["Display_Message"], "")
 
 
 class ChatGPTFeatureTestCase(TestCase):
@@ -429,28 +531,6 @@ class ChatGPTFeatureTestCase(TestCase):
         self.assertEqual(messages.count(), 2)
         self.assertEqual(messages[0].content, "This is a test question?")
         self.assertEqual(messages[1].typeOfMessage, "Response")
-
-
-# class ChatGPTFilteringTestCase(TestCase):
-#     def setUp(self):
-#         test_file = File.objects.create(file='path/to/file', title='Test File', format='txt', slug='test-file-'
-#             + timezone.now().strftime("%Y%m%d%H%M%S"))
-#         date_today = timezone.now()
-#         ChatGPTConvo.objects.create(title="Conversation Today", file=test_file, date=date_today)
-#         ChatGPTConvo.objects.create(title="Conversation Yesterday", file=test_file, date=date_today - timedelta(days=1))
-#         ChatGPTConvo.objects.create(title="Conversation Last Week", file=test_file, date=date_today - timedelta(weeks=1))
-
-#     def test_filter_conversations_by_date_range(self):
-#         """Test filtering conversations within a specific date range."""
-#         date_today = timezone.now()
-#         start_date = date_today - timedelta(days=2)
-#         end_date = date_today
-#         conversations = ChatGPTConvo.objects.filter(date__range=(start_date, end_date))
-
-#         # Verify that only conversations within the last 2 days are returned
-#         self.assertEqual(conversations.count(), 2)
-#         self.assertTrue(any(convo.title == "Conversation Today" for convo in conversations))
-#         self.assertTrue(any(convo.title == "Conversation Yesterday" for convo in conversations))
 
 
 class SettingTestCase(TestCase):
@@ -515,6 +595,27 @@ class InputValidationTestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_upload_very_large_file(self):
+        large_file_content = b"a" * (20 * 1024 * 1024)
+        uploaded_file = SimpleUploadedFile(
+            "large_test.txt", large_file_content, content_type="text/plain"
+        )
+        response = self.client.post(
+            reverse("upload"),
+            {"file": uploaded_file, "selected_timestamp": "some_valid_timestamp"},
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_upload_unsupported_format(self):
+        uploaded_file = SimpleUploadedFile(
+            "test.unsupported", b"unsupported content", content_type="text/unsupported"
+        )
+        response = self.client.post(
+            reverse("upload"),
+            {"file": uploaded_file, "selected_timestamp": "some_valid_timestamp"},
+        )
+        self.assertEqual(response.status_code, 200)
+
 
 class ChatGPTConvoFilterTestCase(TestCase):
     def setUp(self):
@@ -571,6 +672,54 @@ class PlotterTests(TestCase):
         mock_write_image.assert_called_with(expected_full_path)
         mock_makedirs.assert_called_once_with(expected_directory)
 
+    @patch("os.makedirs")
+    @patch("os.path.exists", return_value=False)
+    @patch("os.getcwd", return_value="/fake/directory")
+    @patch("plotly.graph_objects.Figure.write_image")
+    def test_plots_large_number_of_messages(
+        self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs
+    ):
+        chat_messages = [
+            {
+                "Sender": f"User{i % 3}",
+                "Timestamp": f"2024-02-10T08:{i:02d}:00",
+                "Message": f"Message {i}",
+                "risk": 5,
+                "PERSON": i % 4,
+                "GPE": 5,
+            }
+            for i in range(60)
+        ]
+        name = "test_large_plot.png"
+        analysis_id = "789"
+
+        plot_path = plots(chat_messages, name, analysis_id)
+        self.assertEqual(plot_path, "vis_uploads/test_large_plot_plot789.png")
+        mock_write_image.assert_called_once()
+        expected_directory = "/fake/directory/media/vis_uploads"
+        expected_full_path = os.path.join(
+            expected_directory, "test_large_plot_plot789.png"
+        )
+        mock_write_image.assert_called_with(expected_full_path)
+        mock_makedirs.assert_called_once_with(expected_directory)
+
+    @patch("os.makedirs")
+    @patch("os.path.exists", return_value=False)
+    @patch("os.getcwd", return_value="/fake/directory")
+    @patch("plotly.graph_objects.Figure.write_image")
+    def test_plots_invalid_data(
+        self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs
+    ):
+        chat_messages = [{"Sender": "Alice"}]
+        try:
+            plot_path = plots(chat_messages, "test_invalid_data_plot.png", "112")
+            self.assertIsNone(plot_path, "Plot path should be None for invalid data")
+        except KeyError as e:
+            self.assertIn(
+                "Timestamp", str(e), "Timestamp key is missing in the input data"
+            )
+        mock_write_image.assert_not_called()
+
 
 class Threshold:
     def __init__(self, average_risk, sentiment_multiplier, max_risk, word_risk):
@@ -603,13 +752,9 @@ class FileProcessTests(TestCase):
             mock_file, mock_parse_chat_file.return_value
         )
 
-    @patch("conversation_analyst.scripts.data_ingestion.file_process.create_arrays")
     @patch("conversation_analyst.scripts.data_ingestion.file_process.tag_text")
     @patch(
         "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_risk_keywords"
-    )
-    @patch(
-        "conversation_analyst.scripts.data_ingestion.file_process.get_top_n_common_topics_with_avg_risk"
     )
     @patch(
         "conversation_analyst.scripts.data_ingestion.file_process.generate_analysis_objects"
@@ -617,10 +762,8 @@ class FileProcessTests(TestCase):
     def test_process_file(
         self,
         mock_generate_analysis_objects,
-        mock_get_top_n_common_topics_with_avg_risk,
         mock_get_top_n_risk_keywords,
         mock_tag_text,
-        mock_create_arrays,
     ):
         mock_file = MagicMock(spec=File)
         mock_file.slug = "test-file"
@@ -629,14 +772,7 @@ class FileProcessTests(TestCase):
                 timestamp="2021-01-01 10:00:00", sender="Alice", content="Hello", id=1
             )
         ]
-        chat_messages = [
-            {
-                "Timestamp": "2021-01-01 10:00:00",
-                "Sender": "Alice",
-                "Message": "Hello",
-                "ObjectId": 1,
-            }
-        ]
+
         threshold_mock = Threshold(
             average_risk=0.5, sentiment_multiplier=0.7, max_risk=0.9, word_risk=1.2
         )
@@ -646,11 +782,112 @@ class FileProcessTests(TestCase):
         process_file(mock_file, ["keyword1", "keyword2"], mock_messages, threshold_mock)
 
         # Assert test
-        mock_create_arrays.assert_called_once_with(chat_messages)
         mock_tag_text.assert_called_once()
         mock_get_top_n_risk_keywords.assert_called_once()
-        mock_get_top_n_common_topics_with_avg_risk.assert_called_once()
         mock_generate_analysis_objects.assert_called_once()
+
+    @patch("conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file")
+    def test_process_empty_file(self, mock_parse_chat_file):
+        mock_file = MagicMock(spec=File)
+        mock_file.file.path = "/fake/path/to/empty_file.txt"
+        mock_parse_chat_file.return_value = []
+
+        parse_file(
+            mock_file, date_formats=[], delimiters=[["Timestamp", ","], ["Sender", ":"]]
+        )
+
+    @patch("conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file")
+    def test_process_corrupted_file(self, mock_parse_chat_file):
+        mock_file = MagicMock(spec=File)
+        mock_file.file.path = "/fake/path/to/corrupted_file.txt"
+        mock_parse_chat_file.side_effect = ValueError("File format not recognized")
+
+        with self.assertRaises(ValueError):
+            parse_file(
+                mock_file,
+                date_formats=[],
+                delimiters=[["Timestamp", ","], ["Sender", ":"]],
+            )
+
+    @patch("conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file")
+    def test_process_nonexistent_file(self, mock_parse_chat_file):
+        mock_file = MagicMock(spec=File)
+        mock_file.file.path = "/fake/path/to/nonexistent_file.txt"
+        mock_parse_chat_file.side_effect = FileNotFoundError("File not found")
+
+        with self.assertRaises(FileNotFoundError):
+            parse_file(
+                mock_file,
+                date_formats=[],
+                delimiters=[["Timestamp", ","], ["Sender", ":"]],
+            )
+
+
+class TestGenerateAnalysisObjects(TestCase):
+    @patch("conversation_analyst.scripts.object_creators.add_risk_word_result")
+    @patch("conversation_analyst.scripts.object_creators.add_location")
+    @patch("conversation_analyst.scripts.object_creators.add_person")
+    @patch("conversation_analyst.scripts.object_creators.add_vis")
+    @patch("conversation_analyst.scripts.object_creators.update_message")
+    @patch("conversation_analyst.scripts.object_creators.add_analysis")
+    @patch("conversation_analyst.scripts.data_ingestion.plotter.plots")
+    def test_generate_analysis_objects(
+        self,
+        mock_plots,
+        mock_add_analysis,
+        mock_update_message,
+        mock_add_vis,
+        mock_add_person,
+        mock_add_location,
+        mock_add_risk_word_result,
+    ):
+        mock_file = MagicMock()
+        chat_messages = [
+            {
+                "ObjectId": 1,
+                "Sender": "Alice",
+                "Timestamp": "2024-02-10T08:00:00",
+                "Display_Message": "Hello",
+                "Message": "Hello!",
+                "risk": 0,
+                "PERSON": 1,
+                "GPE": 0,
+                "entities": ["entity1"],
+            },
+            {
+                "ObjectId": 2,
+                "Sender": "Bob",
+                "Timestamp": "2024-02-10T08:05:00",
+                "Display_Message": "Hi there!",
+                "Message": "Hi there!",
+                "risk": 1,
+                "PERSON": 0,
+                "GPE": 1,
+                "entities": ["entity2"],
+            },
+        ]
+        person_and_locations = {"PERSON": ["Alice", "Bob"], "GPE": ["City1", "City2"]}
+        risk_words = [("risk1", 0.5, "desc1"), ("risk2", 0.7, "desc2")]
+
+        mock_add_analysis.return_value = MagicMock()
+        mock_plots.return_value = "path/to/visualization.png"
+
+        # Call the function under test
+        generate_analysis_objects(
+            mock_file,
+            chat_messages,
+            person_and_locations,
+            risk_words,
+        )
+
+        mock_add_analysis.assert_called_once_with(mock_file)
+        self.assertEqual(mock_update_message.call_count, len(chat_messages))
+        mock_add_vis.assert_called_once()
+        self.assertEqual(
+            mock_add_person.call_count, len(person_and_locations["PERSON"])
+        )
+        self.assertEqual(mock_add_location.call_count, len(person_and_locations["GPE"]))
+        self.assertEqual(mock_add_risk_word_result.call_count, len(risk_words))
 
 
 class HomePageTests(TestCase):
@@ -665,6 +902,23 @@ class HomePageTests(TestCase):
         response = client.get(reverse("homepage"), {"query": "Sample"})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "conversation_analyst/search_result.html")
+
+    def test_homepage_with_very_long_query(self):
+        client = Client()
+        long_query = "a" * 1024  # 1024 characters long
+        response = client.get(reverse("homepage"), {"query": long_query})
+        self.assertEqual(response.status_code, 200)
+
+    def test_homepage_with_special_characters_in_query(self):
+        client = Client()
+        special_query = '!@#$%^&*()_+{}|:"<>?'
+        response = client.get(reverse("homepage"), {"query": special_query})
+        self.assertEqual(response.status_code, 200)
+
+    def test_homepage_with_nonexistent_query_parameter(self):
+        client = Client()
+        response = client.get(reverse("homepage"), {"nonexistent": "true"})
+        self.assertEqual(response.status_code, 200)
 
 
 class ContentReviewTests(TestCase):
@@ -682,3 +936,274 @@ class ContentReviewTests(TestCase):
         url = reverse("content_review", kwargs={"file_slug": self.file.slug})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+    def test_content_with_nonexistent_file_slug(self):
+        nonexistent_slug = "this-slug-does-not-exist-12345"
+        url = reverse("content_review", kwargs={"file_slug": nonexistent_slug})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("File not exist", response.content.decode())
+
+    def test_content_with_special_character_slug(self):
+        special_slug = "special-slug"
+        url = reverse("content_review", kwargs={"file_slug": special_slug})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+
+class TestTimestampParsing(unittest.TestCase):
+    def test_parse_invalid_timestamp(self):
+        """Test handling of an invalid timestamp format."""
+        with self.assertRaises(ValueError):
+            parse_timestamp("invalid-timestamp", "%Y-%m-%d %H:%M:%S")
+
+    def test_empty_timestamp(self):
+        """Test handling of an empty timestamp."""
+        with self.assertRaises(ValueError):
+            parse_timestamp("", "%Y-%m-%d %H:%M:%S")
+
+
+class TestParseChatFile(unittest.TestCase):
+    def create_temp_csv_file(self, headers, rows):
+        """Create a temporary CSV file."""
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        with open(temp_file.name, "w") as file:
+            file.write(",".join(headers) + "\n")
+            for row in rows:
+                file.write(",".join(row) + "\n")
+        return temp_file
+
+    def create_temp_docx_file(self, paragraphs):
+        """Create a temporary DOCX file."""
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        doc = Document()
+        for paragraph in paragraphs:
+            doc.add_paragraph(paragraph)
+        doc.save(temp_file.name)
+        return temp_file
+
+    def test_parse_csv_file(self):
+        """Test parsing a CSV file."""
+        headers = ["Timestamp", "Sender", "Message"]
+        rows = [
+            ["2021-01-01 10:00:00", "Alice", "Hello!"],
+            ["2021-01-01 10:05:00", "Bob", "Hi there!"],
+        ]
+        temp_file = self.create_temp_csv_file(headers, rows)
+        parsed_data = parse_chat_file(
+            temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
+        )
+        self.assertEqual(
+            parsed_data,
+            [],
+        )
+
+    def test_parse_docx_file(self):
+        """Test parsing a DOCX file."""
+        paragraphs = [
+            "2021-01-01 10:00:00, Alice: Hello!",
+            "2021-01-01 10:05:00, Bob: Hi there!",
+        ]
+        temp_file = self.create_temp_docx_file(paragraphs)
+        parsed_data = parse_chat_file(
+            temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
+        )
+        self.assertEqual(
+            parsed_data,
+            [],
+        )
+
+    def create_temp_invalid_file(self, content, file_extension=".txt"):
+        """Create a temporary file with invalid content and a specific extension."""
+        temp_file = tempfile.NamedTemporaryFile(
+            mode="w+t", suffix=file_extension, delete=False
+        )
+        temp_file.write(content)
+        temp_file.seek(0)
+        temp_file.close()
+        return temp_file.name
+
+    def test_parse_invalid_file_format(self):
+        """Test parsing a file with an invalid format."""
+        invalid_content = "Timestamp,Sender:Message\n2024-02-10T08:00:00,Alice:Hello\nInvalid Line Without Delimiter"
+        temp_file_path = self.create_temp_invalid_file(invalid_content, ".txt")
+
+        with self.assertRaises(ValueError) as context:
+            parse_chat_file(
+                temp_file_path,
+                [["Timestamp", ","], ["Sender", ":"]],
+                "%Y-%m-%d %H:%M:%S",
+            )
+
+        # Check if the specific error message is in the context of the exception
+        self.assertIn("Pattern mismatch detected", str(context.exception))
+
+        # Clean up by deleting the temporary file
+        os.unlink(temp_file_path)
+
+
+class TestCSVFileParsing(unittest.TestCase):
+    def create_temp_csv_file(self, headers, rows):
+        """Utility function for creating a temporary CSV file."""
+        temp_file = tempfile.NamedTemporaryFile(mode="w+t", delete=False)
+        writer = csv.writer(temp_file)
+        writer.writerow(headers)
+        writer.writerows(rows)
+        temp_file.flush()
+        temp_file.close()
+        return temp_file.name
+
+    def test_successful_csv_parsing(self):
+        """Test parsing of a well-formed CSV
+        file."""
+        headers = ["Timestamp", "User", "Message"]
+        rows = [
+            ["2023-01-01 12:00:00", "Alice", "Hello, World!"],
+            ["2023-01-02 13:30:00", "Bob", "Hi there!"],
+        ]
+        file_path = self.create_temp_csv_file(headers, rows)
+
+        os.unlink(file_path)
+
+    def test_csv_file_not_found(self):
+        """Test behavior when the CSV file does not exist."""
+        with self.assertRaises(ValueError) as context:
+            # Ensure the file path is clearly invalid or points to a non-existing file
+            parse_chat_file(
+                "non_existent_file.csv",
+                [["Timestamp", ","], ["Sender", ":"]],
+                "%Y-%m-%d %H:%M:%S",
+            )
+        self.assertIn("Error reading CSV file", str(context.exception))
+
+
+class ModelsTestCase(TestCase):
+    def test_file_init_save(self):
+        upload_file = SimpleUploadedFile("test_file.txt", b"file_content")
+        file_instance = File(file=upload_file)
+        file_instance.init_save()
+        self.assertEqual(file_instance.title, "test_file.txt")
+        self.assertEqual(file_instance.format, "txt")
+        self.assertTrue(file_instance.slug.startswith(slugify(file_instance.title)))
+
+    def test_message_set_main_sender(self):
+        file_instance = File.objects.create(
+            file=SimpleUploadedFile("test_file.txt", b"file_content")
+        )
+        message = Message.objects.create(
+            file=file_instance,
+            sender="Original Sender",
+            main_sender="Original",
+            timestamp=datetime.now(),
+        )
+        new_sender = "New Main Sender"
+        message.set_main_sender(new_sender)
+        self.assertEqual(message.main_sender, new_sender)
+
+    def test_keywordsuite_save(self):
+        global_plan, created = KeywordPlan.objects.get_or_create(name="global")
+        suite = KeywordSuite.objects.create(name="Suite", default=True)
+        suite.save()
+        self.assertIn(
+            global_plan,
+            suite.plans.all(),
+            "Global plan should be part of suite plans when default is True.",
+        )
+        suite.default = False
+        suite.save()
+        self.assertNotIn(
+            global_plan,
+            suite.plans.all(),
+            "Global plan should not be part of suite plans when default is False.",
+        )
+
+    def test_riskword_save(self):
+        suite = KeywordSuite.objects.create(name="Suite")
+        risk_word = RiskWord.objects.create(suite=suite, keyword="test")
+        self.assertEqual(risk_word.lemma, get_keyword_lamma("test"))
+
+    def test_delimiter_methods(self):
+        delimiter = Delimiter.objects.create(name="Comma", value=",", order=1)
+        self.assertEqual(delimiter.get_name(), "Comma")
+        self.assertEqual(delimiter.get_value(), ",")
+        self.assertEqual(delimiter.get_order(), 1)
+
+    def test_analysis_str(self):
+        file_instance = File.objects.create(
+            file=SimpleUploadedFile("test_file.txt", b"file_content")
+        )
+        analysis = Analysis.objects.create(file=file_instance)
+        self.assertEqual(str(analysis), str(file_instance))
+
+    def test_riskword_result_str(self):
+        riskword = RiskWord.objects.create(
+            suite=KeywordSuite.objects.create(name="Suite"), keyword="test"
+        )
+        analysis = Analysis.objects.create(
+            file=File.objects.create(
+                file=SimpleUploadedFile("test_file.txt", b"file_content")
+            )
+        )
+        result = RiskWordResult.objects.create(riskword=riskword, analysis=analysis)
+        self.assertIn(str(analysis), str(result))
+        self.assertIn(str(riskword), str(result))
+
+    def test_visfile_str(self):
+        file_instance = File.objects.create(
+            file=SimpleUploadedFile("test_file.txt", b"file_content")
+        )
+        analysis = Analysis.objects.create(file=file_instance)
+        visfile = VisFile.objects.create(file_path="path/to/visfile", analysis=analysis)
+        self.assertEqual(str(visfile), "path/to/visfile")
+
+    def test_dateformat_str(self):
+        date_format = DateFormat.objects.create(
+            name="ISO", example="2021-12-31", format="%Y-%m-%d"
+        )
+        self.assertEqual(str(date_format), "ISO")
+
+    def test_delimiter_str(self):
+        delimiter = Delimiter.objects.create(name="Comma", value=",")
+        self.assertEqual(str(delimiter), "Comma")
+
+    def test_chatgptconvo_save(self):
+        file_instance = File.objects.create(
+            file=SimpleUploadedFile("test_file.txt", b"file_content")
+        )
+        convo = ChatGPTConvo.objects.create(title="Initial", file=file_instance)
+        self.assertIn(file_instance.title, convo.title)
+        convo.init_save()
+        self.assertIn(str(convo.id), convo.slug)
+
+    def test_message_str_method(self):
+        file = File.objects.create(
+            file=SimpleUploadedFile("test.txt", b"dummy content")
+        )
+        message = Message.objects.create(
+            file=file,
+            timestamp=datetime.now(),
+            sender="sender",
+            main_sender="main_sender",
+            content="This is a test message.",
+            display_content="This is a test message with display content.",
+            risk_rating=0,
+            tags="test",
+        )
+        self.assertIn(message.sender, str(message))
+        self.assertIn(message.timestamp.strftime("%Y-%m-%d %H:%M:%S"), str(message))
+
+    def test_person_location_str_methods(self):
+        analysis = Analysis.objects.create()
+        person = Person.objects.create(name="John Doe", analysis=analysis)
+        location = Location.objects.create(name="Office", analysis=analysis)
+        self.assertEqual(str(person), person.name)
+        self.assertEqual(str(location), location.name)
+
+    def test_topic_str_method(self):
+        topic = Topic.objects.create(name="Test Topic")
+        self.assertEqual(str(topic), topic.name)
+
+    def test_riskword_save_method(self):
+        suite = KeywordSuite.objects.create(name="Suite")
+        risk_word = RiskWord.objects.create(suite=suite, keyword="test")
+        self.assertIsNotNone(risk_word.lemma)

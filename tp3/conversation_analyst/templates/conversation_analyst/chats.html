@@ -1,15 +1,22 @@
+{% load static %}
+<script type="text/javascript" src="{% static 'js/renameChat.js' %}"></script>
 <div class="scroll-container" id="search_results">
     {% if chats %}
-        <ul class="list-group">
+        <ul class="list-group chat-list">
             {% for chat in chats %}
                 {% if chat.slug == convo.slug %}
-                    <li class="list-group-item" style="background-color: grey;">{{chat.slug}}</li>
+                    <li class="list-group-item chat-title convo active" id="chat-title-{{ chat.id }}">{{chat.title}}</li>
                 {% else %}
-                    <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" >{{chat.slug}}</a></li>
+                    <li class="list-group-item chat-title" id="chat-title-{{ chat.id }}"><a class="text-reset text-decoration-none" href="{%  url 'chatgpt_page' chat.slug %}" >{{chat.title}}</a></li>
                 {% endif %}
+                <form id="chat-rename-form-{{ chat.id }}"
+                            class="chat-rename-form d-none text-reset d-flex align-items-center">{% csrf_token %}
+                            <input class="chat-rename form-control" type="text" value="" name="chat_rename"
+                                id="chat-rename-{{ chat.id }}">
+                </form>
             {% endfor %}
         </ul>
     {% else %}
-        <strong>There are no chats present.</strong>
+        <div class="prompt-style mt-4">There are no chats present.</div>
     {% endif %}
 </div>

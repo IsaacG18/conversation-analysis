@@ -9,6 +9,29 @@ $(document).ready(function(){
         history.back();
     })
 
+    $('#gpt-switch').on("input", function(e){
+        e.preventDefault();
+        var isChecked = $(e.target).is(':checked');
+        $.ajax({
+            type: 'POST',
+            url: "/gpt_switch",
+            headers: {
+                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            data: {'value': isChecked},
+            success: function(response){
+                console.log(response);
+            },
+            error: function(jqXHR) {
+                var errorMessage = 'An error occurred';
+                if (jqXHR.responseJSON && jqXHR.responseJSON.detail) {
+                    errorMessage = jqXHR.responseJSON.detail;
+                }
+                alert(errorMessage);
+            }
+        })
+    })
+
     
 
     $('#new-suite-form').submit(function(e){
@@ -30,7 +53,7 @@ $(document).ready(function(){
                     <div class="list-group-item list-group-item-action suite-item" id="suite-item-${suiteId}">
                     <div class="row d-flex align-items-center justify-content-between">
                     <div class="col-9 form-check" id="suite-check-${suiteId}">
-                            <input class="form-check-input" type="checkbox" value="${suiteId}" id="checkbox-${suiteId}">
+                            <input class="form-check-input suite-checkbox" type="checkbox" value="${suiteId}" id="checkbox-${suiteId}">
                             <label class="form-check-label" for="checkbox-${suiteId}">${newSuiteName}</label>
                     </div>
                     <div class="col-3">
@@ -182,7 +205,7 @@ $(document).ready(function(){
         deleteKeywordClick(e);
     })
 
-    $('.form-check-input').click(function(e){
+    $('.suite-checkbox').click(function(e){
         suiteCheck(e);
     })
 
@@ -223,8 +246,7 @@ $(document).ready(function(){
     function refreshSuiteFocusOnCreation(suite){
         $('.active-suite').removeClass('active-suite');
         $(suite).addClass('active-suite');
-        console.log(suite);
-        $('.keyword-item').empty();
+        $('.keyword-item').remove();
     }
 
     function refreshSuiteFocusOnDeletion(suite){
@@ -325,7 +347,6 @@ $(document).ready(function(){
     function suiteCheck(e){
         var suiteId = $(e.target).val();
         var isChecked = $(e.target).is(':checked');
-        console.log(`${suiteId} ${isChecked}`)
         $.ajax({
             type: 'POST',
             url: "/check_suite",
@@ -388,7 +409,6 @@ $(document).ready(function(){
     }
 
     function checkIfSuiteExist(){
-        console.log($('.active-suite'));
         if (!$('.active-suite').length) {
             $('#keyword-error-row').append(`<span>Please create a suite frist</span>`);
             return false;

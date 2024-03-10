@@ -1,10 +1,10 @@
 image: python
 
-stages:          # List of stages for jobs, and their order of execution
+stages:          
   - test
 
-unit-test-job:   # This job runs in the test stage.
-  stage: test    # It only starts when the job in the build stage completes successfully.
+unit-test-job:   
+  stage: test    
   script:
     - pip install -r requirements.txt
     - pip install coverage
@@ -19,9 +19,24 @@ unit-test-job:   # This job runs in the test stage.
 
 
 
-lint-test-job:   # This job also runs in the test stage.
-  stage: test    # It can run at the same time as unit-test-job (in parallel).
+lint-test-job:   
+  stage: test   
   script:
     - echo "Linting code"
     - pip install flake8
-    - flake8 --max-line-length=200 --exclude=date_format_populate.py . 
+    - flake8 --max-line-length=200 --exclude=date_format_populate.py,speed_test_messages.py . 
+
+
+run_method:
+  stage: test
+  script:
+    - pip install -r requirements.txt
+    - cd tp3
+    - python manage.py makemigrations
+    - python manage.py migrate
+    - python manage.py migrate --run-syncdb
+    - time python speed_test_messages.py
+  only:
+    changes:
+      - tp3/conversation_analyst/scripts/*
+      - .gitlab-ci.yml
