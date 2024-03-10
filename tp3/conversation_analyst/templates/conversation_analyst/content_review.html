@@ -21,14 +21,26 @@
     {% include "conversation_analyst/messages.html" %}
 
     <div class="col-6" id="analysis">
-      <div class="d-flex flex-row justify-content-start mt-3 pe-2 m-2">
-        <div class="col-2"><a href="{% url 'suite_selection' file.slug %}" class="btn btn-outline-secondary mr-1"
-            role="button">Regenerate</a></div>
-        <div class="col-auto"><a href="{% url 'export_view' file.slug %}" class="btn btn-outline-success mr-1"
-            role="button">Download XML</a></div>
-    </div>
       <div class="accordion">
-
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+              data-bs-target="#controls-collapse" aria-expanded="true" aria-controls="controls-collapse">
+              Controls
+            </button>
+          </h2>
+          <div id="controls-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <div class="d-flex flex-row">
+                <div class="col-2"><a href="{% url 'suite_selection' file.slug %}" class="btn btn-outline-secondary mr-1"
+                  role="button">Regenerate</a></div>
+                    <div class="col-auto"><a href="{% url 'export_view' file.slug %}" class="btn btn-outline-success mr-1"
+                      role="button">Download XML</a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -39,7 +51,7 @@
           <div id="chatgpt-prompt-collapse" class="accordion-collapse collapse show">
             <div class="accordion-body">
               <label for="message_content">ChatGPT Quick Ask:</label>
-              <button class="btn btn-primary chatgpt_quick_message" type="button">Summarise</button>
+              <button class="btn btn-outline-secondary chatgpt_quick_message" type="button">Summarise</button>
               <div id="ChatGPT-results"></div>
             </div>
           </div>
@@ -152,11 +164,13 @@
           <div id="risk-words-collapse" class="accordion-collapse collapse show">
             <div class="accordion-body">
               {% for risk_word in risk_words %}
-              {% if risk_word.riskword.risk_factor > 5.0 %}
-              <button class="filter risk-button">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
-              {% else %}
-              <button class="filter risk-button">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
-              {% endif %}
+              {% if risk_word.riskword.risk_factor > 5.0%}
+                  {% if 8.0 > risk_word.riskword.risk_factor%}
+                  <button class="filter risk-button medium">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
+                  {% else %}
+                  <button class="filter risk-button high">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
+                  {% endif %} 
+            {% endif %}            
               {% endfor %}
             </div>
           </div>
