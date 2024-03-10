@@ -1,9 +1,4 @@
 {% load static %}
-{% if convo %}
-<a href="{% url 'content_review' convo.file.slug %}" class="text-decoration-none btn btn-outline-secondary btn-sm">
-    <span class="me-1"><i class="bi bi-arrow-left"></i></span><small class="me-1">Go to File</small>
-</a> 
-{% endif %}
 <div class="chat-messages results mt-0 pt-0 scroll-container">
     {% if messages %}
         {% for message in messages %}
