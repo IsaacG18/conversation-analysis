@@ -67,6 +67,10 @@ File path: cs39-main/tp3
 
     python manage.py runserver
 
+# To test the speed of the code run this in linux
+    
+    time python speed_test_messages.py
+
 
 # Versions
 
