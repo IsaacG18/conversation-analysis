@@ -11,6 +11,8 @@ To verify if pip is installed, you can run the following command in your termina
 
 # Step 2 clone the repo
 
+    git clone https://github.com/mentos-team/MentOS.git
+
 # Step 3 set up venv
 
     pip install virtualenv
@@ -82,36 +84,57 @@ Access original only on Python Anywhere
 
 Core Feature:
 - NLP
--- Sentiment Analysis (not integrated)
--- Added Visualization for messages
--- Keyword Identification
--- Name and Location identification
+- - Sentiment Analysis (not integrated)
+- - Added Visualization for messages
+- - Keyword Identification
+- - Name and Location identification
 - Data ingestion
--- Basic Customization of File ingestion
--- Custom Keywords (only in settings)
--- Compatibility with csv, docs, and txt
--- Error Handling in upload
+- - Basic Customization of File ingestion
+- - Custom Keywords (only in settings)
+- - Compatibility with csv, docs, and txt
+- - Error Handling in upload
 - Front End
--- Search homepage for files
--- Word highlighting in content review
--- Date Filtering 
--- Key Highlighting
+- - Search homepage for files
+- - Word highlighting in content review
+- - Date Filtering 
+- - Key Highlighting
 - ChatGPT
--- Nothing Implemented
+- - Nothing Implemented
   
 **2.0.0**
 Available from the 15th of February, available as github and website
 - Content Review New features
--- Google Maps API search
--- Export XML data
--- Add re-analysis of file
+- - Google Maps API search
+- - Export XML data
+- - Add re-analysis of file
 - ChatGPT new features
--- Added the ability to message chatgpt
--- Added ability to create new chats
--- Added ability to access old chats
--- Added suggested prompts based on analysis
+- - Added the ability to message chatgpt
+- - Added ability to create new chats
+- - Added ability to access old chats
+- - Added suggested prompts based on analysis
 - Other new features
--- Renaming analysis on homepage
+- - Renaming analysis on homepage
 - Improvements to existing features
--- Search for root words in analysis
--- Improved customization in file structure including; dates, types order, and ability to added extra delimiters
+- - Search for root words in analysis
+- - Improved customization in file structure including; dates, types order, and ability to added extra delimiters
+
+**3.0.0**
+Available from the 15th of March, available as github and website
+- Visual updates
+- - Content Review Page
+- - ChatGPT page
+- - Waiting message for data analysis 
+- New features
+- - ChatGPT summary
+- - Search bar on chatgpt page
+- - Allow the renaming of chats
+- - Customsation of risk levels
+- - Increased naviation between chatgpt page and content review
+- - Allow chatgpt to find names and locations
+- - Ability to delete old analysis
+- Other improvements
+- - Cleaner code
+- - Increase testing
+- - Bug fixes on display html in chats
+- - Filter out emojis from names
+- - Less files stored on machine
