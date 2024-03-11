@@ -8,12 +8,13 @@ from django.conf import settings
 import os
 
 
-def parse_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":"]]):
+def parse_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":"]], skip=False):
     """
     Arguments:
     file (file): The file object to the user
     date_formats (str): The format of the timestamps in the chat file
     delimiters (list): Is a list of list, with the internal list having it first element be the type and the second being the delimiter
+    skip (bool): Test message to skip if it want to move over the first line
 
 
     Description:
@@ -22,7 +23,7 @@ def parse_file(file, date_formats, delimiters=[["Timestamp", ","], ["Sender", ":
 
     if not file.title.endswith((".docx", ".txt", ".csv")):
         raise ValueError("Unsupported file type. Only .txt, .csv and .docx are supported.")
-    messages = ingestion.parse_chat_file(file.file.path, delimiters, date_formats)
+    messages = ingestion.parse_chat_file(file.file.path, delimiters, skip, date_formats)
     generate_message_objects(file, messages)
 
 

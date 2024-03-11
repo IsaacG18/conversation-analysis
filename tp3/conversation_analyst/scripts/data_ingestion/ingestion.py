@@ -22,12 +22,13 @@ def parse_timestamp(timestamp, date_formats):
         return datetime.strptime(timestamp, date_formats).strftime("%Y-%m-%d %H:%M:%S")
 
 
-def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
+def parse_chat_file(file_path, delimiters, skip, date_formats="%Y-%m-%dT%H:%M:%S"):
     """
     Arguments:
     file_path (str): The path to the chat file.
     delimiters (list): A list of delimiters for splitting each line.
     date_formats (str): The format of the timestamps in the chat file. Default is ISO 8601.
+    skip (bool): Test message to skip if it want to move over the first line
 
     Returns:
     list: A list of dictionaries containing parsed chat messages.
@@ -41,7 +42,7 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
     pattern += "(.*)$"
     d = list(delimiters)
     d.append(["Message", ""])
-
+    print(skip)
     messages = []
     lines = []
     try:
@@ -56,6 +57,8 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
                     csv_reader = csv.reader(file)
+                    if skip:
+                        next(csv_reader)
                     headers = [columns[0] for columns in d]
                     for row in csv_reader:
                         message_dict = {headers[i]: row[i] for i in range(len(headers))}
@@ -70,7 +73,6 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
                     lines = file.readlines()
-                    print(lines)
             except Exception as e:
                 raise ValueError(f"Error reading TXT file: {e}")
 
@@ -83,7 +85,8 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
                     message_dict["Timestamp"] = parse_timestamp(
                         message_dict["Timestamp"], date_formats
                     )
-                    messages.append(message_dict)
+                    if not skip or i != 0:
+                        messages.append(message_dict)
                 else:
 
                     raise ValueError(
