@@ -77,20 +77,21 @@ def parse_chat_file(file_path, delimiters, skip, date_formats="%Y-%m-%dT%H:%M:%S
 
         if file_path.endswith(".docx") or file_path.endswith(".txt"):
             for i, line in enumerate(lines):
-                match = re.match(pattern, line)
-                if match:
-                    values = match.groups()
-                    message_dict = {key: value for (key, _), value in zip(d, values)}
-                    message_dict["Timestamp"] = parse_timestamp(
-                        message_dict["Timestamp"], date_formats
-                    )
-                    if not skip or i != 0:
-                        messages.append(message_dict)
-                else:
+                if not skip or i != 0:
+                    match = re.match(pattern, line)
+                    if match:
+                        values = match.groups()
+                        message_dict = {key: value for (key, _), value in zip(d, values)}
+                        message_dict["Timestamp"] = parse_timestamp(
+                            message_dict["Timestamp"], date_formats
+                        )
+                        
+                            messages.append(message_dict)
+                    else:
 
-                    raise ValueError(
-                        f"Pattern mismatch detected on line {i+1} with delimiter '{delimiters[-1][-1]}' :\n \"{line.strip()}\" "
-                    )
+                        raise ValueError(
+                            f"Pattern mismatch detected on line {i+1} with delimiter '{delimiters[-1][-1]}' :\n \"{line.strip()}\" "
+                        )
 
     except FileNotFoundError:
         raise ValueError(f"File not found: {file_path}")
