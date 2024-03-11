@@ -65,7 +65,6 @@ def upload(request):
         if form.is_valid():
             delims = Delimiter.objects.filter(order__gt=0).order_by("order")
             delim_pairs = [[delim.name, delim.value] for delim in delims]
-
             uploaded_file = request.FILES["file"]
             file_obj = File.objects.create(file=uploaded_file)
             file_obj.init_save()
@@ -74,7 +73,10 @@ def upload(request):
                 timestamp = DateFormat.objects.get(
                     name=request.POST["selected_timestamp"]
                 )
-                parse_file(file_obj, timestamp.format, delimiters=delim_pairs)
+                skip = request.POST.get('selected_skip', False)
+                if skip:
+                    skip = True
+                parse_file(file_obj, timestamp.format, skip=skip, delimiters=delim_pairs)
                 return HttpResponseRedirect(
                     reverse("suite_selection", kwargs={"file_slug": file_obj.slug})
                 )
