@@ -132,6 +132,7 @@ Available from the 15th of March, available as github and website
   - Increased naviation between chatgpt page and content review
   - Allow chatgpt to find names and locations
   - Ability to delete old analysis
+  - Ability to select to skip a line as title line
 - Other improvements
   - Cleaner code
   - Increase testing
