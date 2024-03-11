@@ -375,6 +375,11 @@ class TestNLP(TestCase):
         expected_result = [("risk3", 0.7, 1), ("risk1", 0.5, 1)]
         self.assertEqual(top_keywords, expected_result)
 
+    def test_get_top_n_risk_keywords_not_number(self):
+        top_keywords = get_top_n_risk_keywords(self.messages)
+        expected_result = [('risk3', 0.7, 1), ('risk1', 0.5, 1), ('risk2', 0.3, 1), ('risk4', 0.2, 1)]
+        self.assertEqual(top_keywords, expected_result)
+
     def test_get_date_messages(self):
         parsed_data = [
             {"Sender": "Alice", "Message": "Hello", "Timestamp": "2024-02-10 08:00:00"},

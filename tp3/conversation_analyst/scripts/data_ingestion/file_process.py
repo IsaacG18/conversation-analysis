@@ -58,7 +58,7 @@ def process_file(file, keywords, messages, threshold, gpt_switch=False):
         threshold.word_risk,
         gpt_switch
     )
-    risk_words = get_top_n_risk_keywords(nlp_text, 10)
+    risk_words = get_top_n_risk_keywords(nlp_text)
     generate_analysis_objects(
         file,
         chat_messages,
