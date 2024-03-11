@@ -56,7 +56,6 @@ def parse_chat_file(file_path, delimiters, date_formats="%Y-%m-%dT%H:%M:%S"):
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
                     csv_reader = csv.reader(file)
-                    next(csv_reader, None)
                     headers = [columns[0] for columns in d]
                     for row in csv_reader:
                         message_dict = {headers[i]: row[i] for i in range(len(headers))}
