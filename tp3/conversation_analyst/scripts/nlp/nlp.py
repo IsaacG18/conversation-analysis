@@ -195,7 +195,7 @@ def update_display(start, end, message, text):
     message["Display_Message"] = message["Display_Message"][:start] + text + message["Display_Message"][end:]
 
 
-def get_top_n_risk_keywords(messages, n):
+def get_top_n_risk_keywords(messages, n=-1):
     """
     Arguments:
     messages (dictionary): A dictionary of tagged messages.
@@ -210,6 +210,7 @@ def get_top_n_risk_keywords(messages, n):
 
     token_risk = {}
     token_count = {}
+    sorted_tokens = []
     for message in messages:
         for keyword, risk, topics in message["tags"]:
             if risk != 0:
@@ -219,8 +220,9 @@ def get_top_n_risk_keywords(messages, n):
                     token_count[keyword] += 1
                 else:
                     token_count[keyword] = 1
-
-    sorted_tokens = sorted(token_risk, key=lambda x: token_risk[x], reverse=True)[:n]
+    sorted_tokens = sorted(token_risk, key=lambda x: token_risk[x], reverse=True)
+    if n != -1:
+        sorted_tokens = sorted_tokens[:n]
     result = [(token, token_risk[token], token_count[token]) for token in sorted_tokens]
     return result
 
