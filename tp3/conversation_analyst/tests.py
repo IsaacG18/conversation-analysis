@@ -596,7 +596,7 @@ class InputValidationTestCase(TestCase):
         )
         response = self.client.post(
             reverse("upload"),
-            {"file": uploaded_file, "selected_timestamp": "some_valid_timestamp"},
+            {"file": uploaded_file, "selected_skip":False, "selected_timestamp": "some_valid_timestamp"},
         )
         self.assertEqual(response.status_code, 200)
 
@@ -607,7 +607,7 @@ class InputValidationTestCase(TestCase):
         )
         response = self.client.post(
             reverse("upload"),
-            {"file": uploaded_file, "selected_timestamp": "some_valid_timestamp"},
+            {"file": uploaded_file, "selected_skip":False, "selected_timestamp": "some_valid_timestamp"},
         )
         self.assertEqual(response.status_code, 200)
 
@@ -617,7 +617,7 @@ class InputValidationTestCase(TestCase):
         )
         response = self.client.post(
             reverse("upload"),
-            {"file": uploaded_file, "selected_timestamp": "some_valid_timestamp"},
+            {"file": uploaded_file, "selected_skip":False, "selected_timestamp": "some_valid_timestamp"},
         )
         self.assertEqual(response.status_code, 200)
 
@@ -751,7 +751,26 @@ class FileProcessTests(TestCase):
         )
 
         mock_parse_chat_file.assert_called_once_with(
-            "/fake/path/to/chat.txt", [["Timestamp", ","], ["Sender", ":"]], []
+            "/fake/path/to/chat.txt", [["Timestamp", ","], ["Sender", ":"]], False, []
+        )
+        mock_generate_message_objects.assert_called_once_with(
+            mock_file, mock_parse_chat_file.return_value
+        )
+    @patch("conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file")
+    @patch(
+        "conversation_analyst.scripts.data_ingestion.file_process.generate_message_objects"
+    )
+    def test_parse_file_skip(self, mock_generate_message_objects, mock_parse_chat_file):
+        mock_file = MagicMock(spec=File)
+        mock_file.title = "chat.txt"
+        mock_file.file.path = "/fake/path/to/chat.txt"
+        mock_parse_chat_file.return_value = []
+        parse_file(
+            mock_file, date_formats=[], delimiters=[["Timestamp", ","], ["Sender", ":"]], skip=True,
+        )
+
+        mock_parse_chat_file.assert_called_once_with(
+            "/fake/path/to/chat.txt", [["Timestamp", ","], ["Sender", ":"]], True, []
         )
         mock_generate_message_objects.assert_called_once_with(
             mock_file, mock_parse_chat_file.return_value
@@ -1037,6 +1056,7 @@ class TestParseChatFile(unittest.TestCase):
             parse_chat_file(
                 temp_file_path,
                 [["Timestamp", ","], ["Sender", ":"]],
+                False,
                 "%Y-%m-%d %H:%M:%S",
             )
 
@@ -1077,6 +1097,7 @@ class TestCSVFileParsing(unittest.TestCase):
             parse_chat_file(
                 "non_existent_file.csv",
                 [["Timestamp", ","], ["Sender", ":"]],
+                False,
                 "%Y-%m-%d %H:%M:%S",
             )
         self.assertIn("Error reading CSV file", str(context.exception))
