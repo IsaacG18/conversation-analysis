@@ -54,7 +54,7 @@ def parse_chat_file(file_path, delimiters, skip, date_formats="%Y-%m-%dT%H:%M:%S
 
         elif file_path.endswith(".csv"):
             try:
-                with open(file_path, "r", encoding="utf-8") as file:
+                with open(file_path, "r", encoding="utf-8-sig") as file:
                     csv_reader = csv.reader(file)
                     if skip:
                         next(csv_reader)
@@ -77,6 +77,8 @@ def parse_chat_file(file_path, delimiters, skip, date_formats="%Y-%m-%dT%H:%M:%S
 
         if file_path.endswith(".docx") or file_path.endswith(".txt"):
             for i, line in enumerate(lines):
+                if line.strip() == "":
+                    continue
                 if not skip or i != 0:
                     match = re.match(pattern, line)
                     if match:
