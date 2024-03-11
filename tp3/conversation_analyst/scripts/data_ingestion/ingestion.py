@@ -85,8 +85,7 @@ def parse_chat_file(file_path, delimiters, skip, date_formats="%Y-%m-%dT%H:%M:%S
                         message_dict["Timestamp"] = parse_timestamp(
                             message_dict["Timestamp"], date_formats
                         )
-                        
-                            messages.append(message_dict)
+                        messages.append(message_dict)
                     else:
 
                         raise ValueError(
