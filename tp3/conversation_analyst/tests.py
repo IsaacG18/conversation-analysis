@@ -596,7 +596,7 @@ class InputValidationTestCase(TestCase):
         )
         response = self.client.post(
             reverse("upload"),
-            {"file": uploaded_file, "selected_skip":False, "selected_timestamp": "some_valid_timestamp"},
+            {"file": uploaded_file, "selected_skip": False, "selected_timestamp": "some_valid_timestamp"},
         )
         self.assertEqual(response.status_code, 200)
 
@@ -607,7 +607,7 @@ class InputValidationTestCase(TestCase):
         )
         response = self.client.post(
             reverse("upload"),
-            {"file": uploaded_file, "selected_skip":False, "selected_timestamp": "some_valid_timestamp"},
+            {"file": uploaded_file, "selected_skip": False, "selected_timestamp": "some_valid_timestamp"},
         )
         self.assertEqual(response.status_code, 200)
 
@@ -617,7 +617,7 @@ class InputValidationTestCase(TestCase):
         )
         response = self.client.post(
             reverse("upload"),
-            {"file": uploaded_file, "selected_skip":False, "selected_timestamp": "some_valid_timestamp"},
+            {"file": uploaded_file, "selected_skip": False, "selected_timestamp": "some_valid_timestamp"},
         )
         self.assertEqual(response.status_code, 200)
 
@@ -756,6 +756,7 @@ class FileProcessTests(TestCase):
         mock_generate_message_objects.assert_called_once_with(
             mock_file, mock_parse_chat_file.return_value
         )
+
     @patch("conversation_analyst.scripts.data_ingestion.ingestion.parse_chat_file")
     @patch(
         "conversation_analyst.scripts.data_ingestion.file_process.generate_message_objects"

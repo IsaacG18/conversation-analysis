@@ -73,7 +73,7 @@ def upload(request):
                 timestamp = DateFormat.objects.get(
                     name=request.POST["selected_timestamp"]
                 )
-                skip=request.POST.get('selected_skip', False)
+                skip = request.POST.get('selected_skip', False)
                 if skip:
                     skip = True
                 parse_file(file_obj, timestamp.format, skip=skip, delimiters=delim_pairs)

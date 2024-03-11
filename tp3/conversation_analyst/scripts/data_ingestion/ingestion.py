@@ -42,7 +42,6 @@ def parse_chat_file(file_path, delimiters, skip, date_formats="%Y-%m-%dT%H:%M:%S
     pattern += "(.*)$"
     d = list(delimiters)
     d.append(["Message", ""])
-    print(skip)
     messages = []
     lines = []
     try:
