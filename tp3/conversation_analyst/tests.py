@@ -600,7 +600,6 @@ class InputValidationTestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-
     def test_upload_very_large_file(self):
         large_file_content = b"a" * (20 * 1024 * 1024)
         uploaded_file = SimpleUploadedFile(
