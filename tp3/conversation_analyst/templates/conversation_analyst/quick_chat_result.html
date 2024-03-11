@@ -1,4 +1,11 @@
+{% load static %}
 <div id="ChatGPT-results">
-    <h3>ChatGPT response:</h3>
-    {{response}}
+    <div class="reply p-3 m-2">
+        <div class="reply-content">
+            <div class="reply-details">
+                 <img src="{% static 'pictures/gpt.png' %}" class="mr-3 rounded-circle" alt="GPT Image">
+                 <p>{{response}}</p>
+            </div>
+        </div>
+    </div>
 </div>

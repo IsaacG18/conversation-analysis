@@ -1,8 +1,9 @@
 {% extends "conversation_analyst/base.html" %}
 {% block title %}
-
 {% endblock %}
-  <title>Content Review</title>
+
+<title>Content Review</title>
+
 {% block body %}
 {% load static %}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
@@ -10,176 +11,215 @@
 <script type="text/javascript" src="{% static 'js/highlight.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/chatgptcreate.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/quickchat.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/buttons-content-review.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/highlight.css' %}">
 <link rel="stylesheet" href="{% static 'css/messages.css' %}">
+<link rel="stylesheet" href="{% static 'css/content_review.css' %}">
 
-  <div class="container-fluid">
+<div class="container-fluid">
   <div class="row">
     {% include "conversation_analyst/messages.html" %}
-  <div class="col-6"  id="analysis" >
-    <div class="accordion">
-          {% if persons %}
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                Person
-              </button>
-            </h2>
-            <div id="collapseOne" class="accordion-collapse collapse show">
-              <div class="accordion-body">
-                {% for person in persons %}
-                  <button class="btn btn-outline-primary filter person-button">{{ person }}</button>
-                {% endfor %}
-              </div>
-            </div>
-          </div>
-          {% endif %}
-          {% if locations %}
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                Location
-              </button>
-            </h2>
-            <div id="collapseTwo" class="accordion-collapse collapse show">
-              <div class="accordion-body">
-                {% for location in locations %}
-                  <button class="btn btn-outline-success filter location-button" data-url="{{ location.url }}">{{ location.name }}</button>
-                {% endfor %}
-              </div>
-            </div>
-          </div>
-          {% endif %}
-          {% if URL %}
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMapUrls" aria-expanded="true" aria-controls="collapseMapUrls">
-                Google Maps Links
-              </button>
-            </h2>
-            <div id="collapseMapUrls" class="accordion-collapse collapse show">
-              <div class="accordion-body">
-                {% for location in URL %}
-                  <a href="{{ location.url }}" target="_blank" class="btn btn-outline-success location-button">
-                    {{ location.name }}
-                  </a>
-                {% endfor %}
-              </div>
-            </div>
-          </div>
-          {% endif %}
-          {% if risk_words %}
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
-                Risk Words
-              </button>
-            </h2>
-            <div id="collapseThree" class="accordion-collapse collapse show">
-              <div class="accordion-body">
-                {% for risk_word in risk_words %}
-                    {% if risk_word.riskword.risk_factor > 5.0 %}
-                    <button class="btn btn-danger filter risk-button">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
-                    {% else %}
-                    <button class="btn btn-warning filter risk-button">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
-                    {% endif %}
-                {% endfor %}
-              </div>
-            </div>
-          </div>
-          {% endif %}
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
-                Date/Time Filter
-              </button>
-            </h2>
-            <div id="collapseDateFilter" class="accordion-collapse collapse show">
-              <div class="accordion-body">
-                <label for="startDate">Start Date/Time:</label>
-                <input type="datetime-local" id="startDate" class="form-control">
-                
-                <label for="endDate">End Date/Time:</label>
-                <input type="datetime-local" id="endDate" class="form-control">
-          
-                <button class="btn btn-outline-success date-fil">Filter</button>
-              </div>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
-                Risk Levels
-              </button>
-            </h2>
-            <div id="collapseDateFilter" class="accordion-collapse collapse show">
-              <div class="accordion-body">
-                <button value="2" class="btn btn-outline-success risk">high risk</button>
-                <button value="1" class="btn btn-outline-success risk">medium risk</button>
-                <button value="0" class="btn btn-outline-success risk">low risk</button>
-              </div>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                ChatGPT
-              </button>
-            </h2>
-            <div id="collapseTwo" class="accordion-collapse collapse show">
-              <div class="accordion-body">
-                <button class="btn btn-outline-success chatgpt_new_message">New ChatGPT</button>
-                <button class="btn btn-outline-success"><a href="{%  url 'chatgpt_page_without_slug' %}">Existing ChatGPT</a></button>
-                {% if chats %}
-                    <ul class="list-group">
-                        {% for chat in chats %}
-                          <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" >{{chat.title}}</a></li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <strong>There are no chats present.</strong>
-                {% endif %}
-              </div>
-            </div>
-          </div>
 
-          {% if vis_path %}
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
-                Visulation
-              </button>
-            </h2>
-            <div id="collapseDateFilter" class="accordion-collapse collapse show">
-              <div class="accordion-body">
-                <img src="{% get_media_prefix %}{{vis_path}}" alt="No image found">
+    <div class="col-6" id="analysis">
+      <div class="accordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+              data-bs-target="#controls-collapse" aria-expanded="true" aria-controls="controls-collapse">
+              Controls
+            </button>
+          </h2>
+          <div id="controls-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <div class="d-flex flex-row">
+                <div class="col-2"><a href="{% url 'suite_selection' file.slug %}" class="btn btn-outline-secondary mr-1"
+                  role="button">Regenerate</a></div>
+                    <div class="col-auto"><a href="{% url 'export_view' file.slug %}" class="btn btn-outline-success mr-1"
+                      role="button">Download XML</a></div>
               </div>
             </div>
           </div>
-          {% else %}
-            <strong>There are no Visulation present.</strong>
-          {% endif %}
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDateFilter" aria-expanded="true" aria-controls="collapseDateFilter">
-                ChatGPT Prompt
-              </button>
-            </h2>
-            <div id="collapseDateFilter" class="accordion-collapse collapse show">
+        </div>
+        
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+              data-bs-target="#chatgpt-prompt-collapse" aria-expanded="true" aria-controls="chatgpt-prompt-collapse">
+              ChatGPT Prompt
+            </button>
+          </h2>
+          <div id="chatgpt-prompt-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
               <label for="message_content">ChatGPT Quick Ask:</label>
-              <button class="btn btn-primary chatgpt_quick_message" type="button">Summarise</button>
-              <div id="ChatGPT-results">
+              <button class="btn btn-outline-secondary chatgpt_quick_message" type="button">Summarise</button>
+              <div id="ChatGPT-results"></div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chatgpt-collapse"
+              aria-expanded="true" aria-controls="chatgpt-collapse">
+              ChatGPT
+            </button>
+          </h2>
+          <div id="chatgpt-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              {% if chats %}
+              <ul class="list-group">
+                {% for chat in chats %}
+                <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" style="text-decoration: none;">{{chat.slug}}</a>
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <strong>There are no chats present.</strong>
+              {% endif %}
+              <div class="d-flex flex-row">
+                <button class="btn btn-outline-success chatgpt_new_message mt-3 m-2">New ChatGPT</button>
+                <button class="btn btn-outline-success exist-charts-btn mt-3 m-2"><a
+                    href="{%  url 'chatgpt_page_without_slug' %}">Existing ChatGPT</a></button>
               </div>
             </div>
           </div>
         </div>
-        <div class="row justify-content-end mt-3 pe-2">
-          <div class="col-2"><a href="{%  url 'suite_selection' file.slug %}" class="btn btn-outline-secondary" role="button">Regenerate</a></div>
-          <div class="col-auto"><a href="{%  url 'export_view' file.slug %}" class="btn btn-outline-success" role="button">Download XML</a></div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+              data-bs-target="#risk-levels-collapse" aria-expanded="true" aria-controls="risk-levels-collapse">
+              Risk Levels
+            </button>
+          </h2>
+          <div id="risk-levels-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <button value="0" class="risk risk-button low">low risk</button>
+              <button value="1" class="risk risk-button medium">medium risk</button>
+              <button value="2" class="risk risk-button high">high risk</button>
+            </div>
+          </div>
         </div>
-  </div>
+
+        {% if persons %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#person-collapse"
+              aria-expanded="true" aria-controls="person-collapse">
+              Person
+            </button>
+          </h2>
+          <div id="person-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              {% for person in persons %}
+              <button class="filter person-button filter-button m-1">{{ person }}</button>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% if locations %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#location-collapse"
+              aria-expanded="true" aria-controls="location-collapse">
+              Location
+            </button>
+          </h2>
+          <div id="location-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              {% for location in locations %}
+              <button class="filter location-button filter-button" data-url="{{ location.url }}">{{ location.name }}</button>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% if URL %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#map-url-collapse"
+              aria-expanded="true" aria-controls="map-url-collapse">
+              Google Maps Links
+            </button>
+          </h2>
+          <div id="map-url-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              {% for location in URL %}
+             <a href="{{ location.url }}" target="_blank" class="location-button google-map-button" style="text-decoration: none;">
+                {{ location.name }}
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% if risk_words %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+              data-bs-target="#risk-words-collapse" aria-expanded="true" aria-controls="risk-words-collapse">
+              Risk Words
+            </button>
+          </h2>
+          <div id="risk-words-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              {% for risk_word in risk_words %}
+              {% if risk_word.riskword.risk_factor > 5.0%}
+                  {% if 8.0 > risk_word.riskword.risk_factor%}
+                  <button class="filter risk-button medium">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
+                  {% else %}
+                  <button class="filter risk-button high">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
+                  {% endif %} 
+            {% endif %}            
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+              data-bs-target="#date-filter-collapse" aria-expanded="true" aria-controls="date-filter-collapse">
+              Date/Time Filter
+            </button>
+          </h2>
+          <div id="date-filter-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <div class="d-flex flex-column">
+                <div class="m-2">
+                  <label for="startDate">Start Date/Time:</label>
+                  <input type="datetime-local" id="startDate" class="form-control">
+                </div>
+                <div class="m-2">
+                  <label for="endDate">End Date/Time:</label>
+                  <input type="datetime-local" id="endDate" class="form-control">
+                </div>
+              </div>
+              <button class="date-fil mt-3 filter-button">Filter</button>
+
+            </div>
+          </div>
+        </div>
+
+        {% if vis_path %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+              data-bs-target="#visualization-collapse" aria-expanded="true" aria-controls="visualization-collapse">
+              Visualization
+            </button>
+          </h2>
+          <div id="visualization-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <img src="{% get_media_prefix %}{{vis_path}}" alt="No image found">
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <strong>There are no Visulation present.</strong>
+        {% endif %}
+      </div>
     </div>
   </div>
-  </div>
-
+</div>
 {% endblock %}

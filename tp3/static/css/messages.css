@@ -1,5 +1,8 @@
 :root{
     --white: #fff;
+
+    --outgoing-conv-item: cornflowerblue;
+    --incoming-conv-item: rgb(80, 107, 157);
 }
 
 .conversation-item-content{
@@ -19,8 +22,8 @@
     padding: 8px 16px;
     margin-left: auto;
     border-radius: 18px 18px 0 18px;
-    background-color: cornflowerblue;
-    box-shadow: 0 2px 12px -2px cornflowerblue;
+    background-color: var(--outgoing-conv-item);
+    box-shadow: 0 2px 12px -2px var(--outgoing-conv-item);
 }
 
 .conversation-item-content .incoming{
@@ -30,8 +33,8 @@
 .incoming .conversation-item-text{
     padding: 8px 16px;
     border-radius: 18px 18px 18px 0;
-    background-color: rgb(80, 107, 157);
-    box-shadow: 0 2px 12px -2px rgb(80, 107, 157);
+    background-color: var(--incoming-conv-item);
+    box-shadow: 0 2px 12px -2px var(--incoming-conv-item);
 }
 
 .incoming .details{
