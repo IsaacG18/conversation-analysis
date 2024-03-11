@@ -596,9 +596,10 @@ class InputValidationTestCase(TestCase):
         )
         response = self.client.post(
             reverse("upload"),
-            {"file": uploaded_file, "selected_skip": False, "selected_timestamp": "some_valid_timestamp"},
+            {"file": uploaded_file, "selected_timestamp": "some_valid_timestamp"},
         )
         self.assertEqual(response.status_code, 200)
+
 
     def test_upload_very_large_file(self):
         large_file_content = b"a" * (20 * 1024 * 1024)
@@ -607,7 +608,7 @@ class InputValidationTestCase(TestCase):
         )
         response = self.client.post(
             reverse("upload"),
-            {"file": uploaded_file, "selected_skip": False, "selected_timestamp": "some_valid_timestamp"},
+            {"file": uploaded_file, "selected_timestamp": "some_valid_timestamp"},
         )
         self.assertEqual(response.status_code, 200)
 
