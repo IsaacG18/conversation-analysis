@@ -118,8 +118,8 @@ Available from the 15th of February, available as github and website
   - Search for root words in analysis
   - Improved customization in file structure including; dates, types order, and ability to added extra delimiters
 
-**3.0.0**
-Available from the 15th of March, available as github and website
+**2.1.0**
+Available from the 14th of March, available as github and website
 - Visual updates
   - Content Review Page
   - ChatGPT page
