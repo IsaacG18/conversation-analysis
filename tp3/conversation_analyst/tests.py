@@ -650,7 +650,7 @@ class PlotterTests(TestCase):
     @patch("os.path.exists", return_value=False)
     @patch("plotly.graph_objects.Figure.write_image")
     def test_plots(
-        self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs
+        self, mock_write_image, mock_path_exists, mock_makedirs
     ):
         chat_messages = [
             {
@@ -683,10 +683,9 @@ class PlotterTests(TestCase):
 
     @patch("os.makedirs")
     @patch("os.path.exists", return_value=False)
-    @patch("os.getcwd", return_value="/fake/directory")
     @patch("plotly.graph_objects.Figure.write_image")
     def test_plots_large_number_of_messages(
-        self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs
+        self, mock_write_image, mock_path_exists, mock_makedirs
     ):
         chat_messages = [
             {
@@ -714,10 +713,9 @@ class PlotterTests(TestCase):
 
     @patch("os.makedirs")
     @patch("os.path.exists", return_value=False)
-    @patch("os.getcwd", return_value="/fake/directory")
     @patch("plotly.graph_objects.Figure.write_image")
     def test_plots_invalid_data(
-        self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs
+        self, mock_write_image, mock_path_exists, mock_makedirs
     ):
         chat_messages = [{"Sender": "Alice"}]
         try:
