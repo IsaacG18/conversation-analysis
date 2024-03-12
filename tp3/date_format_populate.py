@@ -63,7 +63,8 @@ def populate_thresholds():
 
 if __name__ == "__main__":
     print("Starting population script...")
-    media_dir = "media"
+
+    media_dir = os.path.join(os.getcwd(), "media")
     vis_uploads_dir = "vis_uploads"
 
     if not os.path.exists(media_dir):
