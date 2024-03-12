@@ -40,8 +40,10 @@ File path: conversation-analysis/tp3/tp3 **create a file** called **.env**
 Add in the file
 
     CHATGPT_API_KEY=<api-key>
+    CHATGPT_VERSION=<model-version>
 
-
+Current version is gpt-3.5-turbo
+If the key needs updated the .env and re-run Step 7
 
 # Step 5 install packages
 File path: conversation-analysis/
@@ -81,7 +83,7 @@ Run the populate script
     python date_format_populate.py
 
 
-# After set up to run the website uses this command
+# Step 7 After set up to run the website uses this command
 File path: conversation-analysis/tp3
 
     python manage.py runserver

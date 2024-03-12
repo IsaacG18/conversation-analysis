@@ -557,7 +557,7 @@ def quick_chat_message(request):
         ]
 
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo", messages=[*conversation_history]
+            model=os.environ.get("CHATGPT_VERSION"), messages=[*conversation_history]
         )
 
         reply = response.choices[0].message.content
@@ -723,7 +723,7 @@ def message(request):
         conversation_history.append({"role": "user", "content": message_content})
 
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo", messages=[*conversation_history]
+            model=os.environ.get("CHATGPT_VERSION"), messages=[*conversation_history]
         )
 
         reply = response.choices[0].message.content
