@@ -21,9 +21,8 @@ $(document).ready(function () {
                 });
     })
 
-    $(".risk").click(function () {
+    $(".risk-level").click(function () {
         var clickedElement = this; 
-        if(this.hasClass("filter")){
             var button = document.getElementsByClassName("existing");
             var filter_vals = []
             var risk_value  = parseInt($(this).val())
@@ -53,7 +52,6 @@ $(document).ready(function () {
                         $(clickedElement).addClass("clicked");
                     });
             }
-        }
     })
 
 
