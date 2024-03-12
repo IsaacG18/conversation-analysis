@@ -23,34 +23,36 @@ $(document).ready(function () {
 
     $(".risk").click(function () {
         var clickedElement = this; 
-        var button = document.getElementsByClassName("existing");
-        var filter_vals = []
-        var risk_value  = parseInt($(this).val())
-        
-        var pageSlug = window.location.pathname.split('/').pop(); 
-        for (var i = 0; i < button.length; i++) {
-            var buttonText = button[i].textContent || button[i].innerText;
-            filter_vals.push(removeNumberedSuffix(buttonText))
-        }
-        if($(this).hasClass("clicked")){
-            let index = risk.indexOf(risk_value);
-            if (index !== -1) {
-                risk.splice(index, 1);
+        if(this.hasClass("filter")){
+            var button = document.getElementsByClassName("existing");
+            var filter_vals = []
+            var risk_value  = parseInt($(this).val())
+            
+            var pageSlug = window.location.pathname.split('/').pop(); 
+            for (var i = 0; i < button.length; i++) {
+                var buttonText = button[i].textContent || button[i].innerText;
+                filter_vals.push(removeNumberedSuffix(buttonText))
             }
-            $.get('/filter/',
-                {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug, "risk":JSON.stringify(risk)},
-                function(data) {
-                    $('.results').replaceWith(data.results);
-                    $(clickedElement).removeClass("clicked");
-                });
-        }else{
-            risk.push(risk_value)
-            $.get('/filter/',
-                {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug, "risk":JSON.stringify(risk)},
-                function(data) {
-                    $('.results').replaceWith(data.results);
-                    $(clickedElement).addClass("clicked");
-                });
+            if($(this).hasClass("clicked")){
+                let index = risk.indexOf(risk_value);
+                if (index !== -1) {
+                    risk.splice(index, 1);
+                }
+                $.get('/filter/',
+                    {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug, "risk":JSON.stringify(risk)},
+                    function(data) {
+                        $('.results').replaceWith(data.results);
+                        $(clickedElement).removeClass("clicked");
+                    });
+            }else{
+                risk.push(risk_value)
+                $.get('/filter/',
+                    {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug, "risk":JSON.stringify(risk)},
+                    function(data) {
+                        $('.results').replaceWith(data.results);
+                        $(clickedElement).addClass("clicked");
+                    });
+            }
         }
     })
 
