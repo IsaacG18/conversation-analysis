@@ -32,10 +32,10 @@
           <div id="controls-collapse" class="accordion-collapse collapse show">
             <div class="accordion-body">
               <div class="d-flex flex-row">
-                <div class="col-2"><a href="{% url 'suite_selection' file.slug %}" class="btn btn-outline-secondary mr-1"
-                  role="button">Regenerate</a></div>
-                    <div class="col-auto"><a href="{% url 'export_view' file.slug %}" class="btn btn-outline-success mr-1"
-                      role="button">Download XML</a></div>
+                <a href="{% url 'suite_selection' file.slug %}" class="btn btn-outline-secondary m-1"
+                  role="button">Regenerate</a>
+                <a href="{% url 'export_view' file.slug %}" class="btn btn-outline-success m-1"
+                      role="button">Download XML</a>
               </div>
             </div>
           </div>
@@ -76,8 +76,8 @@
               <strong>There are no chats present.</strong>
               {% endif %}
               <div class="d-flex flex-row">
-                <button class="btn btn-outline-success chatgpt_new_message mt-3 m-2">New ChatGPT</button>
-                <button class="btn btn-outline-success exist-charts-btn mt-3 m-2"><a
+                <button class="btn btn-outline-success chatgpt_new_message mt-3 m-1">New ChatGPT</button>
+                <button class="btn btn-outline-success exist-charts-btn mt-3 m-1"><a
                     href="{%  url 'chatgpt_page_without_slug' %}">Existing ChatGPT</a></button>
               </div>
             </div>
