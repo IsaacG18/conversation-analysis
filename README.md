@@ -3,7 +3,7 @@
 To get this code running require steps for set up
 
 # Step 1 install python and pip
-You need to have Python 3.9 installed on your system. If you haven't installed it yet, you can download it from the [official Python website](https://www.python.org/downloads/) and follow the installation instructions for your operating system.
+You need to have Python 3.11 installed on your system. If you haven't installed it yet, you can download it from the [official Python website](https://www.python.org/downloads/) and follow the installation instructions for your operating system.
 
 To verify if pip is installed, you can run the following command in your terminal or command prompt:
 
