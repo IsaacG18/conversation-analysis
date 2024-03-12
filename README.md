@@ -7,7 +7,7 @@ You need to have Python 3.11 installed on your system. If you haven't installed 
 
 To verify if pip is installed, you can run the following command in your terminal or command prompt:
 
-    --pip version
+    pip --version
 
 
 # Step 2 clone the repo
@@ -30,7 +30,7 @@ Navigate to your project directory in the terminal or command prompt and run the
 
 **On macOS and Linux:**
 
-    source venv/bin/activate
+    source ca/bin/activate
 
 
 # Step 4 add .env
