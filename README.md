@@ -165,9 +165,9 @@ Available from the 14th of March, available as github and website
 
 
 
-  # Get Started
+# Get Started
 
-  - What can you do with the website
+- What can you do with the website
 	- upload chat logs
 	- receive analysis of the chat logs
 	- tailor analysis with customise settings
@@ -209,7 +209,7 @@ Available from the 14th of March, available as github and website
 	- hover on buttons in 'Person' and 'Location' highlights them in the chat, and clicking on them filters out messages containing them for you
 	- use 'Date/Time Filter' to view messages in a certain period
 	- 'Visualisation' shows a graph Plotting each participant's message length against timeline
-- get help from ChatGPT
+- Get help from ChatGPT
 	- start a chat with GPT by clicking on 'New ChatGPT' button from an analysis
 	- 'Existing ChatGPT' shows the chat you already started with ChatGPT
 	- there's a list of prompts on the right to make things easier
