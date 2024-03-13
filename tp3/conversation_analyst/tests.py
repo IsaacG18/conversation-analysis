@@ -648,10 +648,9 @@ class ChatGPTConvoFilterTestCase(TestCase):
 class PlotterTests(TestCase):
     @patch("os.makedirs")
     @patch("os.path.exists", return_value=False)
-    @patch("os.getcwd", return_value="/fake/directory")
     @patch("plotly.graph_objects.Figure.write_image")
     def test_plots(
-        self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs
+        self, mock_write_image, mock_path_exists, mock_makedirs
     ):
         chat_messages = [
             {
@@ -677,17 +676,16 @@ class PlotterTests(TestCase):
         plot_path = plots(chat_messages, name, analysis_id)
         self.assertEqual(plot_path, "vis_uploads/test_plot_plot123.png")
         mock_write_image.assert_called_once()
-        expected_directory = "/fake/directory/media/vis_uploads"
+        expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
         expected_full_path = os.path.join(expected_directory, "test_plot_plot123.png")
         mock_write_image.assert_called_with(expected_full_path)
         mock_makedirs.assert_called_once_with(expected_directory)
 
     @patch("os.makedirs")
     @patch("os.path.exists", return_value=False)
-    @patch("os.getcwd", return_value="/fake/directory")
     @patch("plotly.graph_objects.Figure.write_image")
     def test_plots_large_number_of_messages(
-        self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs
+        self, mock_write_image, mock_path_exists, mock_makedirs
     ):
         chat_messages = [
             {
@@ -706,7 +704,7 @@ class PlotterTests(TestCase):
         plot_path = plots(chat_messages, name, analysis_id)
         self.assertEqual(plot_path, "vis_uploads/test_large_plot_plot789.png")
         mock_write_image.assert_called_once()
-        expected_directory = "/fake/directory/media/vis_uploads"
+        expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
         expected_full_path = os.path.join(
             expected_directory, "test_large_plot_plot789.png"
         )
@@ -715,10 +713,9 @@ class PlotterTests(TestCase):
 
     @patch("os.makedirs")
     @patch("os.path.exists", return_value=False)
-    @patch("os.getcwd", return_value="/fake/directory")
     @patch("plotly.graph_objects.Figure.write_image")
     def test_plots_invalid_data(
-        self, mock_write_image, mock_getcwd, mock_path_exists, mock_makedirs
+        self, mock_write_image, mock_path_exists, mock_makedirs
     ):
         chat_messages = [{"Sender": "Alice"}]
         try:

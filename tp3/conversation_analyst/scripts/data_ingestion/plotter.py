@@ -1,6 +1,7 @@
 import numpy as np
 import plotly.graph_objects as go
 import os
+from django.conf import settings
 
 
 def plots(chat_messages, name, analysis_id):
@@ -128,7 +129,7 @@ def plots(chat_messages, name, analysis_id):
     )
 
     try:
-        plots_folder = os.getcwd() + "/media/vis_uploads"
+        plots_folder = settings.MEDIA_ROOT + "/vis_uploads"
         if not os.path.exists(plots_folder):
             os.makedirs(plots_folder)
 
