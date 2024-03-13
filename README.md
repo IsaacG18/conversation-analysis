@@ -93,6 +93,9 @@ File path: conversation-analysis/tp3
     
     time python speed_test_messages.py
 
+To run the file 100 times do this
+
+    time (for i in {1..100}; do python speed_test_messages.py; done)
 
 # Versions
 
