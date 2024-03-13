@@ -330,7 +330,7 @@ def name_location_chatgpt(text):
         },
     ]
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo", messages=[*conversation_history]
+        model=os.environ.get("CHATGPT_VERSION"), messages=[*conversation_history]
     )
     reply = response.choices[0].message.content
     rows = reply.split("\n")

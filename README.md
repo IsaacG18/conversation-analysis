@@ -3,15 +3,16 @@
 To get this code running require steps for set up
 
 # Step 1 install python and pip
-You need to have Python 3.9 installed on your system. If you haven't installed it yet, you can download it from the [official Python website](https://www.python.org/downloads/) and follow the installation instructions for your operating system.
+You need to have Python 3.11 installed on your system. If you haven't installed it yet, you can download it from the [official Python website](https://www.python.org/downloads/) and follow the installation instructions for your operating system.
 
 To verify if pip is installed, you can run the following command in your terminal or command prompt:
-    --pip version
+
+    pip --version
 
 
 # Step 2 clone the repo
 
-    git clone https://github.com/mentos-team/MentOS.git
+    git clone https://github.com/IsaacG18/conversation-analysis.git
 
 # Step 3 set up venv
 
@@ -29,10 +30,35 @@ Navigate to your project directory in the terminal or command prompt and run the
 
 **On macOS and Linux:**
 
-    source venv/bin/activate
+    source ca/bin/activate
 
 
-# Step 4 install packages
+# Step 4 add .env
+
+File path: conversation-analysis/tp3/tp3 **create a file** called **.env**
+
+Add in the file
+
+    CHATGPT_API_KEY=<api-key>
+    CHATGPT_VERSION=<model-version>
+
+Current version is gpt-3.5-turbo
+If the key needs updated the .env and re-run Step 7
+
+# Step 5 install packages
+File path: conversation-analysis/
+**Using Init Script**
+You can skip Step 5 and 6 using
+
+    chmod +x init.sh
+
+    ./init.sh
+
+Or for windows
+
+    init.bat
+
+**For manual install:**
 **Window OS:**
 
     pip install -r win_requirements.txt
@@ -42,37 +68,34 @@ Navigate to your project directory in the terminal or command prompt and run the
     pip install -r requirements.txt
 
 
-# Step 5 add .env
-
-In tp3/tp3 **create a file** called **.env**
-
-Add in the file
-
-    CHATGPT_API_KEY=<api-key>
-
 # Step 6 run these commands
-Create and run the migrations:
+Create and run the migrations 
+File path: conversation-analysis/tp3:
 
     python manage.py makemigrations
     
-    python manage,py migrate
+    python manage.py migrate
     
-    python manage,py migrate --run-syncdb
+    python manage.py migrate --run-syncdb
 
 Run the populate script
 
     python date_format_populate.py
 
 
-# After set up to run the website uses this command
-File path: cs39-main/tp3
+# Step 7 After set up to run the website uses this command
+File path: conversation-analysis/tp3
 
     python manage.py runserver
 
 # To test the speed of the code run this in linux
+File path: conversation-analysis/tp3
     
     time python speed_test_messages.py
 
+To run the file 100 times do this
+
+    time (for i in {1..100}; do python speed_test_messages.py; done)
 
 # Versions
 
