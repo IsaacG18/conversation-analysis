@@ -16,7 +16,6 @@ from .models import (
     ChatGPTFilter,
     ChatGPTConvoFilter,
     CustomThresholds,
-    KeywordPlan,
     RiskWordResult,
     Topic,
 )
@@ -1128,23 +1127,6 @@ class ModelsTestCase(TestCase):
         new_sender = "New Main Sender"
         message.set_main_sender(new_sender)
         self.assertEqual(message.main_sender, new_sender)
-
-    def test_keywordsuite_save(self):
-        global_plan, created = KeywordPlan.objects.get_or_create(name="global")
-        suite = KeywordSuite.objects.create(name="Suite", default=True)
-        suite.save()
-        self.assertIn(
-            global_plan,
-            suite.plans.all(),
-            "Global plan should be part of suite plans when default is True.",
-        )
-        suite.default = False
-        suite.save()
-        self.assertNotIn(
-            global_plan,
-            suite.plans.all(),
-            "Global plan should not be part of suite plans when default is False.",
-        )
 
     def test_riskword_save(self):
         suite = KeywordSuite.objects.create(name="Suite")

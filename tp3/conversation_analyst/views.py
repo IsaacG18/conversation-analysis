@@ -25,7 +25,6 @@ from .models import (
     Location,
     KeywordSuite,
     RiskWord,
-    KeywordPlan,
     RiskWordResult,
     VisFile,
     DateFormat,
@@ -314,6 +313,7 @@ def create_suite(request):
         try:
             suite_name = request.POST["name"]
             suite_obj = KeywordSuite.objects.create(name=suite_name)
+            suite_obj.default = True
             suite_obj.save()
             context_dict = {"message": "New suite added", "suiteId": suite_obj.id}
             return JsonResponse(context_dict, status=201)
@@ -391,26 +391,14 @@ def check_suite(request):
     # Returns HTTP response with status and message.
 
     if request.method == "POST":
-        response = ""
         suite_id = request.POST["suiteId"]
         isChecked = json.loads(request.POST["value"])
         suite = KeywordSuite.objects.get(id=suite_id)
-        keyword_plan = KeywordPlan.objects.get_or_create(name="global")[0]
-        is_keyword_in_plan = keyword_plan in suite.plans.all()
-        if is_keyword_in_plan != isChecked:
-            if isChecked:
-                suite.plans.add(keyword_plan)
-                suite.default = True
-                response += "checked"
-            else:
-                suite.plans.remove(keyword_plan)
-                suite.default = False
-                response += "unchecked"
+        suite.default = isChecked
         suite.save()
 
         return HttpResponse(
-            suite.name + " is " + response + " in " + keyword_plan.name + " plan"
-        )
+            suite.name + " is now included")
 
 
 def risk_update(request):
@@ -923,8 +911,7 @@ def suite_selection(request, file_slug):
         )
 
     else:
-        default_plan = KeywordPlan.objects.get_or_create(name="global")[0]
-        keyword_suites = default_plan.keywordsuite_set.all()
+        keyword_suites = KeywordSuite.objects.filter(default=True)
         keywords = RiskWord.objects.filter(suite__in=keyword_suites)
 
         try:

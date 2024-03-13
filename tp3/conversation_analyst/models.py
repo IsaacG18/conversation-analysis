@@ -23,16 +23,8 @@ class File(models.Model):
         return self.title
 
 
-class KeywordPlan(models.Model):
-    name = models.CharField(max_length=128, null=True)
-
-    def __str__(self):
-        return self.name.__str__()
-
-
 class Analysis(models.Model):
     file = models.ForeignKey(File, null=True, on_delete=models.SET_NULL)
-    KeywordPlan = models.ForeignKey(KeywordPlan, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name_plural = "Analyses"
@@ -77,17 +69,7 @@ class Location(models.Model):
 
 class KeywordSuite(models.Model):
     name = models.CharField(max_length=128, unique=True)
-    plans = models.ManyToManyField(KeywordPlan, blank=True)
     default = models.BooleanField(default=False)
-
-    def save(self, *args, **kwargs):
-        global_plan = KeywordPlan.objects.get_or_create(name="global")[0]
-        super(KeywordSuite, self).save(*args, **kwargs)
-        if self.default:
-            self.plans.add(global_plan)
-        else:
-            self.plans.remove(global_plan)
-        super(KeywordSuite, self).save(force_insert=False)
 
     def __str__(self):
         return self.name.__str__()
