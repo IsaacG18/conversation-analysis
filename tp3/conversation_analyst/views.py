@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .scripts.data_ingestion.file_process import parse_file, process_file
 from .scripts.object_creators import add_chat_message, add_chat_filter
+from .scripts.nlp.chatgpt import message_openAI
 from django.core.serializers import serialize
 from django.db import IntegrityError
 from datetime import datetime
@@ -12,9 +13,6 @@ from django.db.models import Q
 import json
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
-from openai import OpenAI
-import openai
-import os
 
 from .forms import UploadFileForm
 from .models import (
@@ -549,55 +547,29 @@ def quick_chat_message(request):
             system_message += (
                 f"{message.timestamp}: {message.sender}:  {message.content} \n"
             )
-        client = OpenAI(
-            api_key=os.environ.get("CHATGPT_API_KEY"),
-        )
         conversation_history = [
             {"role": "system", "content": system_message},
             {"role": "user", "content": "please sumerise the messages"},
         ]
-
-        response = client.chat.completions.create(
-            model=os.environ.get("CHATGPT_VERSION"), messages=[*conversation_history]
-        )
-
-        reply = response.choices[0].message.content
-        return JsonResponse(
-            {
-                "results": render_to_string(
-                    "conversation_analyst/quick_chat_result.html",
-                    {"response": reply},
-                )
-            }
-        )
-
-    except openai.APIError as e:
-        return JsonResponse(
-            {
-                "results": render_to_string(
-                    "conversation_analyst/quick_chat_result.html",
-                    {"response": f"OpenAI API returned an API Error: {e}"},
-                )
-            }
-        )
-    except openai.APIConnectionError as e:
-        return JsonResponse(
-            {
-                "results": render_to_string(
-                    "conversation_analyst/quick_chat_result.html",
-                    {"response": f"Failed to connect to OpenAI API: {e}"},
-                )
-            }
-        )
-    except openai.RateLimitError as e:
-        return JsonResponse(
-            {
-                "results": render_to_string(
-                    "conversation_analyst/quick_chat_result.html",
-                    {"response": f"OpenAI API request exceeded rate limit: {e}"},
-                )
-            }
-        )
+        reply, conversation_history = message_openAI(conversation_history)
+        if conversation_history is None:
+            return JsonResponse(
+                {
+                    "results": render_to_string(
+                        "conversation_analyst/quick_chat_result.html",
+                        {"response": reply},
+                    )
+                }
+            )
+        else:
+            return JsonResponse(
+                {
+                    "results": render_to_string(
+                        "conversation_analyst/quick_chat_result.html",
+                        {"response": reply},
+                    )
+                }
+            )
     except Exception as e:
         return JsonResponse(
             {
@@ -702,7 +674,7 @@ def chatgpt_page_without_slug(request):
 def message(request):
     # Define the message view function.
     # Handles GET request to process user input in chat conversation.
-    # Uses OpenAI GPT-3.5 to generate responses based on conversation history and user input.
+    # Uses ChatGPT to generate responses based on conversation history and user input.
     # Returns JSON response with updated conversation messages.
 
     chatgpt_slug = request.GET["chatgpt_slug"]
@@ -717,69 +689,35 @@ def message(request):
                 {"role": message.typeOfMessage, "content": message.content}
             )
 
-        client = OpenAI(
-            api_key=os.environ.get("CHATGPT_API_KEY"),
-        )
-
         conversation_history.append({"role": "user", "content": message_content})
+        reply, conversation_history = message_openAI(conversation_history)
+        if conversation_history is None:
+            return JsonResponse(
+                {
+                    "results": render_to_string(
+                        "conversation_analyst/chatgpt_messages.html",
+                        {
+                            "convo": convo,
+                            "messages": messages,
+                            "error": reply,
+                        },
+                    )
+                }
+            )
+        else:
+            conversation_history.append({"role": "assistant", "content": reply})
+            add_chat_message("user", message_content, convo)
+            add_chat_message("assistant", reply, convo)
 
-        response = client.chat.completions.create(
-            model=os.environ.get("CHATGPT_VERSION"), messages=[*conversation_history]
-        )
-
-        reply = response.choices[0].message.content
-        conversation_history.append({"role": "assistant", "content": reply})
-        add_chat_message("user", message_content, convo)
-        add_chat_message("assistant", reply, convo)
-
-        messages = ChatGPTMessage.objects.filter(convo=convo)
-        return JsonResponse(
-            {
-                "results": render_to_string(
-                    "conversation_analyst/chatgpt_messages.html",
-                    {"convo": convo, "messages": messages},
-                )
-            }
-        )
-    except openai.APIError as e:
-        return JsonResponse(
-            {
-                "results": render_to_string(
-                    "conversation_analyst/chatgpt_messages.html",
-                    {
-                        "convo": convo,
-                        "messages": messages,
-                        "error": f"OpenAI API returned an API Error: {e}",
-                    },
-                )
-            }
-        )
-    except openai.APIConnectionError as e:
-        return JsonResponse(
-            {
-                "results": render_to_string(
-                    "conversation_analyst/chatgpt_messages.html",
-                    {
-                        "convo": convo,
-                        "messages": messages,
-                        "error": f"Failed to connect to OpenAI API: {e}",
-                    },
-                )
-            }
-        )
-    except openai.RateLimitError as e:
-        return JsonResponse(
-            {
-                "results": render_to_string(
-                    "conversation_analyst/chatgpt_messages.html",
-                    {
-                        "convo": convo,
-                        "messages": messages,
-                        "error": f"OpenAI API request exceeded rate limit: {e}",
-                    },
-                )
-            }
-        )
+            messages = ChatGPTMessage.objects.filter(convo=convo)
+            return JsonResponse(
+                {
+                    "results": render_to_string(
+                        "conversation_analyst/chatgpt_messages.html",
+                        {"convo": convo, "messages": messages},
+                    )
+                }
+            )
     except Exception as e:
         return JsonResponse(
             {

@@ -2,9 +2,8 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import spacy
 import numpy as np
 import re
-import os
-from openai import OpenAI
 import emoji
+from .chatgpt import message_openAI
 
 nlp = spacy.load("en_core_web_md")
 RISK_LEVELS = 2
@@ -315,10 +314,6 @@ def name_location_chatgpt(text):
                     Here is the text: \n"""
         + text
     )
-
-    client = OpenAI(
-        api_key=os.environ.get("CHATGPT_API_KEY"),
-    )
     conversation_history = [
         {"role": "system", "content": system_message},
         {
@@ -329,10 +324,9 @@ def name_location_chatgpt(text):
                     """,
         },
     ]
-    response = client.chat.completions.create(
-        model=os.environ.get("CHATGPT_VERSION"), messages=[*conversation_history]
-    )
-    reply = response.choices[0].message.content
+    reply, conversation_history = message_openAI(conversation_history)
+    if conversation_history is None:
+        return [], []
     rows = reply.split("\n")
     try:
         names, locations = (
