@@ -3,9 +3,10 @@ import spacy
 import numpy as np
 import re
 import emoji
+import os
 from .chatgpt import message_openAI
 
-nlp = spacy.load("en_core_web_md")
+nlp = spacy.load(os.environ.get("NLP_VERSION"))
 RISK_LEVELS = 2
 
 
