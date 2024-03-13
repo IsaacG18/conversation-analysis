@@ -136,13 +136,13 @@ $(document).ready(function () {
                         $('#new-keyword').val('');
                         $('#new-keyword-form').before(`<div class="list-group-item list-group-item-action keyword-item" id="keyword-item-${keywordId}">
                         <div class="row d-flex align-items-center justify-content-between">
-                        <div class="col-8">
+                        <div class="col-7">
                                 <a href="#" class="text-reset text-decoration-none">${newKeyword}</a>
                         </div>
-                        <div class="col-1">
+                        <div class="col-3">
                         <input type="number" class="form-control keyword-risk"  value="${newKeywordRisk}" id="risk-${keywordId}">
                         </div>
-                        <div class="col-3">
+                        <div class="col-2">
                         <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "${keywordId}" id="delete-keyword-${keywordId}">Delete</button>
                         </div>
                         </div>
@@ -200,13 +200,13 @@ $(document).ready(function () {
             toAppend +=
                 `<div class="list-group-item list-group-item-action keyword-item" id="keyword-item-${keywordId}">
             <div class="row d-flex align-items-center justify-content-between">
-              <div class="col-8">
+              <div class="col-7">
                     <a href="#" class="text-reset text-decoration-none">${keyword}</a>
               </div>
-              <div class="col-1">
+              <div class="col-3">
               <input type="number" class="form-control keyword-risk"  value="${risk}" id="risk-${keywordId}">
             </div>
-            <div class="col-3">
+            <div class="col-2">
               <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "${keywordId}" id="delete-keyword-${keywordId}">Delete</button>
             </div>
             </div>
