@@ -53,7 +53,7 @@ $(document).ready(function(){
                     <div class="list-group-item list-group-item-action suite-item" id="suite-item-${suiteId}">
                     <div class="row d-flex align-items-center justify-content-between">
                     <div class="col-9 form-check" id="suite-check-${suiteId}">
-                            <input class="form-check-input suite-checkbox" type="checkbox" value="${suiteId}" id="checkbox-${suiteId}">
+                            <input class="form-check-input suite-checkbox" type="checkbox" value="${suiteId}" id="checkbox-${suiteId}" checked>
                             <label class="form-check-label" for="checkbox-${suiteId}">${newSuiteName}</label>
                     </div>
                     <div class="col-3">
