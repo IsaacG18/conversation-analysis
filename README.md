@@ -51,8 +51,7 @@ If the key needs updated the .env and re-run Step 7
 File path: conversation-analysis/
 
 
-Using Init Script
-You can skip Step 5 and 6 using
+Using Init Script you can skip Step 5 and 6 using
 
     chmod +x init.sh
 
