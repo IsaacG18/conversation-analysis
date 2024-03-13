@@ -140,7 +140,7 @@ def tag_text(
             )
             keyword = lemma_dict.get(token.lemma_)
             if (keyword is not None):
-                risk = keyword["risk_factor"] * (1 + abs(sentiment) / sentiment_multiplier)
+                risk = keyword["risk_factor"] * (1 + abs(sentiment) * sentiment_multiplier)
                 topics = keyword["topics"]
                 risk_total += risk
                 if risk > word_risk:

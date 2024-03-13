@@ -275,7 +275,7 @@ def strictness_update(request):
                 case _:
                     print("Invalid strictness level")
         else:
-            obj.sentiment_level_level = level
+            obj.sentiment_level = level
             match level:
                 case 0:
                     obj.sentiment_multiplier = 0
