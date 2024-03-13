@@ -49,13 +49,13 @@
                 {% for risk_word in risk_words %}
                 <div class="list-group-item list-group-item-action keyword-item" id="keyword-item-{{ risk_word.id }}">
                     <div class="row d-flex align-items-center justify-content-between">
-                      <div class="col-8">
+                      <div class="col-7">
                             <a href="#" class="text-reset text-decoration-none">{{ risk_word.keyword }}</a>
                       </div>
-                      <div class="col-1">
+                      <div class="col-3">
                         <input type="number" class="form-control keyword-risk"  value="{{ risk_word.risk_factor }}" id="risk-{{ risk_word.id }}" name="risk_input">
                       </div>
-                      <div class="col-3">
+                      <div class="col-2">
                         <button type="button" class="btn btn-danger btn-sm delete-keyword" value= "{{ risk_word.id }}" id="delete-keyword-{{ risk_word.id }}">Delete</button>
                       </div>
                     </div>
