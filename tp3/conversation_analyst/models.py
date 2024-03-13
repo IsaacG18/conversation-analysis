@@ -208,3 +208,7 @@ class CustomThresholds(models.Model):
 
 class GptSwitch(models.Model):
     on = models.BooleanField(default=False)
+
+
+class LastFile(models.Model):
+    file = models.ForeignKey(File, on_delete=models.SET_NULL, null=True)

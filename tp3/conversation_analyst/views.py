@@ -34,14 +34,24 @@ from .models import (
     ChatGPTMessage,
     CustomThresholds,
     GptSwitch,
+    LastFile
 )
 
 
 def homepage(request, query=None):
     # Define the homepage view function.
+    # clean up file without matching analysis
     # Displays a list of files ordered by date.
     # Handles search queries if provided, filtering files by title.
 
+    # cleaning up un-analysed file
+    if tracker := LastFile.objects.filter(id=1).first():
+        if file := tracker.file:
+            analysis = Analysis.objects.filter(file=tracker.file).first()
+            if not analysis:
+                print(f"deleting file {file.title}")
+                file.delete()
+    # show files
     files = File.objects.order_by("-date")
     try:
         query = request.GET["query"]
@@ -68,6 +78,9 @@ def upload(request):
             uploaded_file = request.FILES["file"]
             file_obj = File.objects.create(file=uploaded_file)
             file_obj.init_save()
+            tracker = LastFile.objects.get_or_create(id=1)[0]
+            tracker.file = file_obj
+            tracker.save()
 
             try:
                 timestamp = DateFormat.objects.get(

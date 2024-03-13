@@ -15,6 +15,7 @@ from .models import (
     CustomThresholds,
     GptSwitch,
     ChatGPTConvo,
+    LastFile
 )
 
 # Register your models here.
@@ -55,3 +56,4 @@ admin.site.register(VisFile)
 admin.site.register(CustomThresholds)
 admin.site.register(GptSwitch)
 admin.site.register(ChatGPTConvo)
+admin.site.register(LastFile)
