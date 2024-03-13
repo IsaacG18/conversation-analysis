@@ -116,6 +116,20 @@
             </div>
           </div>
         </div>
+        {% else %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#person-collapse"
+              aria-expanded="true" aria-controls="person-collapse">
+              Person
+            </button>
+          </h2>
+          <div id="person-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <h4>Nothing Found</h4>
+            </div>
+          </div>
+        </div>
         {% endif %}
         {% if locations %}
         <div class="accordion-item">
@@ -130,6 +144,20 @@
               {% for location in locations %}
               <button class="filter location-button filter-button" data-url="{{ location.url }}">{{ location.name }}</button>
               {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#location-collapse"
+              aria-expanded="true" aria-controls="location-collapse">
+              Location
+            </button>
+          </h2>
+          <div id="person-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <h4>Nothing Found</h4>
             </div>
           </div>
         </div>
@@ -149,6 +177,20 @@
                 {{ location.name }}
               </a>
               {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#map-url-collapse"
+              aria-expanded="true" aria-controls="map-url-collapse">
+              Google Maps Links
+            </button>
+          </h2>
+          <div id="person-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <h4>Nothing Found</h4>
             </div>
           </div>
         </div>
@@ -172,6 +214,20 @@
                   {% endif %} 
             {% endif %}            
               {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+              data-bs-target="#risk-words-collapse" aria-expanded="true" aria-controls="risk-words-collapse">
+              Risk Words
+            </button>
+          </h2>
+          <div id="person-collapse" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+              <h4>Nothing Found</h4>
             </div>
           </div>
         </div>
