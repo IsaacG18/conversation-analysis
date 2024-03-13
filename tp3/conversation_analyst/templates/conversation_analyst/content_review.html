@@ -68,7 +68,7 @@
               {% if chats %}
               <ul class="list-group">
                 {% for chat in chats %}
-                <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" style="text-decoration: none;">{{chat.slug}}</a>
+                <li class="list-group-item"><a href="{%  url 'chatgpt_page' chat.slug %}" class="text-reset text-decoration-none">{{chat.title}}</a>
                 </li>
                 {% endfor %}
               </ul>
