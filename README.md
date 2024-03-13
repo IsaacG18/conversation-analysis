@@ -187,9 +187,9 @@ The app uses Natural Language Processing (NLP) to analyse text documents and gen
 **Upload Page**:
 On the upload page users can see a "Browse" button which allows them to upload a file.
 
- - The application currently supports .txt, .csv, and .docx.
- - Custom delimiters can be set with default delimiter set to "," for "Timestamp" and ":" for Sender. (Order can be altered but message has to appear in the end)
- - Timestamp Formats must also be selected.
+- The application currently supports .txt, .csv, and .docx.
+- Custom delimiters can be set with default delimiter set to "," for "Timestamp" and ":" for Sender. (Order can be altered but message has to appear in the end)
+- Timestamp Formats must also be selected.
 - Supported Timestamp Formats:
   - ISO 8601
   - Common Log Format
