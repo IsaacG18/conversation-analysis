@@ -204,7 +204,7 @@ Available from the 14th of March, available as github and website
 	- sender, message content will be shown on the left side
 	- 'Regenerate' allows to re-analyse the file with different keywords, GPT and strictness settings
 	- 'Download XML' generates XML files for the analysis, i.e. everything on the right side of the page
-	- 'Summarise' asks ChatGPT to summarise the chat for you (to use this feature, an OpenAI key need to be provided first, see README and 'GPT troubleshooting' section for details)
+	- 'Summarise' asks ChatGPT to summarise the chat for you (to use this feature, an OpenAI key need to be provided first, see 'Step 4 add .env' in README.md and 'GPT troubleshooting' section for details)
 	- buttons in 'Risk Level' section filters messages based on calculated risk for each message
 	- hover on buttons in 'Person' and 'Location' highlights them in the chat, and clicking on them filters out messages containing them for you
 	- use 'Date/Time Filter' to view messages in a certain period
