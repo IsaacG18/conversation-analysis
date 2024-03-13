@@ -19,12 +19,6 @@ def populate_dates():
             "default": True,
         },
         {
-            "name": "Unix Timestamp",
-            "example": "1643057699",
-            "format": r"^\d{10}(?:\.\d+)?$",
-            "default": False,
-        },
-        {
             "name": "Common Log Format",
             "example": "01/Feb/2024:12:34:56 +0000",
             "format": "%d/%b/%Y:%H:%M:%S %z",
