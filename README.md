@@ -49,7 +49,9 @@ If the key needs updated the .env and re-run Step 7
 
 # Step 5 install packages
 File path: conversation-analysis/
-**Using Init Script**
+
+
+Using Init Script
 You can skip Step 5 and 6 using
 
     chmod +x init.sh
