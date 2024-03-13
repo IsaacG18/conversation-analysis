@@ -89,7 +89,7 @@ File path: conversation-analysis/tp3
     python manage.py runserver
 
 # To test the speed of the code run this in linux
-File path: conversation-analysis/
+File path: conversation-analysis/tp3
     
     time python speed_test_messages.py
 
