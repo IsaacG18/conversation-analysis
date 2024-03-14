@@ -44,7 +44,9 @@ Add in the file
     NLP_VERSION=<nlp-version>
 
 Current chatgpt  version is gpt-3.5-turbo
-Current NLP version is en_core_web_md
+
+Current NLP version is en_core_web_md, this is also the default NLP if nothing is selected
+
 If the key needs updated the .env and re-run Step 7
 
 # Step 5 install packages

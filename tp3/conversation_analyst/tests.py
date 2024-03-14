@@ -67,7 +67,11 @@ import csv
 from docx import Document
 from datetime import datetime
 
-nlp = spacy.load(os.environ.get("NLP_VERSION"))
+nlp = []
+if "NLP_VERSION" not in os.environ:
+    nlp = spacy.load("en_core_web_md")
+else:
+    nlp = spacy.load(os.environ.get("NLP_VERSION"))
 
 
 # Create your tests here.
