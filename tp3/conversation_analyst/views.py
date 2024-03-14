@@ -96,7 +96,7 @@ def upload(request):
                     "conversation_analyst/upload.html",
                     {
                         "form": form,
-                        "error_message": "File is of an Invalid type",
+                        "error_message": "File does not contain any messages",
                         "delimiters": Delimiter.objects.all(),
                         "timestamps": DateFormat.objects.all(),
                     },
@@ -124,7 +124,6 @@ def upload(request):
                 "timestamps": DateFormat.objects.all(),
             },
         )
-    
 
 
 def content_review(request, file_slug):
