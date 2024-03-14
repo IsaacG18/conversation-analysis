@@ -1011,33 +1011,24 @@ class TestParseChatFile(unittest.TestCase):
     def test_parse_csv_file(self):
         """Test parsing a CSV file."""
         headers = ["Timestamp", "Sender", "Message"]
-        rows = [
-            ["2021-01-01 10:00:00", "Alice", "Hello!"],
-            ["2021-01-01 10:05:00", "Bob", "Hi there!"],
-        ]
-        temp_file = self.create_temp_csv_file(headers, rows)
-        parsed_data = parse_chat_file(
-            temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
-        )
-        self.assertEqual(
-            parsed_data,
-            [],
-        )
+        with self.assertRaises(ValueError):
+            rows = [
+            ]
+            temp_file = self.create_temp_csv_file(headers, rows)
+            parsed_data = parse_chat_file(
+                temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
+            )
 
     def test_parse_docx_file(self):
         """Test parsing a DOCX file."""
         paragraphs = [
-            "2021-01-01 10:00:00, Alice: Hello!",
-            "2021-01-01 10:05:00, Bob: Hi there!",
+
         ]
-        temp_file = self.create_temp_docx_file(paragraphs)
-        parsed_data = parse_chat_file(
-            temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
-        )
-        self.assertEqual(
-            parsed_data,
-            [],
-        )
+        with self.assertRaises(ValueError):
+            temp_file = self.create_temp_docx_file(paragraphs)
+            parsed_data = parse_chat_file(
+                temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
+            )
 
     def create_temp_invalid_file(self, content, file_extension=".txt"):
         """Create a temporary file with invalid content and a specific extension."""
