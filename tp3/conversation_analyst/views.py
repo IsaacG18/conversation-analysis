@@ -90,6 +90,28 @@ def upload(request):
                 return HttpResponseRedirect(
                     reverse("suite_selection", kwargs={"file_slug": file_obj.slug})
                 )
+            else:
+                return render(
+                    request,
+                    "conversation_analyst/upload.html",
+                    {
+                        "form": form,
+                        "error_message": "File is of an Invalid type",
+                        "delimiters": Delimiter.objects.all(),
+                        "timestamps": DateFormat.objects.all(),
+                    },
+                )
+        else:
+            form = UploadFileForm()
+            return render(
+                request,
+                "conversation_analyst/upload.html",
+                {
+                    "form": form,
+                    "delimiters": Delimiter.objects.all(),
+                    "timestamps": DateFormat.objects.all(),
+                },
+            )
     except (ValueError, ValidationError) as e:
         file_obj.delete()
         return render(
@@ -102,17 +124,7 @@ def upload(request):
                 "timestamps": DateFormat.objects.all(),
             },
         )
-    else:
-        form = UploadFileForm()
-        return render(
-            request,
-            "conversation_analyst/upload.html",
-            {
-                "form": form,
-                "delimiters": Delimiter.objects.all(),
-                "timestamps": DateFormat.objects.all(),
-            },
-        )
+    
 
 
 def content_review(request, file_slug):
