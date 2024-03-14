@@ -1,4 +1,78 @@
-from django.test import TestCase
+from django.test import TestCase, Client
+from django.urls import reverse
+import unittest
+from .models import (
+    Delimiter,
+    File,
+    Analysis,
+    Person,
+    Location,
+    VisFile,
+    DateFormat,
+    KeywordSuite,
+    RiskWord,
+    ChatGPTConvo,
+    ChatGPTMessage,
+    ChatGPTFilter,
+    ChatGPTConvoFilter,
+    CustomThresholds,
+    RiskWordResult,
+    Topic,
+)
+from .scripts.nlp.nlp import (
+    classify,
+    get_top_n_risk_keywords,
+    label_entity,
+    label_keyword,
+    message_to_text,
+    get_date_messages,
+    get_keyword_lamma,
+    tag_text,
+    name_location_chatgpt,
+    update_display,
+)
+from django.utils import timezone
+from django.template.defaultfilters import slugify
+from .scripts.object_creators import (
+    Message,
+    add_message,
+    update_message,
+    add_analysis,
+    add_person,
+    add_location,
+    add_vis,
+    add_date,
+    add_delim,
+    add_chat_message,
+    add_chat_filter,
+    add_custom_threshold,
+)
+from django.core.files.uploadedfile import SimpleUploadedFile
+from .scripts.data_ingestion.plotter import plots
+from unittest.mock import patch, MagicMock
+from .scripts.data_ingestion.file_process import (
+    parse_file,
+    process_file,
+    generate_analysis_objects,
+)
+from conversation_analyst.scripts.data_ingestion.ingestion import (
+    parse_chat_file,
+    parse_timestamp,
+)
+import os
+import numpy as np
+import spacy
+import tempfile
+import csv
+from docx import Document
+from datetime import datetime
+
+nlp = []
+if "NLP_VERSION" not in os.environ:
+    nlp = spacy.load("en_core_web_md")
+else:
+    nlp = spacy.load(os.environ.get("NLP_VERSION"))
+
 
 # Create your tests here.
 class DelimiterTestCase(TestCase):
@@ -605,7 +679,7 @@ class PlotterTests(TestCase):
         plot_path = plots(chat_messages, name, analysis_id)
         self.assertEqual(plot_path, "vis_uploads/test_plot_plot123.png")
         mock_write_image.assert_called_once()
-        expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
+        expected_directory = os.getcwd()+"/media/vis_uploads"
         expected_full_path = os.path.join(expected_directory, "test_plot_plot123.png")
         mock_write_image.assert_called_with(expected_full_path)
         mock_makedirs.assert_called_once_with(expected_directory)
@@ -633,7 +707,7 @@ class PlotterTests(TestCase):
         plot_path = plots(chat_messages, name, analysis_id)
         self.assertEqual(plot_path, "vis_uploads/test_large_plot_plot789.png")
         mock_write_image.assert_called_once()
-        expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
+        expected_directory = os. getcwd() + "/media/vis_uploads"
         expected_full_path = os.path.join(
             expected_directory, "test_large_plot_plot789.png"
         )
