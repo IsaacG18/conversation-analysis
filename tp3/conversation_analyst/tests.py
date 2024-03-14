@@ -645,69 +645,70 @@ class ChatGPTConvoFilterTestCase(TestCase):
 
 
 class PlotterTests(TestCase):
-    # @patch("os.makedirs")
-    # @patch("os.path.exists", return_value=False)
-    # @patch("plotly.graph_objects.Figure.write_image")
-    # def test_plots(
-    #     self, mock_write_image, mock_path_exists, mock_makedirs
-    # ):
-    #     chat_messages = [
-    #         {
-    #             "Sender": "Alice",
-    #             "Timestamp": "2024-02-10T08:00:00",
-    #             "Message": "Hello!",
-    #             "risk": 0,
-    #             "PERSON": 1,
-    #             "GPE": 0,
-    #         },
-    #         {
-    #             "Sender": "Bob",
-    #             "Timestamp": "2024-02-10T08:05:00",
-    #             "Message": "Hi there!",
-    #             "risk": 1,
-    #             "PERSON": 0,
-    #             "GPE": 1,
-    #         },
-    #     ]
-    #     name = "test_plot.png"
-    #     analysis_id = "123"
+    @patch("os.makedirs")
+    @patch("os.path.exists", return_value=False)
+    @patch("plotly.graph_objects.Figure.write_image")
+    def test_plots(
+        self, mock_write_image, mock_path_exists, mock_makedirs
+    ):
+        chat_messages = [
+            {
+                "Sender": "Alice",
+                "Timestamp": "2024-02-10T08:00:00",
+                "Message": "Hello!",
+                "risk": 0,
+                "PERSON": 1,
+                "GPE": 0,
+            },
+            {
+                "Sender": "Bob",
+                "Timestamp": "2024-02-10T08:05:00",
+                "Message": "Hi there!",
+                "risk": 1,
+                "PERSON": 0,
+                "GPE": 1,
+            },
+        ]
+        name = "test_plot.png"
+        analysis_id = "123"
 
-    #     plot_path = plots(chat_messages, name, analysis_id)
-    #     self.assertEqual(plot_path, "vis_uploads/test_plot_plot123.png")
-    #     mock_write_image.assert_called_once()
-    #     expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
-    #     expected_full_path = os.path.join(expected_directory, "test_plot_plot123.png")
-    #     mock_write_image.assert_called_with(expected_full_path)
-    #     mock_makedirs.assert_called_once_with(expected_directory)
-    # @patch("os.makedirs")
-    # @patch("os.path.exists", return_value=False)
-    # @patch("plotly.graph_objects.Figure.write_image")
-    # def test_plots_large_number_of_messages(
-    #     self, mock_write_image, mock_path_exists, mock_makedirs
-    # ):
-    #     chat_messages = [
-    #         {
-    #             "Sender": f"User{i % 3}",
-    #             "Timestamp": f"2024-02-10T08:{i:02d}:00",
-    #             "Message": f"Message {i}",
-    #             "risk": 5,
-    #             "PERSON": i % 4,
-    #             "GPE": 5,
-    #         }
-    #         for i in range(60)
-    #     ]
-    #     name = "test_large_plot.png"
-    #     analysis_id = "789"
+        plot_path = plots(chat_messages, name, analysis_id)
+        self.assertEqual(plot_path, "vis_uploads/test_plot_plot123.png")
+        mock_write_image.assert_called_once()
+        expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
+        expected_full_path = os.path.join(expected_directory, "test_plot_plot123.png")
+        mock_write_image.assert_called_with(expected_full_path)
+        mock_makedirs.assert_called_once_with(expected_directory)
 
-    #     plot_path = plots(chat_messages, name, analysis_id)
-    #     self.assertEqual(plot_path, "vis_uploads/test_large_plot_plot789.png")
-    #     mock_write_image.assert_called_once()
-    #     expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
-    #     expected_full_path = os.path.join(
-    #         expected_directory, "test_large_plot_plot789.png"
-    #     )
-    #     mock_write_image.assert_called_with(expected_full_path)
-    #     mock_makedirs.assert_called_once_with(expected_directory)
+    @patch("os.makedirs")
+    @patch("os.path.exists", return_value=False)
+    @patch("plotly.graph_objects.Figure.write_image")
+    def test_plots_large_number_of_messages(
+        self, mock_write_image, mock_path_exists, mock_makedirs
+    ):
+        chat_messages = [
+            {
+                "Sender": f"User{i % 3}",
+                "Timestamp": f"2024-02-10T08:{i:02d}:00",
+                "Message": f"Message {i}",
+                "risk": 5,
+                "PERSON": i % 4,
+                "GPE": 5,
+            }
+            for i in range(60)
+        ]
+        name = "test_large_plot.png"
+        analysis_id = "789"
+
+        plot_path = plots(chat_messages, name, analysis_id)
+        self.assertEqual(plot_path, "vis_uploads/test_large_plot_plot789.png")
+        mock_write_image.assert_called_once()
+        expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
+        expected_full_path = os.path.join(
+            expected_directory, "test_large_plot_plot789.png"
+        )
+        mock_write_image.assert_called_with(expected_full_path)
+        mock_makedirs.assert_called_once_with(expected_directory)
 
     @patch("os.makedirs")
     @patch("os.path.exists", return_value=False)
