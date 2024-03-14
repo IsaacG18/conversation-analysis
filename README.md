@@ -163,6 +163,8 @@ Available from the 14th of March, available as github and website
   - Filter out emojis from names
   - Less files stored on machine
 
+# Application Overview
+
 **HomePage**:
 This is the main page which displays all of your uploaded files.
 
