@@ -1019,7 +1019,7 @@ class TestParseChatFile(unittest.TestCase):
             rows = [
             ]
             temp_file = self.create_temp_csv_file(headers, rows)
-            parsed_data = parse_chat_file(
+            parse_chat_file(
                 temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
             )
 
@@ -1030,7 +1030,7 @@ class TestParseChatFile(unittest.TestCase):
         ]
         with self.assertRaises(ValueError):
             temp_file = self.create_temp_docx_file(paragraphs)
-            parsed_data = parse_chat_file(
+            parse_chat_file(
                 temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
             )
 
