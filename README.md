@@ -159,6 +159,7 @@ Available from the 14th of March, available as github and website
   - Content Review Page
   - ChatGPT page
   - Waiting message for data analysis 
+  - Show all risk words
 - New features
   - ChatGPT summary
   - Search bar on chatgpt page
@@ -168,12 +169,25 @@ Available from the 14th of March, available as github and website
   - Allow chatgpt to find names and locations
   - Ability to delete old analysis
   - Ability to select to skip a line as title line
+  - initialization script
+  - Ability to deal with a title row in data ingestion
+  - Ability to read past missing lines
+  - Remove UNIX timestamp
+  - Remove non anaylised files from homepage
 - Other improvements
   - Cleaner code
   - Increase testing
   - Bug fixes on display html in chats
   - Filter out emojis from names
   - Less files stored on machine
+  - Update readme
+  - More interchange LLM and NLP
+  - Add a walk through
+  - Save sentiment and strictness properly
+
+
+
+
 
 # Application Overview
 
