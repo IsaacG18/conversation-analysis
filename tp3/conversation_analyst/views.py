@@ -66,20 +66,18 @@ def upload(request):
     # Handles file upload via form submission.
     # Parses the uploaded file, saves it, and redirects to suite selection.
     # Handles errors during file processing and displays appropriate messages.
-
-    if request.method == "POST":
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            delims = Delimiter.objects.filter(order__gt=0).order_by("order")
-            delim_pairs = [[delim.name, delim.value] for delim in delims]
-            uploaded_file = request.FILES["file"]
-            file_obj = File.objects.create(file=uploaded_file)
-            file_obj.init_save()
-            tracker = LastFile.objects.get_or_create(id=1)[0]
-            tracker.file = file_obj
-            tracker.save()
-
-            try:
+    try:
+        if request.method == "POST":
+            form = UploadFileForm(request.POST, request.FILES)
+            if form.is_valid():
+                delims = Delimiter.objects.filter(order__gt=0).order_by("order")
+                delim_pairs = [[delim.name, delim.value] for delim in delims]
+                uploaded_file = request.FILES["file"]
+                file_obj = File.objects.create(file=uploaded_file)
+                file_obj.init_save()
+                tracker = LastFile.objects.get_or_create(id=1)[0]
+                tracker.file = file_obj
+                tracker.save()
                 timestamp = DateFormat.objects.get(
                     name=request.POST["selected_timestamp"]
                 )
@@ -90,25 +88,36 @@ def upload(request):
                 return HttpResponseRedirect(
                     reverse("suite_selection", kwargs={"file_slug": file_obj.slug})
                 )
-            except (ValueError, ValidationError) as e:
-                file_obj.delete()
+            else:
                 return render(
                     request,
                     "conversation_analyst/upload.html",
                     {
                         "form": form,
-                        "error_message": str(e),
+                        "error_message": "File does not contain any messages",
                         "delimiters": Delimiter.objects.all(),
                         "timestamps": DateFormat.objects.all(),
                     },
                 )
-    else:
-        form = UploadFileForm()
+        else:
+            form = UploadFileForm()
+            return render(
+                request,
+                "conversation_analyst/upload.html",
+                {
+                    "form": form,
+                    "delimiters": Delimiter.objects.all(),
+                    "timestamps": DateFormat.objects.all(),
+                },
+            )
+    except (ValueError, ValidationError) as e:
+        file_obj.delete()
         return render(
             request,
             "conversation_analyst/upload.html",
             {
                 "form": form,
+                "error_message": str(e),
                 "delimiters": Delimiter.objects.all(),
                 "timestamps": DateFormat.objects.all(),
             },
