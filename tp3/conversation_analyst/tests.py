@@ -67,7 +67,11 @@ import csv
 from docx import Document
 from datetime import datetime
 
-nlp = spacy.load("en_core_web_md")
+nlp = []
+if "NLP_VERSION" not in os.environ:
+    nlp = spacy.load("en_core_web_md")
+else:
+    nlp = spacy.load(os.environ.get("NLP_VERSION"))
 
 
 # Create your tests here.
@@ -675,7 +679,7 @@ class PlotterTests(TestCase):
         plot_path = plots(chat_messages, name, analysis_id)
         self.assertEqual(plot_path, "vis_uploads/test_plot_plot123.png")
         mock_write_image.assert_called_once()
-        expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
+        expected_directory = os.getcwd()+"/media/vis_uploads"
         expected_full_path = os.path.join(expected_directory, "test_plot_plot123.png")
         mock_write_image.assert_called_with(expected_full_path)
         mock_makedirs.assert_called_once_with(expected_directory)
@@ -703,7 +707,7 @@ class PlotterTests(TestCase):
         plot_path = plots(chat_messages, name, analysis_id)
         self.assertEqual(plot_path, "vis_uploads/test_large_plot_plot789.png")
         mock_write_image.assert_called_once()
-        expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
+        expected_directory = os. getcwd() + "/media/vis_uploads"
         expected_full_path = os.path.join(
             expected_directory, "test_large_plot_plot789.png"
         )

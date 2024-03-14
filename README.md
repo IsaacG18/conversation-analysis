@@ -41,14 +41,19 @@ Add in the file
 
     CHATGPT_API_KEY=<api-key>
     CHATGPT_VERSION=<model-version>
+    NLP_VERSION=<nlp-version>
 
-Current version is gpt-3.5-turbo
+Current chatgpt  version is gpt-3.5-turbo
+
+Current NLP version is en_core_web_md, this is also the default NLP if nothing is selected
+
 If the key needs updated the .env and re-run Step 7
 
 # Step 5 install packages
 File path: conversation-analysis/
-**Using Init Script**
-You can skip Step 5 and 6 using
+
+
+Using Init Script you can skip Step 5 and 6 using
 
     chmod +x init.sh
 
@@ -96,6 +101,13 @@ File path: conversation-analysis/tp3
 To run the file 100 times do this
 
     time (for i in {1..100}; do python speed_test_messages.py; done)
+
+# Change NLP
+To change the NLP data set
+
+    python -m spacy download <data-set-name>
+
+it must be imported then update .env
 
 # Versions
 
