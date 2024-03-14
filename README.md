@@ -217,6 +217,7 @@ Available from the 14th of March, available as github and website
 - **Get help from ChatGPT**
 ![screenshot of GPT page](image-5.png)
 	- start a chat with GPT by clicking on 'New ChatGPT' button from an analysis
+  - if you want to talk about messages in a certain time period, filter messages by Date/Time on content review page before starting a new chat
 	- 'Existing ChatGPT' shows the chat you already started with ChatGPT
 	- there's a list of prompts on the right to make things easier
 	- past chats are listed on the left hand side
