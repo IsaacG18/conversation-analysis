@@ -163,6 +163,56 @@ Available from the 14th of March, available as github and website
   - Filter out emojis from names
   - Less files stored on machine
 
+**HomePage**:
+This is the main page which displays all of your uploaded files.
+
+ - There is a search bar at the top right hand side that can be  used to filter through your uploaded files by name.
+ - Next to the search bar there is three buttons : Upload File, Setttings, and ChatGBT.
+ - Clicking on an uploaded file will lead you to the analysis page. These files can also be deleted if the "x" icon is pressed.
+ - Double clicking on an uploaded file will allow you to rename it.
+ - Clicking to "Conversation Analyst" on the top left hand side will always lead the user back to the home page.
+
+**Analysis Page**:
+The app uses Natural Language Processing (NLP) to analyse text documents and generate reports.
+
+- The system then processes the document and displays key information.
+- Filtering on this page only works one at the time.
+- What is analysed:
+  - Names
+  - Locations
+  - Custom Inputed Keyword (Lemmas of each words)
+  - Risk Level (Based of keywords and risk values multiplied by the sentiment)
+
+**Upload Page**:
+On the upload page users can see a "Browse" button which allows them to upload a file.
+
+- The application currently supports .txt, .csv, and .docx.
+- Custom delimiters can be set with default delimiter set to "," for "Timestamp" and ":" for Sender. (Order can be altered but message has to appear in the end)
+- Timestamp Formats must also be selected.
+- Supported Timestamp Formats:
+  - ISO 8601
+  - Common Log Format
+  - ISO 8601 Without Seconds
+
+- Suites and keywords risk factor are used to filter results based upon their level. The higher the number the more risky the keyword.
+- After successfully uploading a file user will be redirected to the analysis page.
+
+**Settings Page**:
+Keywords and Detection settings can be customized here.
+
+- In keyword tab, suites and keywords can be added and removed
+- In detection tab, the level of strictness and sentiment and be adjusted from high to low
+  - This adjustment can range from high to low, offering a balance between precision and recall based on the user's preference or requirements for the analysis.
+  - Users can tweak how sentiment analysis is conducted. This may involve adjusting the sensitivity of the sentiment analysis tool, enabling the application to more accurately reflect the tone and mood of the conversations being analyzed.
+
+**ChatGBT Page**:
+This page  allows you to interact with the AI model directly. Suggested prompts are also offered.
+
+- You can type in any message and get suggestions for what to say next.
+- When messages are parsed they are only filtered by time.
+- Search bar to filter through chat history.
+- Multiple conversation can be made simultaneously.
+- Conversations can be renamed by double clicking them.
 
 
 # Get Started

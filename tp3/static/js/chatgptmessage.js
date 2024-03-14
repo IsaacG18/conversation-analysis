@@ -2,6 +2,9 @@ $(document).ready(function () {
     $(".chatgpt_new_message_form").submit(function (e) {
         e.preventDefault();
         var message_content = document.getElementById('message_content').value;
+        if (message_content.trim() == ""){
+            return;
+        }
         document.getElementById('message_content').value = ""
         document.getElementById('loading_message').innerHTML = "Loading Response"
         if (message_content.trim() == ""){return;}
