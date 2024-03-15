@@ -2,6 +2,7 @@ $(document).ready(function () {
     var startDate = document.getElementById('startDate').value;
     var endDate = document.getElementById('endDate').value;
     var risk = []
+    
 
     $(".date-fil").click(function () {
         startDate = document.getElementById('startDate').value;
@@ -97,11 +98,57 @@ $(document).ready(function () {
         }
         
     });
+    $(".restort_filters").click(function () {
+        var button = document.getElementsByClassName(".filter");
+        var filter_vals = []
+        var pageSlug = window.location.pathname.split('/').pop(); 
+        for (var i = 0; i < button.length; i++) {
+            if (button[i].classList.contains("clicked")) {
+                button[i].classList.remove("existing")
+                button[i].classList.remove("clicked");
+                if (button[i].classList.contains('risk-button')) {
+                    risk_remove(button[i])
+                }
+                if (button[i].classList.contains('filter-button--selected')) {
+                    button[i].classList.remove("filter-button--selected")
+                }
+            }
+        }
+        var risk_levels = document.getElementsByClassName("risk-level");
+        for (var i = 0; i < risk_levels.length; i++) {
+            if (risk_levels[i].classList.contains("clicked")) {
+                risk_levels[i].classList.remove("clicked");
+                risk_remove(risk_levels[i])
+            }
+        }
+        risk = []
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        startDate = null
+        endDate = null
+        console.log(JSON.stringify(filter_vals), startDate, endDate, pageSlug, JSON.stringify(risk))
+        $.get('/filter/',
+        {'filters': JSON.stringify(filter_vals), 'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug,"risk":JSON.stringify(risk)},
+            function(data) {
+                $('.results').replaceWith(data.results);
+            });
+    });
 });
-
 function removeNumberedSuffix(input) {
     return input.replace(/\(\d+\)$/, '');
 }
+
+function risk_remove(button){
+    if (button.classList.contains('low')) {
+        button.classList.remove("risk-button-low--selected");
+    } else if (button.classList.contains('medium')) {
+        button.classList.remove("risk-button-medium--selected");
+    } else {
+        button.classList.remove("risk-button-high--selected");
+    }
+}
+
+
 var styles = `
   <style>
     /* Add your custom styles here */
