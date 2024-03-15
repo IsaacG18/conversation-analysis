@@ -616,9 +616,8 @@ def chatgpt_new_message(request):
                 end_date, "%Y-%m-%dT%H:%M"
             )
         messages = Message.objects.filter(**filter_params)
-        if len(messages)==0:
-            return JsonResponse({"error":"No message found for chatgpt conversation"})
-
+        if len(messages) == 0:
+            return JsonResponse({"error": "No message found for chatgpt conversation"})
         convo.save()
 
         system_message = "You are answering questions about a some text messages with lots of detail, the formated of the messages will be'<Timestamp>: <Name>: <Message> \n"
@@ -628,7 +627,7 @@ def chatgpt_new_message(request):
             )
 
         add_chat_message("system", system_message, convo)
-        return JsonResponse({"url": convo.slug, "error":""})
+        return JsonResponse({"url": convo.slug, "error": ""})
 
     except Exception as e:
         print(e)
