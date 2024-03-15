@@ -179,6 +179,7 @@ Available from the 15th of March, available as github and website
   - Ability to read past missing lines
   - Remove UNIX timestamp
   - Remove non anaylised files from homepage
+  - Reset filters button
 - Other improvements
   - Cleaner code
   - Increase testing
@@ -210,6 +211,7 @@ The app uses Natural Language Processing (NLP) to analyse text documents and gen
 
 - The system then processes the document and displays key information.
 - Filtering on this page only works one at the time.
+- There is a reset filter
 - What is analysed:
   - Names
   - Locations
