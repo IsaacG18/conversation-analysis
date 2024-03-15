@@ -67,7 +67,7 @@ Or for windows
 
     init.bat
 
-**For manual install:**
+**For manual install:**d
 **Window OS:**
 
     pip install -r win_requirements.txt
@@ -195,7 +195,7 @@ Available from the 15th of March, available as github and website
 
 
 # Application Overview
-
+This project is primarly for local running usage
 **HomePage**:
 This is the main page which displays all of your uploaded files.
 
