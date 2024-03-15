@@ -15,7 +15,6 @@ urlpatterns = [
     path('filter/', views.filter_view, name='filter_view'),
     path('quick_chat_message/', views.quick_chat_message, name='quick_chat_message'),
     path("chatgpt_new_message/", views.chatgpt_new_message, name="chatgpt_new_message"),
-    path('/<str:query>/', views.homepage, name='homepage'),
     path('settings', views.settings_page, name='settings'),
     path("export_view/<slug:file_slug>", views.export_view, name='export_view'),
     path('create_suite', views.create_suite, name='create_suite'),
