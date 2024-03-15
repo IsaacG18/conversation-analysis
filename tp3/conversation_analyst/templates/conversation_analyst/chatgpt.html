@@ -28,23 +28,29 @@
           <div class="prompt-style text-center">Select a conversation to continue</div>
         {% endif %}
         {% if convo %}
-          <a href="{% url 'content_review' convo.file.slug %}" class="text-decoration-none btn btn-outline-secondary btn-sm">
+        <div class="row">
+          <div class="col-6">
+            <a href="{% url 'content_review' convo.file.slug %}" class="text-decoration-none btn btn-outline-secondary btn-sm">
               <span class="me-1"><i class="bi bi-arrow-left"></i></span><small class="me-1">Go to File</small>
           </a> 
+          </div>
+        <div class="col-6 justify-content-end">
           {% if convo.start %}
-            <h5>Start Datetime filter: {{ convo.start }}</h5>
+          <div class="prompt-style-small text-end pt-2">Start Datetime filter: {{ convo.start }}</div>
           {% else %}
-            <h5>Start Datetime filter: None</h5>
+          <div class="prompt-style-small text-end pt-2">Start Datetime filter: None</div>
           {% endif %}
           {% if convo.end %}
-            <h5>End Datetime filter: {{ convo.end }}</h5>
+          <div class="prompt-style-small text-end">End Datetime filter: {{ convo.end }}</div>
           {% else %}
-            <h5>End Datetime filter: None</h5>
+          <div class="prompt-style-small text-end">End Datetime filter: None</div>
           {% endif %}
         {% endif %}
+      </div>
+    </div>
           {% include "conversation_analyst/chatgpt_messages.html" %}
           <br>
-          <h5 id="loading_message"></h5>
+          <div id="loading_message" class="prompt-style"></div>
           {% if messages %}
               <form class="chatgpt_new_message_form fixed-bottom mt-3">
                 <div class="input-group">

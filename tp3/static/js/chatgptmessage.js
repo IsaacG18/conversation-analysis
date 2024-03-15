@@ -6,7 +6,7 @@ $(document).ready(function () {
             return;
         }
         document.getElementById('message_content').value = ""
-        document.getElementById('loading_message').innerHTML = "Loading Response"
+        document.getElementById('loading_message').innerHTML = "Loading Response..."
         if (message_content.trim() == ""){return;}
         var pageSlug = window.location.pathname.split('/').pop(); 
         var formattedResult = formatMediaString(message_content);
@@ -19,7 +19,7 @@ $(document).ready(function () {
                 });
     })
     $(".gpt_prompt").click(function () {
-        document.getElementById('loading_message').innerHTML = "Loading Response"
+        document.getElementById('loading_message').innerHTML = "Loading Response..."
         var message_content =  $(this).text();
         var pageSlug = window.location.pathname.split('/').pop(); 
         var formattedResult = formatMediaString(message_content);

@@ -112,6 +112,12 @@ h3 {
     font-weight: bold;
 }
 
+.prompt-style-small{
+    color: var(--gray-600);
+    font-weight: bold;
+    font-size: 75%;
+}
+
 .chat-rename-form input[type='text'] {
     font-size: small;
     padding-top: 1rem;

@@ -91,4 +91,8 @@
     background: var(--selected-background);
 }
 
+.waring-text{
+    font-size: 120%;
+    color: grey;
+}
 

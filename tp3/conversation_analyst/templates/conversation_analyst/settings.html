@@ -22,7 +22,7 @@
 
 <div class="container-fluid px-5" id="tab-container">
   <div id="div" class="row">
-    <div id="div" class="col-3">
+    <div id="div" class="col-0 col-md-3">
       <div class="list-group" id="suite-list">
         <div class="list-group-item disabled list-header">
           <span>Suites</span>
@@ -58,7 +58,7 @@
         </form>
       </div>
     </div>
-    <div class="col-9">
+    <div class="col-12 col-md-9 pt-md-0 pt-2">
       <div class="list-group" id="keyword-list">
         <div class="list-group-item disabled list-header">
           <div class="row d-flex align-items-center justify-content-between">
@@ -70,10 +70,10 @@
         {% for risk_word in risk_words %}
         <div class="list-group-item list-group-item-action keyword-item" id="keyword-item-{{ risk_word.id }}">
           <div class="row d-flex align-items-center justify-content-between">
-            <div class="col-7">
+            <div class="col-8">
               <a href="#" class="text-reset text-decoration-none">{{ risk_word.keyword }}</a>
             </div>
-            <div class="col-3">
+            <div class="col-2">
               <input type="number" class="form-control keyword-risk" value="{{ risk_word.risk_factor }}"
                 id="risk-{{ risk_word.id }}" name="risk_input">
             </div>
@@ -95,10 +95,10 @@
               <input id="new-keyword" type="text" class="form-control ps-2" placeholder="Add new keyword"
                 aria-label="Keyword Input" name="keyword">
             </div>
-            <div class="col-1">
+            <div class="col-2">
               <input type="number" class="form-control" value="0" id="new-keyword-risk" name="risk_factor">
             </div>
-            <div class="col-3">
+            <div class="col-2">
               <button type="submit" value="Submit" class="btn btn-primary btn-sm">Add</button>
             </div>
           </div>
