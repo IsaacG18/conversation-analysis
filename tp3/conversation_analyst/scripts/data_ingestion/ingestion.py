@@ -93,6 +93,8 @@ def parse_chat_file(file_path, delimiters, skip, date_formats="%Y-%m-%dT%H:%M:%S
                         raise ValueError(
                             f"Pattern mismatch detected on line {i+1} with delimiter '{delimiters[-1][-1]}' :\n \"{line.strip()}\" "
                         )
+        if len(messages) == 0:
+            raise ValueError("File does not contain any messages")
 
     except FileNotFoundError:
         raise ValueError(f"File not found: {file_path}")

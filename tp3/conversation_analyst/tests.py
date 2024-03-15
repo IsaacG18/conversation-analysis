@@ -67,7 +67,11 @@ import csv
 from docx import Document
 from datetime import datetime
 
-nlp = spacy.load("en_core_web_md")
+nlp = []
+if "NLP_VERSION" not in os.environ:
+    nlp = spacy.load("en_core_web_md")
+else:
+    nlp = spacy.load(os.environ.get("NLP_VERSION"))
 
 
 # Create your tests here.
@@ -675,7 +679,7 @@ class PlotterTests(TestCase):
         plot_path = plots(chat_messages, name, analysis_id)
         self.assertEqual(plot_path, "vis_uploads/test_plot_plot123.png")
         mock_write_image.assert_called_once()
-        expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
+        expected_directory = os.getcwd()+"/media/vis_uploads"
         expected_full_path = os.path.join(expected_directory, "test_plot_plot123.png")
         mock_write_image.assert_called_with(expected_full_path)
         mock_makedirs.assert_called_once_with(expected_directory)
@@ -703,7 +707,7 @@ class PlotterTests(TestCase):
         plot_path = plots(chat_messages, name, analysis_id)
         self.assertEqual(plot_path, "vis_uploads/test_large_plot_plot789.png")
         mock_write_image.assert_called_once()
-        expected_directory = "/builds/team-project-h/2023/sh23/cs39-main/tp3/media/vis_uploads"
+        expected_directory = os. getcwd() + "/media/vis_uploads"
         expected_full_path = os.path.join(
             expected_directory, "test_large_plot_plot789.png"
         )
@@ -1011,33 +1015,24 @@ class TestParseChatFile(unittest.TestCase):
     def test_parse_csv_file(self):
         """Test parsing a CSV file."""
         headers = ["Timestamp", "Sender", "Message"]
-        rows = [
-            ["2021-01-01 10:00:00", "Alice", "Hello!"],
-            ["2021-01-01 10:05:00", "Bob", "Hi there!"],
-        ]
-        temp_file = self.create_temp_csv_file(headers, rows)
-        parsed_data = parse_chat_file(
-            temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
-        )
-        self.assertEqual(
-            parsed_data,
-            [],
-        )
+        with self.assertRaises(ValueError):
+            rows = [
+            ]
+            temp_file = self.create_temp_csv_file(headers, rows)
+            parse_chat_file(
+                temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
+            )
 
     def test_parse_docx_file(self):
         """Test parsing a DOCX file."""
         paragraphs = [
-            "2021-01-01 10:00:00, Alice: Hello!",
-            "2021-01-01 10:05:00, Bob: Hi there!",
+
         ]
-        temp_file = self.create_temp_docx_file(paragraphs)
-        parsed_data = parse_chat_file(
-            temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
-        )
-        self.assertEqual(
-            parsed_data,
-            [],
-        )
+        with self.assertRaises(ValueError):
+            temp_file = self.create_temp_docx_file(paragraphs)
+            parse_chat_file(
+                temp_file.name, [["Timestamp", ","], ["Sender", ":"]], []
+            )
 
     def create_temp_invalid_file(self, content, file_extension=".txt"):
         """Create a temporary file with invalid content and a specific extension."""
