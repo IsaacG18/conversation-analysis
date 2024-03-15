@@ -100,8 +100,6 @@
             </div>
           </div>
         </div>
-
-        {% if persons %}
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#person-collapse"
@@ -111,28 +109,16 @@
           </h2>
           <div id="person-collapse" class="accordion-collapse collapse show">
             <div class="accordion-body">
+              {% if persons %}
               {% for person in persons %}
               <button class="filter person-button filter-button m-1">{{ person }}</button>
               {% endfor %}
-            </div>
-          </div>
-        </div>
-        {% else %}
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#person-collapse"
-              aria-expanded="true" aria-controls="person-collapse">
-              Person
-            </button>
-          </h2>
-          <div id="person-collapse" class="accordion-collapse collapse show">
-            <div class="accordion-body">
+              {% else %}
               <div class="waring-text ps-2">Nothing Found</div>
+              {% endif %}
             </div>
           </div>
         </div>
-        {% endif %}
-        {% if locations %}
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#location-collapse"
@@ -142,28 +128,16 @@
           </h2>
           <div id="location-collapse" class="accordion-collapse collapse show">
             <div class="accordion-body">
+              {% if locations %}
               {% for location in locations %}
               <button class="filter location-button filter-button" data-url="{{ location.url }}">{{ location.name }}</button>
               {% endfor %}
-            </div>
-          </div>
-        </div>
-        {% else %}
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#location-collapse"
-              aria-expanded="true" aria-controls="location-collapse">
-              Location
-            </button>
-          </h2>
-          <div id="person-collapse" class="accordion-collapse collapse show">
-            <div class="accordion-body">
+              {% else %}
               <div class="waring-text ps-2">Nothing Found</div>
+              {% endif %}
             </div>
           </div>
         </div>
-        {% endif %}
-        {% if URL %}
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#map-url-collapse"
@@ -173,30 +147,18 @@
           </h2>
           <div id="map-url-collapse" class="accordion-collapse collapse show">
             <div class="accordion-body">
+              {% if URL %}
               {% for location in URL %}
              <a href="{{ location.url }}" target="_blank" class="location-button google-map-button" style="text-decoration: none;">
                 {{ location.name }}
               </a>
               {% endfor %}
-            </div>
-          </div>
-        </div>
-        {% else %}
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#map-url-collapse"
-              aria-expanded="true" aria-controls="map-url-collapse">
-              Google Maps Links
-            </button>
-          </h2>
-          <div id="person-collapse" class="accordion-collapse collapse show">
-            <div class="accordion-body">
+              {% else %}
               <div class="waring-text ps-2">Nothing Found</div>
+              {% endif %}
             </div>
           </div>
         </div>
-        {% endif %}
-        {% if risk_words|length > 1 %}
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -206,6 +168,7 @@
           </h2>
           <div id="risk-words-collapse" class="accordion-collapse collapse show">
             <div class="accordion-body">
+              {% if risk_words|length > 1 %}
               {% for risk_word in risk_words %}
               {% if risk_word.riskword.risk_factor >= 8.0%}
               <button class="filter risk-button high">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
@@ -215,24 +178,12 @@
               <button class="filter risk-button low">{{ risk_word.riskword.keyword }}({{ risk_word.amount }})</button>
               {% endif %}
               {% endfor %}
-            </div>
-          </div>
-        </div>
-        {% else %}
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-              data-bs-target="#risk-words-collapse" aria-expanded="true" aria-controls="risk-words-collapse">
-              Risk Words
-            </button>
-          </h2>
-          <div id="person-collapse" class="accordion-collapse collapse show">
-            <div class="accordion-body">
+              {% else %}
               <div class="waring-text ps-2">Nothing Found</div>
+              {% endif %}
             </div>
           </div>
         </div>
-        {% endif %}
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button class="accordion-button" type="button" data-bs-toggle="collapse"
