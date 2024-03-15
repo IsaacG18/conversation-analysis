@@ -257,7 +257,7 @@ This page allows you to interact with the AI model directly. Suggested prompts a
   - choose timestamp format used by your chat file
   - enable 'Skip First Line' if the first line of your chat log is a title
 - **Customise keywords**
-![screenshot of suite selection page](image-1.png)
+![screenshot of suite selection page](image-4.png)
   - messages with keywords would be highlighted in the analysis
   - keywords are grouped into suites
   - selected suites would be applied to the file analysis
@@ -281,7 +281,7 @@ This page allows you to interact with the AI model directly. Suggested prompts a
   - 'Sentiment' controls the impact of sentiment analysis in message risk calculation
   - setting 'Sentiment' to 'Off' would disable sentiment analysis in risk calculation process
 - **Content Review**
-![scrrenshot of content review page](image-4.png)
+![scrrenshot of content review page](image-6.png)
   - sender, message content will be shown on the left side
   - 'Regenerate' allows to re-analyse the file with different keywords, GPT and strictness settings
   - 'Download XML' generates XML files for the analysis, i.e. everything on the right side of the page
@@ -292,7 +292,7 @@ This page allows you to interact with the AI model directly. Suggested prompts a
   - use 'Date/Time Filter' to view messages in a certain period
   - 'Visualisation' shows a graph Plotting each participant's message length against timeline
 - **Get help from ChatGPT**
-![screenshot of GPT page](image-5.png)
+![screenshot of GPT page](image-7.png)
   - start a chat with GPT by clicking on 'New ChatGPT' button from an analysis
   - if you want to talk about messages in a certain time period, filter messages by Date/Time on content review page before starting a new chat. Currently applied Date/Time filter is shown at the top right of the chat window.
   - 'Existing ChatGPT' shows the chat you already started with ChatGPT
