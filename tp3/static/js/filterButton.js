@@ -99,7 +99,7 @@ $(document).ready(function () {
         
     });
     $(".restort_filters").click(function () {
-        var button = document.getElementsByClassName(".filter");
+        var button = document.getElementsByClassName("filter");
         var filter_vals = []
         var pageSlug = window.location.pathname.split('/').pop(); 
         for (var i = 0; i < button.length; i++) {
