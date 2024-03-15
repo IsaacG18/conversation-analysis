@@ -611,11 +611,14 @@ def chatgpt_new_message(request):
                 start_date, "%Y-%m-%dT%H:%M"
             )
         if end_date:
-            convo.end = datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
+            convo.end = datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
             filter_params["timestamp__lte"] = datetime.strptime(
                 end_date, "%Y-%m-%dT%H:%M"
             )
         messages = Message.objects.filter(**filter_params)
+        if len(messages)==0:
+            return JsonResponse({"error":"No message found for chatgpt conversation"})
+
         convo.save()
 
         system_message = "You are answering questions about a some text messages with lots of detail, the formated of the messages will be'<Timestamp>: <Name>: <Message> \n"
@@ -625,12 +628,12 @@ def chatgpt_new_message(request):
             )
 
         add_chat_message("system", system_message, convo)
-        return JsonResponse({"url": convo.slug})
+        return JsonResponse({"url": convo.slug, "error":""})
 
     except Exception as e:
         print(e)
         return JsonResponse(
-            {"result": "error", "message": f"Internal Server Error with error: {e}"}
+            {"result": "error", "error": f"Internal Server Error with error: {e}"}
         )
 
 
