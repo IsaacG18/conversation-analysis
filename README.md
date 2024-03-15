@@ -160,6 +160,7 @@ Available from the 14th of March, available as github and website
   - ChatGPT page
   - Waiting message for data analysis 
   - Show all risk words
+  - Messages indicating what dates are being filtered
 - New features
   - ChatGPT summary
   - Search bar on chatgpt page
