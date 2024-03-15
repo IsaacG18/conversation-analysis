@@ -285,6 +285,7 @@ This page allows you to interact with the AI model directly. Suggested prompts a
   - sender, message content will be shown on the left side
   - 'Regenerate' allows to re-analyse the file with different keywords, GPT and strictness settings
   - 'Download XML' generates XML files for the analysis, i.e. everything on the right side of the page
+  - 'Restore' button un-applies all filters
   - 'Summarise' asks ChatGPT to summarise the chat for you (to use this feature, an OpenAI key need to be provided first, see 'Step 4 add .env' in README.md and 'GPT troubleshooting' section for details)
   - buttons in 'Risk Level' section filters messages based on calculated risk for each message
   - hover on buttons in 'Person' and 'Location' highlights them in the chat, and clicking on them filters out messages containing them for you
@@ -293,7 +294,7 @@ This page allows you to interact with the AI model directly. Suggested prompts a
 - **Get help from ChatGPT**
 ![screenshot of GPT page](image-5.png)
   - start a chat with GPT by clicking on 'New ChatGPT' button from an analysis
-  - if you want to talk about messages in a certain time period, filter messages by Date/Time on content review page before starting a new chat
+  - if you want to talk about messages in a certain time period, filter messages by Date/Time on content review page before starting a new chat. Currently applied Date/Time filter is shown at the top right of the chat window.
   - 'Existing ChatGPT' shows the chat you already started with ChatGPT
   - there's a list of prompts on the right to make things easier
   - past chats are listed on the left hand side
