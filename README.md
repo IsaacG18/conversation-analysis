@@ -180,7 +180,7 @@ Available from the 15th of March, available as github and website
   - Filter out emojis from names
   - Less files stored on machine
   - Update readme
-  - More interchange LLM and NLP
+  - More interchangeable LLM and NLP
   - Add a walk through
   - Save sentiment and strictness properly
 
