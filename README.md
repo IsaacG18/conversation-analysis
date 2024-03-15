@@ -14,6 +14,10 @@ To verify if pip is installed, you can run the following command in your termina
 
     git clone https://github.com/IsaacG18/conversation-analysis.git
 
+To swtich version, checkout a version branch, recommend to uses 2.1.0
+
+    git checkout -t <remote-branch-version>
+
 # Step 3 set up venv
 
     pip install virtualenv
