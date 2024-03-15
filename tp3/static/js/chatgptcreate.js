@@ -6,6 +6,10 @@ $(document).ready(function () {
         $.get('/chatgpt_new_message/',
                 {'startDate':startDate, 'endDate':endDate ,'file_slug': pageSlug},
                 function(data) {
+                    if (data.error != ""){
+                        document.getElementById('create_chat_error').innerHTML = data.error
+                        return;
+                    }
                     window.location.href = "chatgpt_page/" + data.url
                 });
     })
